@@ -1,15 +1,19 @@
 package com.cedica.cedica
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -74,11 +78,9 @@ fun VolumeSlider(label: String, modifier: Modifier = Modifier) {
     }
 }
 
-//@Preview(showBackground = true)
 @Composable
 fun VolumeConfiguration() {
     Column(
-        modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
@@ -87,18 +89,37 @@ fun VolumeConfiguration() {
     }
 }
 
-@Preview
 @Composable
-fun ConfigurationScreen() {
+fun ConfigurationScreen(navigateToMenu: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFADD8E6)), // Fondo azul claro
+            .background(Color(0xFFADD8E6)) // Fondo azul claro
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
         Text(text = "Configuración", style = MaterialTheme.typography.titleLarge)
         HorizontalDivider(modifier = Modifier.padding(16.dp), color = Color.Black)
         VolumeConfiguration()
+        Row(
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Button(onClick = { navigateToMenu() }) {
+                Text("Volver")
+            }
+            Button(onClick = { /* Acción de guardar */ }) {
+                Text("Guardar")
+            }
+        }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewConfigurationScreen() {
+    ConfigurationScreen(navigateToMenu = {
+        println("Navigating to menu")
+    })
 }

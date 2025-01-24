@@ -26,6 +26,11 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.cedica.cedica.core.navigation.NavigationWrapper
 import com.cedica.cedica.ui.theme.CedicaTheme
 
 @Composable
@@ -50,7 +55,7 @@ fun MenuButtons(modifier: Modifier) {
 }
 
 @Composable
-fun TopBar() {
+fun TopBar(navigateToConfiguration: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -75,7 +80,7 @@ fun TopBar() {
         }
 
         // Botón de configuración
-        IconButton(onClick = { /* Acción de configuración */ }) {
+        IconButton(onClick = { navigateToConfiguration() }) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_logo_background),
                 contentDescription = "Configuración"
@@ -86,13 +91,13 @@ fun TopBar() {
 
 
 @Composable
-fun MainMenuScreen() {
+fun MainMenuScreen(navigateToConfiguration: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFADD8E6))
     ) {
-        TopBar()
+        TopBar(navigateToConfiguration)
 
         Box(
             modifier = Modifier
@@ -130,7 +135,7 @@ fun MainMenuScreen() {
 @Composable
 fun PreviewMainMenuVertical() {
     CedicaTheme {
-        MainMenuScreen()
+        NavigationWrapper()
     }
 }
 
@@ -138,6 +143,6 @@ fun PreviewMainMenuVertical() {
 @Composable
 fun PreviewMainMenuHorizontal() {
     CedicaTheme {
-        MainMenuScreen()
+        NavigationWrapper()
     }
 }
