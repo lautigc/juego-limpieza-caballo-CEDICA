@@ -13,6 +13,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Login
+import androidx.compose.material.icons.automirrored.filled.Subject
+import androidx.compose.material.icons.automirrored.filled.VolumeOff
+import androidx.compose.material.icons.rounded.AccountCircle
+import androidx.compose.material.icons.rounded.Construction
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -21,15 +28,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.cedica.cedica.core.navigation.NavigationWrapper
 import com.cedica.cedica.ui.theme.CedicaTheme
 
@@ -63,9 +67,9 @@ fun TopBar(navigateToConfiguration: () -> Unit) {
     ) {
         // Logo a la izquierda
         Image(
-            painter = painterResource(id = R.drawable.ic_logo_background),
+            painter = painterResource(id = R.drawable.logo_clean_textless),
             contentDescription = "Logo",
-            modifier = Modifier.size(40.dp)
+            modifier = Modifier.size(50.dp),
         )
 
         // Espaciador flexible
@@ -74,16 +78,18 @@ fun TopBar(navigateToConfiguration: () -> Unit) {
         // Botón de perfil
         IconButton(onClick = { /* Acción del perfil */ }) {
             Icon(
-                painter = painterResource(id = R.drawable.ic_logo_background),
-                contentDescription = "Perfil"
+                imageVector = Icons.Rounded.AccountCircle,
+                contentDescription = "Perfil",
+                modifier = Modifier.size(60.dp)
             )
         }
 
         // Botón de configuración
         IconButton(onClick = { navigateToConfiguration() }) {
             Icon(
-                painter = painterResource(id = R.drawable.ic_logo_background),
-                contentDescription = "Configuración"
+                imageVector = Icons.Rounded.Settings,
+                contentDescription = "Configuración",
+                modifier = Modifier.size(60.dp)
             )
         }
     }
@@ -94,7 +100,6 @@ fun TopBar(navigateToConfiguration: () -> Unit) {
 fun MainMenuScreen(navigateToConfiguration: () -> Unit) {
     Column(
         modifier = Modifier
-            .fillMaxSize()
             .background(Color(0xFFADD8E6))
     ) {
         TopBar(navigateToConfiguration)
@@ -124,7 +129,7 @@ fun MainMenuScreen(navigateToConfiguration: () -> Unit) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.fillMaxHeight()
                 ) {
-                    MenuButtons(Modifier.fillMaxWidth(0.6f))
+                    MenuButtons(Modifier.fillMaxWidth(0.6f).scale(1.2f))
                 }
             }
         }
