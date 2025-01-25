@@ -6,19 +6,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.cedica.cedica.ConfigurationScreen
 import com.cedica.cedica.MainMenuScreen
-import com.cedica.cedica.SplashScreen
 
 @Composable
 fun NavigationWrapper() {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = Splash) {
-        composable<Splash> {
-            SplashScreen {
-                navController.popBackStack()
-                navController.navigate(Menu)
-            }
-        }
-
+    NavHost(navController = navController, startDestination = Menu) {
         composable<Menu> {
             MainMenuScreen {
                 navController.navigate(Configuration)
