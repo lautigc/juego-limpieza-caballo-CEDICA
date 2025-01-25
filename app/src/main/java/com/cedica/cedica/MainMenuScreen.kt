@@ -91,6 +91,30 @@ fun TopBar(navigateToConfiguration: () -> Unit, modifier: Modifier = Modifier) {
     }
 }
 
+@Composable
+fun HorizontalLayout() {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp)
+    ) {
+        MenuButtons(Modifier.weight(1f))
+    }
+}
+
+@Composable
+fun VerticalLayout() {
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        MenuButtons(Modifier.fillMaxWidth(0.6f).scale(1.2f))
+    }
+}
 
 @Composable
 fun MainMenuScreen(navigateToConfiguration: () -> Unit) {
@@ -103,28 +127,9 @@ fun MainMenuScreen(navigateToConfiguration: () -> Unit) {
 
         val isHorizontal = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
         if (isHorizontal) {
-            // Diseño horizontal
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp)
-                    .align(Alignment.Center)
-            ) {
-                MenuButtons(Modifier.weight(1f))
-            }
+            HorizontalLayout()
         } else {
-            // Diseño vertical
-            Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .align(Alignment.Center)
-            ) {
-                MenuButtons(Modifier.fillMaxWidth(0.6f).scale(1.2f))
-            }
+            VerticalLayout()
         }
     }
 }
