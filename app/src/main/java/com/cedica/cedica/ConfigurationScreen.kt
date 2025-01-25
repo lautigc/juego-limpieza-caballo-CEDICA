@@ -1,6 +1,7 @@
 package com.cedica.cedica
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -30,8 +31,15 @@ import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
 @Composable
-fun VolumeSlider(label: String, modifier: Modifier = Modifier) {
-    var sliderPosition by remember { mutableFloatStateOf(50f) }
+fun VolumeSlider(
+    label: String,
+    modifier: Modifier = Modifier,
+    initialVolume: Float = 50f
+) {
+    var sliderPosition by remember { mutableFloatStateOf(initialVolume) }
+    val volumePercentage = sliderPosition.roundToInt()
+    var isMuted = volumePercentage == 0
+
     Column (
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.padding(16.dp)
@@ -41,38 +49,23 @@ fun VolumeSlider(label: String, modifier: Modifier = Modifier) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(vertical = 8.dp)
         ) {
-            //Icon(imageVector = Icons.AutoMirrored.Rounded.VolumeUp, contentDescription = "Volume")
-            if (sliderPosition.roundToInt() == 0) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.VolumeOff,
-                    contentDescription = "Mute",
-                    modifier = Modifier.size(24.dp)
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.VolumeUp,
-                    contentDescription = "Volume",
-                    modifier = Modifier.size(24.dp)
-                )
-            }
+            Icon(
+                imageVector = if(isMuted) Icons.AutoMirrored.Filled.VolumeOff else Icons.AutoMirrored.Filled.VolumeUp,
+                contentDescription = if(isMuted) "Mute" else "Volume",
+                modifier = Modifier
+                    .size(24.dp)
+                    .clickable {
+                        isMuted = !isMuted
+                        sliderPosition = if (isMuted) 0f else initialVolume
+                    }
+            )
             Slider(
                 value = sliderPosition,
                 onValueChange = { sliderPosition = it },
                 valueRange = 0f..100f
             )
-            if(sliderPosition.roundToInt() == 0) {
-                Text(text = "Mute")
-            } else {
-                Text(text = sliderPosition.roundToInt().toString() + "%")
-            }
         }
-
-        if(sliderPosition.roundToInt() == 0)
-            Text(text = "Mute")
-        else
-            Text(
-                text = "${sliderPosition.roundToInt()}%",
-            )
+        Text(text = if (isMuted) "Mute" else "$volumePercentage%")
     }
 }
 
