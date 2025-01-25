@@ -14,11 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Login
-import androidx.compose.material.icons.automirrored.filled.Subject
-import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.material.icons.rounded.AccountCircle
-import androidx.compose.material.icons.rounded.Construction
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
@@ -59,9 +55,9 @@ fun MenuButtons(modifier: Modifier) {
 }
 
 @Composable
-fun TopBar(navigateToConfiguration: () -> Unit) {
+fun TopBar(navigateToConfiguration: () -> Unit, modifier: Modifier = Modifier) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(16.dp),
     ) {
@@ -98,39 +94,36 @@ fun TopBar(navigateToConfiguration: () -> Unit) {
 
 @Composable
 fun MainMenuScreen(navigateToConfiguration: () -> Unit) {
-    Column(
+    Box(
         modifier = Modifier
+            .fillMaxSize()
             .background(Color(0xFFADD8E6))
     ) {
-        TopBar(navigateToConfiguration)
+        TopBar(navigateToConfiguration, modifier = Modifier.align(Alignment.TopStart))
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFFADD8E6))
-                .padding(16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            val isHorizontal = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-
-            if (isHorizontal) {
-                // Diseño horizontal
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    MenuButtons(Modifier.weight(1f))
-                }
-            } else {
-                // Diseño vertical
-                Column(
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxHeight()
-                ) {
-                    MenuButtons(Modifier.fillMaxWidth(0.6f).scale(1.2f))
-                }
+        val isHorizontal = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+        if (isHorizontal) {
+            // Diseño horizontal
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp)
+                    .align(Alignment.Center)
+            ) {
+                MenuButtons(Modifier.weight(1f))
+            }
+        } else {
+            // Diseño vertical
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .align(Alignment.Center)
+            ) {
+                MenuButtons(Modifier.fillMaxWidth(0.6f).scale(1.2f))
             }
         }
     }
