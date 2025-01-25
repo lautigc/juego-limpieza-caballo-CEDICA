@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -49,7 +50,9 @@ fun MenuButton(text: String, modifier: Modifier = Modifier) {
 @Composable
 fun MenuButtons(modifier: Modifier) {
     MenuButton("Jugar", modifier)
+    Spacer(modifier = Modifier.height(32.dp))
     MenuButton("Progreso", modifier)
+    Spacer(modifier = Modifier.height(32.dp))
     MenuButton("Acerca de", modifier)
 }
 
@@ -58,7 +61,6 @@ fun TopBar(navigateToConfiguration: () -> Unit, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp),
     ) {
         // Logo a la izquierda
         Image(
@@ -110,8 +112,9 @@ fun VerticalLayout() {
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxSize()
+
     ) {
-        MenuButtons(Modifier.fillMaxWidth(0.6f).scale(1.2f))
+        MenuButtons(Modifier.fillMaxWidth(0.6f).scale(1.4f))
     }
 }
 
