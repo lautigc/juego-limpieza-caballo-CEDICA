@@ -34,9 +34,9 @@ import com.cedica.cedica.core.navigation.NavigationWrapper
 import com.cedica.cedica.ui.theme.CedicaTheme
 
 @Composable
-fun MenuButton(text: String, modifier: Modifier = Modifier) {
+fun MenuButton(text: String, modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
     FilledTonalButton(
-        onClick = { /* Acción */ },
+        onClick = onClick,
         colors = ButtonDefaults.filledTonalButtonColors(
             containerColor = Color(0xFFFFE4B5), // Fondo amarillo claro
             contentColor = Color.Black // Texto negro
@@ -48,8 +48,8 @@ fun MenuButton(text: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun MenuButtons(modifier: Modifier) {
-    MenuButton("Jugar", modifier)
+fun MenuButtons(navigateToGame: () -> Unit, modifier: Modifier) {
+    MenuButton("Jugar", modifier) { navigateToGame() }
     Spacer(modifier = Modifier.height(32.dp))
     MenuButton("Progreso", modifier)
     Spacer(modifier = Modifier.height(32.dp))
@@ -93,7 +93,7 @@ fun TopBar(navigateToConfiguration: () -> Unit, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun HorizontalLayout() {
+fun HorizontalLayout(navigateToGame: () -> Unit) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -101,12 +101,12 @@ fun HorizontalLayout() {
             .fillMaxSize()
             .padding(horizontal = 16.dp)
     ) {
-        MenuButtons(Modifier.weight(1f))
+        MenuButtons(navigateToGame, Modifier.weight(1f))
     }
 }
 
 @Composable
-fun VerticalLayout() {
+fun VerticalLayout(navigateToGame: () -> Unit) {
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -114,12 +114,12 @@ fun VerticalLayout() {
             .fillMaxSize()
 
     ) {
-        MenuButtons(Modifier.fillMaxWidth(0.6f).scale(1.4f))
+        MenuButtons(navigateToGame, Modifier.fillMaxWidth(0.6f).scale(1.4f))
     }
 }
 
 @Composable
-fun MainMenuScreen(navigateToConfiguration: () -> Unit) {
+fun MainMenuScreen(navigateToConfiguration: () -> Unit, navigateToGame: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -129,9 +129,9 @@ fun MainMenuScreen(navigateToConfiguration: () -> Unit) {
 
         val isHorizontal = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
         if (isHorizontal) {
-            HorizontalLayout()
+            HorizontalLayout(navigateToGame)
         } else {
-            VerticalLayout()
+            VerticalLayout(navigateToGame)
         }
     }
 }
