@@ -31,6 +31,25 @@ import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
 @Composable
+fun ConfigurationScreen(navigateToMenu: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFADD8E6)) // Fondo azul claro
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top
+    ) {
+        Text(text = "Configuración", style = MaterialTheme.typography.titleLarge)
+        HorizontalDivider(modifier = Modifier.padding(16.dp), color = Color.Black)
+        VolumeConfiguration()
+        HorizontalDivider(modifier = Modifier.padding(16.dp), color = Color.Black)
+        AccessibilityConfiguration()
+        ConfigButtons(navigateToMenu)
+    }
+}
+
+@Composable
 fun VolumeSlider(
     label: String,
     modifier: Modifier = Modifier,
@@ -81,29 +100,27 @@ fun VolumeConfiguration() {
 }
 
 @Composable
-fun ConfigurationScreen(navigateToMenu: () -> Unit) {
+fun ConfigButtons(navigateToMenu: () -> Unit) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Button(onClick = { navigateToMenu() }) {
+            Text("Volver")
+        }
+        Button(onClick = { /* Acción de guardar */ }) {
+            Text("Guardar")
+        }
+    }
+}
+
+@Composable
+fun AccessibilityConfiguration() {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFADD8E6)) // Fondo azul claro
-            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        Text(text = "Configuración", style = MaterialTheme.typography.titleLarge)
-        HorizontalDivider(modifier = Modifier.padding(16.dp), color = Color.Black)
-        VolumeConfiguration()
-        Row(
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Button(onClick = { navigateToMenu() }) {
-                Text("Volver")
-            }
-            Button(onClick = { /* Acción de guardar */ }) {
-                Text("Guardar")
-            }
-        }
+
     }
 }
 
