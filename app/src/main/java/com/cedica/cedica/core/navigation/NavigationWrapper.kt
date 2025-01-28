@@ -20,9 +20,9 @@ fun NavigationWrapper() {
         }
 
         composable<Configuration> {
-            ConfigurationScreen {
-                navController.navigate(Menu)
-            }
+            ConfigurationScreen (
+                navController = navController
+            )
         }
 
         composable<Game> {

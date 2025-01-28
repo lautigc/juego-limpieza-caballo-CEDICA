@@ -14,8 +14,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -36,10 +38,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.cedica.cedica.core.navigation.About
 import kotlin.math.roundToInt
 
+// TODO: Hacer pantalla de configuracion de dificultad
+
 @Composable
-fun ConfigurationScreen(navigateToMenu: () -> Unit) {
+fun ConfigurationScreen(navController: NavController) {
     val scrollState = rememberScrollState()
 
     Column(
@@ -57,8 +64,8 @@ fun ConfigurationScreen(navigateToMenu: () -> Unit) {
         HorizontalDivider(modifier = Modifier.padding(16.dp), color = Color.Black)
         VolumeConfiguration()
         HorizontalDivider(modifier = Modifier.padding(16.dp), color = Color.Black)
-        AccessibilityConfiguration()
-        ConfigButtons(navigateToMenu)
+        AccessibilityConfiguration(navController)
+        ConfigButtons(navController)
     }
 }
 
@@ -112,19 +119,23 @@ fun VolumeConfiguration() {
 }
 
 @Composable
-fun ConfigButtons(navigateToMenu: () -> Unit) {
+fun ConfigButtons(navController: NavController) {
     Row(
         horizontalArrangement = Arrangement.SpaceEvenly,
         modifier = Modifier.fillMaxWidth()
     ) {
         Button(
-            onClick = { navigateToMenu() },
+            onClick = {
+                navController.navigateUp()
+            },
             colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
         ) {
             Text("Volver")
         }
         Button(
-            onClick = { navigateToMenu() },
+            onClick = {
+                navController.navigateUp()
+            },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
         ) {
             Text("Guardar")
@@ -133,7 +144,7 @@ fun ConfigButtons(navigateToMenu: () -> Unit) {
 }
 
 @Composable
-fun AccessibilityConfiguration() {
+fun AccessibilityConfiguration(navController: NavController) {
     Column(modifier = Modifier.padding(16.dp)) {
         Text("Accesibilidad", style = MaterialTheme.typography.titleMedium)
 
@@ -164,13 +175,36 @@ fun AccessibilityConfiguration() {
             Switch(checked = hintsEnabled, onCheckedChange = { hintsEnabled = it })
         }
 
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(vertical = 8.dp)
+                .clickable { navController.navigate(About) }
+                .fillMaxWidth()
+        ) {
+            Icon(
+                imageVector = Icons.Default.Tune,
+                contentDescription = null,
+                tint = Color.Black
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                "Configuración de dificultad",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Black
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = null,
+                tint = Color.Black
+            )
+        }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewConfigurationScreen() {
-    ConfigurationScreen(navigateToMenu = {
-        println("Navigating to menu")
-    })
+    ConfigurationScreen(rememberNavController())
 }
