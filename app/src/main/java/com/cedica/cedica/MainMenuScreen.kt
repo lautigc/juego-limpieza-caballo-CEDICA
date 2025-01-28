@@ -32,13 +32,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.cedica.cedica.core.navigation.About
+import com.cedica.cedica.core.navigation.Game
 import com.cedica.cedica.core.navigation.NavigationWrapper
 import com.cedica.cedica.ui.theme.CedicaTheme
 
 data class MenuItem(val text: String, val destination: Any)
 
 val menuItems = listOf(
-    MenuItem("Jugar", About),
+    MenuItem("Jugar", Game),
     MenuItem("Progreso", About),
     MenuItem("Acerca de", About)
 )
@@ -102,7 +103,6 @@ fun HorizontalLayout(navController: NavController) {
             .fillMaxSize()
             .padding(horizontal = 16.dp)
     ) {
-        MenuButtons(navigateToGame, Modifier.weight(1f))
         menuItems.forEach { item ->
             MenuButton(item.text, Modifier.weight(1f)) {
                 navController.navigate(item.destination)
@@ -119,7 +119,6 @@ fun VerticalLayout(navController: NavController) {
         modifier = Modifier
             .fillMaxSize()
     ) {
-        MenuButtons(navigateToGame, Modifier.fillMaxWidth(0.6f).scale(1.4f))
         menuItems.forEach { item ->
             MenuButton(text = item.text, Modifier.fillMaxWidth(0.6f).scale(1.4f)) {
                navController.navigate(item.destination)
@@ -140,9 +139,6 @@ fun MainMenuScreen(navController: NavController) {
 
         val isHorizontal = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
         if (isHorizontal) {
-            HorizontalLayout(navigateToGame)
-        } else {
-            VerticalLayout(navigateToGame)
             HorizontalLayout(navController)
         } else {
             VerticalLayout(navController)
