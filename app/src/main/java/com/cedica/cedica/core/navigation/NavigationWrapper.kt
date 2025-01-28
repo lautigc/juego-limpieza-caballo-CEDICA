@@ -14,12 +14,7 @@ fun NavigationWrapper() {
     NavHost(navController = navController, startDestination = Menu) {
         composable<Menu> {
             MainMenuScreen(
-                navigateToConfiguration = {
-                    navController.navigate(Configuration)
-                },
-                navigateToAbout = {
-                    navController.navigate(About)
-                }
+                navController = navController
             )
         }
 
