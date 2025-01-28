@@ -9,4 +9,7 @@ object Menu
 object Configuration
 
 @Serializable
+object Game
+
+@Serializable
 object About

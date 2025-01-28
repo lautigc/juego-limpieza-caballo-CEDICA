@@ -6,6 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.cedica.cedica.AboutScreen
 import com.cedica.cedica.ConfigurationScreen
+import com.cedica.cedica.GameScreen
 import com.cedica.cedica.MainMenuScreen
 
 @Composable
@@ -14,12 +15,7 @@ fun NavigationWrapper() {
     NavHost(navController = navController, startDestination = Menu) {
         composable<Menu> {
             MainMenuScreen(
-                navigateToConfiguration = {
-                    navController.navigate(Configuration)
-                },
-                navigateToAbout = {
-                    navController.navigate(About)
-                }
+                navController = navController
             )
         }
 
@@ -29,6 +25,11 @@ fun NavigationWrapper() {
             }
         }
 
+        composable<Game> {
+            GameScreen {
+                navController.navigate(Menu)
+            }
+        }
         composable<About> {
             AboutScreen {
                 navController.navigate(Menu)
