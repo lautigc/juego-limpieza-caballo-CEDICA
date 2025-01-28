@@ -34,12 +34,12 @@ import com.cedica.cedica.core.navigation.NavigationWrapper
 import com.cedica.cedica.ui.theme.CedicaTheme
 
 @Composable
-fun MenuButton(text: String, modifier: Modifier = Modifier) {
+fun MenuButton(text: String, modifier: Modifier = Modifier, navigateTo: () -> Unit) {
     FilledTonalButton(
-        onClick = { /* Acción */ },
+        onClick = { navigateTo() },
         colors = ButtonDefaults.filledTonalButtonColors(
-            containerColor = Color(0xFFFFE4B5), // Fondo amarillo claro
-            contentColor = Color.Black // Texto negro
+            containerColor = Color(0xFFFFE4B5),
+            contentColor = Color.Black
         ),
         modifier = modifier.padding(8.dp)
     ) {
@@ -48,12 +48,12 @@ fun MenuButton(text: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun MenuButtons(modifier: Modifier) {
-    MenuButton("Jugar", modifier)
+fun MenuButtons(navigateToAbout: () -> Unit, modifier: Modifier) {
+    MenuButton("Jugar", modifier, navigateToAbout)
     Spacer(modifier = Modifier.height(32.dp))
-    MenuButton("Progreso", modifier)
+    MenuButton("Progreso", modifier, navigateToAbout)
     Spacer(modifier = Modifier.height(32.dp))
-    MenuButton("Acerca de", modifier)
+    MenuButton("Acerca de", modifier, navigateToAbout)
 }
 
 @Composable
@@ -93,7 +93,7 @@ fun TopBar(navigateToConfiguration: () -> Unit, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun HorizontalLayout() {
+fun HorizontalLayout(navigateToAbout: () -> Unit) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -101,12 +101,12 @@ fun HorizontalLayout() {
             .fillMaxSize()
             .padding(horizontal = 16.dp)
     ) {
-        MenuButtons(Modifier.weight(1f))
+        MenuButtons(navigateToAbout, Modifier.weight(1f))
     }
 }
 
 @Composable
-fun VerticalLayout() {
+fun VerticalLayout(navigateToAbout: () -> Unit) {
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -114,12 +114,12 @@ fun VerticalLayout() {
             .fillMaxSize()
 
     ) {
-        MenuButtons(Modifier.fillMaxWidth(0.6f).scale(1.4f))
+        MenuButtons(navigateToAbout, Modifier.fillMaxWidth(0.6f).scale(1.4f))
     }
 }
 
 @Composable
-fun MainMenuScreen(navigateToConfiguration: () -> Unit) {
+fun MainMenuScreen(navigateToConfiguration: () -> Unit, navigateToAbout: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -129,9 +129,9 @@ fun MainMenuScreen(navigateToConfiguration: () -> Unit) {
 
         val isHorizontal = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
         if (isHorizontal) {
-            HorizontalLayout()
+            HorizontalLayout(navigateToAbout)
         } else {
-            VerticalLayout()
+            VerticalLayout(navigateToAbout)
         }
     }
 }

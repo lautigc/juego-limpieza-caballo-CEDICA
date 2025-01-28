@@ -7,3 +7,6 @@ object Menu
 
 @Serializable
 object Configuration
+
+@Serializable
+object About

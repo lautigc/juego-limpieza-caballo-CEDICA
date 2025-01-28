@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.cedica.cedica.AboutScreen
 import com.cedica.cedica.ConfigurationScreen
 import com.cedica.cedica.MainMenuScreen
 
@@ -12,9 +13,14 @@ fun NavigationWrapper() {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = Menu) {
         composable<Menu> {
-            MainMenuScreen {
-                navController.navigate(Configuration)
-            }
+            MainMenuScreen(
+                navigateToConfiguration = {
+                    navController.navigate(Configuration)
+                },
+                navigateToAbout = {
+                    navController.navigate(About)
+                }
+            )
         }
 
         composable<Configuration> {
@@ -23,5 +29,10 @@ fun NavigationWrapper() {
             }
         }
 
+        composable<About> {
+            AboutScreen {
+                navController.navigate(Menu)
+            }
+        }
     }
 }
