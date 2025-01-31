@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.graphics.graphicsLayer
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -42,27 +43,24 @@ fun GameScreen(navigateToMenu: () -> Unit) {
         R.drawable.rasqueta_dura
     )
 
-    val droppedImages by remember { mutableStateOf(mutableListOf<Int>()) }
-    var backgroundColor by remember { mutableStateOf(Color(0xFFE5E4E2)) }
+    var droppedImage by remember { mutableStateOf<Int?>(null) }
+    var isDraggingOver by remember { mutableStateOf(false) }
 
     val dragAndDropTarget = remember {
         object : DragAndDropTarget {
             override fun onDrop(event: DragAndDropEvent): Boolean {
                 val data = event.toAndroidDragEvent().clipData.getItemAt(0).text.toString().toInt()
-                droppedImages.add(data)
+                droppedImage = data
+                isDraggingOver = false
                 return true
             }
 
             override fun onEntered(event: DragAndDropEvent) {
-                backgroundColor = Color(0xFFD3D3D3)
+                isDraggingOver = true
             }
 
             override fun onExited(event: DragAndDropEvent) {
-                backgroundColor = Color(0xFFE5E4E2)
-            }
-
-            override fun onEnded(event: DragAndDropEvent) {
-                backgroundColor = Color(0xFFE5E4E2)
+                isDraggingOver = false
             }
         }
     }
@@ -70,7 +68,8 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFFE4B5))
+            .background(Color(0xFFFFE4B5)),
+        contentAlignment = Alignment.TopStart
     ) {
         Column(
             modifier = Modifier
@@ -82,24 +81,32 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                 color = Color.Blue,
                 modifier = Modifier
                     .clickable { navigateToMenu() }
-                    .padding(bottom = 16.dp)
+                    .padding(16.dp)
             )
         }
 
-        // Acá defino el área donde se dropean los elementos para probar
+        // Imagen del caballo como área de drop
+
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(250.dp)
-                .background(backgroundColor)
-                .dragAndDropTarget(
-                    shouldStartDragAndDrop = { event ->
-                        event.mimeTypes().contains(ClipDescription.MIMETYPE_TEXT_PLAIN)
-                    },
-                    target = dragAndDropTarget
-                )
+                .fillMaxWidth(),
+            contentAlignment = Alignment.Center
         ) {
-            droppedImages.forEach { imageRes ->
+            Image(
+                painter = painterResource(R.drawable.caballo),
+                contentDescription = "Caballo",
+                modifier = Modifier
+                    .size(350.dp)
+                    .align(Alignment.Center)
+                    .graphicsLayer(alpha = if (isDraggingOver) 0.8f else 1f)
+                    .dragAndDropTarget(
+                        shouldStartDragAndDrop = { event ->
+                            event.mimeTypes().contains(ClipDescription.MIMETYPE_TEXT_PLAIN)
+                        },
+                        target = dragAndDropTarget
+                    )
+            )
+            droppedImage?.let { imageRes ->
                 DraggableImage(imageRes = imageRes)
             }
         }
@@ -109,6 +116,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
             images = images,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
+                .height(120.dp)
                 .padding(vertical = 16.dp)
         )
     }
@@ -135,7 +143,7 @@ fun ImageSelectionList(
 fun SelectableImage(imageRes: Int) {
     Box(
         modifier = Modifier
-            .size(150.dp)
+            .size(100.dp)
             .padding(8.dp)
             .border(
                 border = androidx.compose.foundation.BorderStroke(2.dp, Color.Black),
@@ -157,7 +165,7 @@ fun SelectableImage(imageRes: Int) {
         Image(
             painter = painterResource(id = imageRes),
             contentDescription = "Imagen seleccionable",
-            modifier = Modifier.size(125.dp)
+            modifier = Modifier.size(80.dp)
         )
     }
 }
@@ -179,7 +187,7 @@ fun DraggableImage(imageRes: Int) {
         Image(
             painter = painterResource(id = imageRes),
             contentDescription = "Imagen generada",
-            modifier = Modifier.size(125.dp)
+            modifier = Modifier.size(80.dp)
         )
     }
 }
