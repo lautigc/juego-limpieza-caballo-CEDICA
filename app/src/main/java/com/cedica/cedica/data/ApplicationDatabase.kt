@@ -10,13 +10,15 @@ import com.cedica.cedica.data.user.UserDao
 
 private val DB_NAME = "cedica_db"
 
+interface RepositoryDao {
+    fun userDao(): UserDao
+}
+
 /**
  * Database class with a singleton Instance object.
  */
 @Database(entities = [User::class], version = 1, exportSchema = false)
-abstract class AppDatabase : RoomDatabase() {
-
-    abstract fun userDao(): UserDao
+abstract class AppDatabase : RoomDatabase(), RepositoryDao {
 
     companion object {
         @Volatile
@@ -30,5 +32,22 @@ abstract class AppDatabase : RoomDatabase() {
                     .also { Instance = it }
             }
         }
+    }
+}
+
+object DB: RepositoryDao {
+
+    // Must be initialized before use, if not, it will throw an exception for lateinit.
+    private lateinit var db: AppDatabase
+
+    /**
+     * Initialize the database.
+     */
+    fun init(context: Context) {
+        db = AppDatabase.getDatabase(context)
+    }
+
+    override fun userDao(): UserDao {
+        return db.userDao()
     }
 }

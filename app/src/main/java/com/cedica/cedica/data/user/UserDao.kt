@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface UserDao {
@@ -18,5 +19,5 @@ interface UserDao {
     suspend fun delete(note: User)
 
     @Query("SELECT * FROM user")
-    fun getAllUsers(): List<User>
+    fun getAllUsers(): Flow<List<User>>
 }
