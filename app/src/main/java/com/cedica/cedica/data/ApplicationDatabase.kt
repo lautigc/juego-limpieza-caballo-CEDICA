@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.cedica.cedica.data.user.Therapist
+import com.cedica.cedica.data.user.TherapistDao
 import com.cedica.cedica.data.user.User
 import com.cedica.cedica.data.user.UserDao
 
@@ -12,12 +14,13 @@ private val DB_NAME = "cedica_db"
 
 interface RepositoryDao {
     fun userDao(): UserDao
+    fun therapistDao(): TherapistDao
 }
 
 /**
  * Database class with a singleton Instance object.
  */
-@Database(entities = [User::class], version = 1, exportSchema = false)
+@Database(entities = [User::class, Therapist::class], version = 1, exportSchema = false)
 abstract class AppDatabase : RoomDatabase(), RepositoryDao {
 
     companion object {
@@ -44,10 +47,14 @@ object DB: RepositoryDao {
      * Initialize the database.
      */
     fun init(context: Context) {
-        db = AppDatabase.getDatabase(context)
+        this.db = AppDatabase.getDatabase(context)
     }
 
     override fun userDao(): UserDao {
-        return db.userDao()
+        return this.db.userDao()
+    }
+
+    override fun therapistDao(): TherapistDao {
+        return this.db.therapistDao()
     }
 }
