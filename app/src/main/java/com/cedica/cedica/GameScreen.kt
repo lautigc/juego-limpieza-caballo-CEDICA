@@ -2,6 +2,8 @@ package com.cedica.cedica
 
 import android.content.ClipData
 import android.content.ClipDescription
+import android.util.Log
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.draganddrop.dragAndDropSource
@@ -28,9 +30,23 @@ import androidx.compose.foundation.clickable
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.ui.draganddrop.toAndroidDragEvent
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
+
+@Preview
+@Composable
+fun PreviewGameScreen() {
+    GameScreen { Log.d("GameScreen", "Volver al menú") }
+}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -48,13 +64,14 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    // Estado para almacenar la posición donde se soltó la herramienta
+    var imageSize by remember { mutableStateOf(IntSize.Zero) }
+    var selectedPart by remember { mutableStateOf<String?>(null) }
+
     var toolPosition by remember { mutableStateOf(IntOffset(0, 0)) }
 
     val dragAndDropTarget = remember {
         object : DragAndDropTarget {
             override fun onDrop(event: DragAndDropEvent): Boolean {
-                // Captura la posición donde se soltó la herramienta
                 val androidDragEvent = event.toAndroidDragEvent()
                 toolPosition = IntOffset(androidDragEvent.x.toInt(), androidDragEvent.y.toInt())
 
@@ -105,7 +122,25 @@ fun GameScreen(navigateToMenu: () -> Unit) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(3f),
+                    .weight(3f)
+                    .pointerInput(Unit) {
+                        detectTapGestures { offset ->
+                            val relativeX = offset.x / imageSize.width
+                            val relativeY = offset.y / imageSize.height
+
+                            val touchedPart = horseParts.find {
+                                isPointInPolygon(relativeX, relativeY, it.polygon)
+                            }
+
+                            selectedPart = touchedPart?.name
+
+                            touchedPart?.let {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("Seleccionaste: ${it.name}")
+                                }
+                            }
+                        }
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 Image(
@@ -120,16 +155,27 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                             },
                             target = dragAndDropTarget
                         )
+                        .onGloballyPositioned { coordinates ->
+                            imageSize = coordinates.size
+                        }
                 )
 
-                // Renderiza la herramienta en la posición donde se soltó
+                selectedPart?.let {
+                    Text(
+                        text = "Seleccionaste: $it",
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        modifier = Modifier.align(Alignment.TopCenter)
+                    )
+                }
+
                 selectedTool?.let { tool ->
                     Image(
                         painter = painterResource(tool),
                         contentDescription = "Herramienta dropeada",
                         modifier = Modifier
                             .size(100.dp)
-                            .offset { toolPosition } // Usa la posición almacenada
+                            .offset { toolPosition }
                     )
                 }
             }
@@ -148,7 +194,6 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ImageSelectionList(
     images: List<Int>,
@@ -195,5 +240,73 @@ fun SelectableImage(imageRes: Int, onClick: () -> Unit) {
             contentDescription = "Imagen seleccionable",
             modifier = Modifier.size(80.dp)
         )
+    }
+}
+
+@Composable
+fun PreviewHorsePolygons() {
+    var imageSize by remember { mutableStateOf(IntSize.Zero) }
+
+    // Tamaño original de la imagen (560x445)
+    val originalImageWidth = 560f
+    val originalImageHeight = 445f
+
+    Box(
+        modifier = Modifier
+            .size(350.dp)
+            .background(Color(0xFFFFE4B5)),
+        contentAlignment = Alignment.Center
+    ) {
+        Image(
+            painter = painterResource(R.drawable.caballo),
+            contentDescription = "Caballo",
+            modifier = Modifier
+                .fillMaxSize()
+                .aspectRatio(originalImageWidth / originalImageHeight) // Mantener relación de aspecto
+                .onGloballyPositioned { coordinates ->
+                    imageSize = coordinates.size
+                }
+        )
+
+        Canvas(
+            modifier = Modifier
+                .fillMaxSize()
+                .aspectRatio(originalImageWidth / originalImageHeight) // Mantener relación de aspecto
+        ) {
+            if (imageSize.width > 0 && imageSize.height > 0) {
+                horseParts.forEach { part ->
+                    drawPath(
+                        path = Path().apply {
+                            part.polygon.forEachIndexed { index, (x, y) ->
+                                // Escalar las coordenadas al tamaño renderizado de la imagen
+                                val scaledX = x * imageSize.width
+                                val scaledY = y * imageSize.height
+                                if (index == 0) moveTo(scaledX, scaledY) else lineTo(scaledX, scaledY)
+                            }
+                            close()
+                        },
+                        color = Color.Red.copy(alpha = 0.5f),
+                        style = Stroke(width = 2.dp.toPx())
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun TestScreen() {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = "Vista previa de los polígonos",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
+        )
+        PreviewHorsePolygons()
     }
 }
