@@ -72,6 +72,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     val dragAndDropTarget = remember {
         object : DragAndDropTarget {
             override fun onDrop(event: DragAndDropEvent): Boolean {
+                // Usar positionInWindow para obtener las coordenadas del evento
                 val androidDragEvent = event.toAndroidDragEvent()
                 toolPosition = IntOffset(androidDragEvent.x.toInt(), androidDragEvent.y.toInt())
 
@@ -148,6 +149,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                     contentDescription = "Caballo",
                     modifier = Modifier
                         .size(350.dp)
+                        .aspectRatio(560f / 445f) // Mantener relación de aspecto
                         .graphicsLayer(alpha = if (isDraggingOver) 0.5f else 1f)
                         .dragAndDropTarget(
                             shouldStartDragAndDrop = { event ->
