@@ -1,38 +1,27 @@
 package com.cedica.cedica
 
-import android.content.ClipData
-import android.content.ClipDescription
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.draganddrop.dragAndDropSource
-import androidx.compose.foundation.draganddrop.dragAndDropTarget
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draganddrop.DragAndDropEvent
-import androidx.compose.ui.draganddrop.DragAndDropTarget
-import androidx.compose.ui.draganddrop.DragAndDropTransferData
-import androidx.compose.ui.draganddrop.mimeTypes
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.ui.draganddrop.toAndroidDragEvent
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntOffset
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun GameScreen(navigateToMenu: () -> Unit) {
     val images = listOf(
@@ -44,37 +33,13 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     )
 
     var selectedTool by remember { mutableStateOf<Int?>(null) }
-    var isDraggingOver by remember { mutableStateOf(false) }
+    var selectedHorsePart by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    // Estado para almacenar la posición donde se soltó la herramienta
-    var toolPosition by remember { mutableStateOf(IntOffset(0, 0)) }
-
-    val dragAndDropTarget = remember {
-        object : DragAndDropTarget {
-            override fun onDrop(event: DragAndDropEvent): Boolean {
-                // Captura la posición donde se soltó la herramienta
-                val androidDragEvent = event.toAndroidDragEvent()
-                toolPosition = IntOffset(androidDragEvent.x.toInt(), androidDragEvent.y.toInt())
-
-                coroutineScope.launch {
-                    snackbarHostState.showSnackbar("Herramienta utilizada correctamente")
-                }
-
-                isDraggingOver = false
-                return true
-            }
-
-            override fun onEntered(event: DragAndDropEvent) {
-                isDraggingOver = true
-            }
-
-            override fun onExited(event: DragAndDropEvent) {
-                isDraggingOver = false
-            }
-        }
-    }
+    var offsetX by remember { mutableFloatStateOf(-150f) }
+    var offsetY by remember { mutableFloatStateOf(-150f) }
+    var isDraggable by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -113,24 +78,41 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                     contentDescription = "Caballo",
                     modifier = Modifier
                         .size(350.dp)
-                        .graphicsLayer(alpha = if (isDraggingOver) 0.5f else 1f)
-                        .dragAndDropTarget(
-                            shouldStartDragAndDrop = { event ->
-                                event.mimeTypes().contains(ClipDescription.MIMETYPE_TEXT_PLAIN)
-                            },
-                            target = dragAndDropTarget
+                        .border(
+                            width = if (selectedHorsePart) 4.dp else 0.dp,
+                            color = if (selectedHorsePart) Color.Green else Color.Transparent
                         )
+                        .clickable {
+                            selectedHorsePart = true
+                            isDraggable = true
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar("Parte del caballo seleccionada correctamente")
+                            }
+                        }
                 )
 
-                // Renderiza la herramienta en la posición donde se soltó
                 selectedTool?.let { tool ->
-                    Image(
-                        painter = painterResource(tool),
-                        contentDescription = "Herramienta dropeada",
+                    Box(
                         modifier = Modifier
+                            .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
+                            .background(Color.Transparent)
                             .size(100.dp)
-                            .offset { toolPosition } // Usa la posición almacenada
-                    )
+                            .pointerInput(Unit) {
+                                detectDragGestures { change, dragAmount ->
+                                    if (isDraggable) {
+                                        change.consume()
+                                        offsetX += dragAmount.x
+                                        offsetY += dragAmount.y
+                                    }
+                                }
+                            }
+                    ) {
+                        Image(
+                            painter = painterResource(tool),
+                            contentDescription = "Herramienta arrastrable",
+                            modifier = Modifier.size(100.dp)
+                        )
+                    }
                 }
             }
 
@@ -142,16 +124,27 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                     .height(120.dp),
                 contentAlignment = Alignment.Center
             ) {
-                ImageSelectionList(images = images, onImageSelected = { selectedTool = it })
+                ImageSelectionList(
+                    images = images,
+                    selectedTool = selectedTool,
+                    onImageSelected = { tool ->
+                        if (selectedTool == null) {
+                            selectedTool = tool
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar("Herramienta seleccionada correctamente")
+                            }
+                        }
+                    }
+                )
             }
         }
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ImageSelectionList(
     images: List<Int>,
+    selectedTool: Int?,
     onImageSelected: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -160,35 +153,27 @@ fun ImageSelectionList(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(images) { imageRes ->
-            SelectableImage(imageRes = imageRes, onClick = { onImageSelected(imageRes) })
+            SelectableImage(
+                imageRes = imageRes,
+                isSelected = selectedTool == imageRes,
+                onClick = { onImageSelected(imageRes) }
+            )
         }
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun SelectableImage(imageRes: Int, onClick: () -> Unit) {
+fun SelectableImage(imageRes: Int, isSelected: Boolean, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .size(100.dp)
             .padding(8.dp)
             .border(
-                border = androidx.compose.foundation.BorderStroke(2.dp, Color.Black),
-                shape = RoundedCornerShape(8.dp)
+                width = if (isSelected) 4.dp else 2.dp,
+                color = if (isSelected) Color.Blue else Color.Black
             )
-            .clickable { onClick() }
-            .dragAndDropSource {
-                detectTapGestures(
-                    onLongPress = {
-                        startTransfer(
-                            DragAndDropTransferData(
-                                ClipData.newPlainText("imageRes", imageRes.toString())
-                            )
-                        )
-                    }
-                )
-            },
-        contentAlignment = Alignment.Center
+            .clickable { onClick() },
+        contentAlignment = Alignment.BottomStart
     ) {
         Image(
             painter = painterResource(id = imageRes),
