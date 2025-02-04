@@ -8,6 +8,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import com.cedica.cedica.data.permissions.Role
 import kotlinx.coroutines.flow.Flow
 
 @Entity(
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.Flow
 )
 data class User(
     @PrimaryKey(autoGenerate = true)  val id: Int = 0,
+    val role: Role,
     val firstName: String,
     val lastName: String,
 )
