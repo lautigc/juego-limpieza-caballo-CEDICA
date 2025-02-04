@@ -275,22 +275,20 @@ fun PreviewHorsePolygons() {
                 .fillMaxSize()
                 .aspectRatio(originalImageWidth / originalImageHeight) // Mantener relación de aspecto
         ) {
-            if (imageSize.width > 0 && imageSize.height > 0) {
-                horseParts.forEach { part ->
-                    drawPath(
-                        path = Path().apply {
-                            part.polygon.forEachIndexed { index, (x, y) ->
-                                // Escalar las coordenadas al tamaño renderizado de la imagen
-                                val scaledX = x * imageSize.width
-                                val scaledY = y * imageSize.height
-                                if (index == 0) moveTo(scaledX, scaledY) else lineTo(scaledX, scaledY)
-                            }
-                            close()
-                        },
-                        color = Color.Red.copy(alpha = 0.5f),
-                        style = Stroke(width = 2.dp.toPx())
-                    )
-                }
+            horseParts.forEach { part ->
+                drawPath(
+                    path = Path().apply {
+                        part.polygon.forEachIndexed { index, (x, y) ->
+                            // Escalar las coordenadas al tamaño renderizado de la imagen
+                            val scaledX = x * imageSize.width
+                            val scaledY = y * imageSize.height
+                            if (index == 0) moveTo(scaledX, scaledY) else lineTo(scaledX, scaledY)
+                        }
+                        close()
+                    },
+                    color = Color.Red.copy(alpha = 0.5f),
+                    style = Stroke(width = 2.dp.toPx())
+                )
             }
         }
     }
