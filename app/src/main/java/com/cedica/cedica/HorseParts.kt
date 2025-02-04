@@ -66,4 +66,3 @@ fun isPointInPolygon(x: Float, y: Float, polygon: List<Pair<Float, Float>>): Boo
     }
     return intersectCount % 2 == 1 // Si es impar, el punto está dentro
 }
-
