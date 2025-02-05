@@ -1,5 +1,7 @@
 package com.cedica.cedica
 
+import androidx.compose.animation.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -14,6 +16,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -21,8 +24,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -40,6 +46,7 @@ fun PreviewHorsePolygons() {
     var imageSize by remember { mutableStateOf(IntSize.Zero) }
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    val animatedColor = remember { Animatable(Color.Red) }
 
     // Tamaño original de la imagen (560x445)
     val originalImageWidth = 560f
@@ -57,16 +64,23 @@ fun PreviewHorsePolygons() {
             contentDescription = "Caballo",
             modifier = Modifier
                 .fillMaxSize()
-                .aspectRatio(originalImageWidth / originalImageHeight) // Mantener relación de aspecto
+                .aspectRatio(originalImageWidth / originalImageHeight)
                 .onGloballyPositioned { coordinates ->
                     imageSize = coordinates.size
                 }
         )
 
+        LaunchedEffect(Unit) {
+            while (true) {
+                animatedColor.animateTo(Color.Yellow, animationSpec = tween(500))
+                animatedColor.animateTo(Color.LightGray, animationSpec = tween(500))
+            }
+        }
+
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
-                .aspectRatio(originalImageWidth / originalImageHeight) // Mantener relación de aspecto
+                .aspectRatio(originalImageWidth / originalImageHeight)
                 .pointerInput(Unit) {
                     detectTapGestures { offset ->
                         val originalX = offset.x / imageSize.width
@@ -87,22 +101,34 @@ fun PreviewHorsePolygons() {
                         }
 
                     }
-                }
-        ) {
-            horseParts.forEach { part ->
+                })
+        {
+            smoothedHorseParts.forEach { part ->
                 drawPath(
                     path = Path().apply {
                         part.polygon.forEachIndexed { index, (x, y) ->
-                            // Escalar las coordenadas al tamaño renderizado de la imagen
                             val scaledX = x * imageSize.width
                             val scaledY = y * imageSize.height
                             if (index == 0) moveTo(scaledX, scaledY) else lineTo(scaledX, scaledY)
                         }
                         close()
                     },
-                    color = Color.Red.copy(alpha = 0.5f),
-                    style = Stroke(width = 2.dp.toPx())
+                    color = animatedColor.value.copy(alpha = 0.3f),
+                    style = Fill
                 )
+                drawPath(
+                    path = Path().apply {
+                        part.polygon.forEachIndexed { index, (x, y) ->
+                            val scaledX = x * imageSize.width
+                            val scaledY = y * imageSize.height
+                            if (index == 0) moveTo(scaledX, scaledY) else lineTo(scaledX, scaledY)
+                        }
+                        close()
+                    },
+                    color = animatedColor.value,
+                    style = Stroke(width = 2.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f))
+                )
+
             }
         }
     }

@@ -1,7 +1,5 @@
 package com.cedica.cedica
 
-import android.util.Log
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -17,33 +15,17 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.material3.Button
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
-//@Preview
 @Composable
-fun PreviewGameScreen() {
-//    GameScreen { Log.d("GameScreen", "Volver al menú") }
-}
-
-
-@Composable
-fun OldGameScreen(navigateToMenu: () -> Unit) {
+fun GameScreen(navigateToMenu: () -> Unit) {
     val images = listOf(
         R.drawable.cepillo_blando,
         R.drawable.cepillo_duro,
@@ -58,7 +40,7 @@ fun OldGameScreen(navigateToMenu: () -> Unit) {
 
     var offsetX by remember { mutableFloatStateOf(-150f) }
     var offsetY by remember { mutableFloatStateOf(-150f) }
-    var isDraggable by remember { mutableStateOf(false) }
+    val isDraggable by remember { mutableStateOf(false) }
 
     var selectedHorsePart by remember { mutableStateOf<String?>(null) }
     var imageSize by remember { mutableStateOf(IntSize.Zero) }
@@ -154,118 +136,6 @@ fun OldGameScreen(navigateToMenu: () -> Unit) {
                     }
                 )
             }
-        }
-    }
-}
-
-@Composable
-fun NewGameScreen(navigateToMenu: () -> Unit) {
-    val images = listOf(
-        R.drawable.cepillo_blando,
-        R.drawable.cepillo_duro,
-        R.drawable.escarba_vasos,
-        R.drawable.rasqueta_blanda,
-        R.drawable.rasqueta_dura
-    )
-
-    var selectedTool by remember { mutableStateOf<Int?>(null) }
-    var selectedHorsePart by remember { mutableStateOf(false) }
-    val snackbarHostState = remember { SnackbarHostState() }
-    val coroutineScope = rememberCoroutineScope()
-
-    var offsetX by remember { mutableFloatStateOf(-150f) }
-    var offsetY by remember { mutableFloatStateOf(-150f) }
-    var isDraggable by remember { mutableStateOf(false) }
-
-
-    val originalImageWidth = 560f
-    val originalImageHeight = 445f
-    var imageSize by remember { mutableStateOf(IntSize.Zero) }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFFFE4B5)),
-    ) {
-
-        Button(
-            onClick = { navigateToMenu() },
-            modifier = Modifier
-                .padding(16.dp)
-                .clickable { navigateToMenu() }
-        ) {
-            Text("Volver al Menú")
-        }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        Box(
-            modifier = Modifier
-                .size(350.dp)
-                .background(Color(0xFFFFE4B5)),
-            contentAlignment = Alignment.Center
-        ) {
-
-            Image(
-                painter = painterResource(R.drawable.caballo),
-                contentDescription = "Caballo",
-                modifier = Modifier
-                    .fillMaxSize()
-                    .aspectRatio(originalImageWidth / originalImageHeight) // Mantener relación de aspecto
-                    .onGloballyPositioned { coordinates ->
-                        imageSize = coordinates.size
-                    }
-                    .clickable {
-                        coroutineScope.launch {
-                        }
-                    }
-            )
-
-        }
-        selectedTool?.let { tool ->
-            Box(
-                modifier = Modifier
-                    .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
-                    .background(Color.Transparent)
-                    .size(100.dp)
-                    .pointerInput(Unit) {
-                        detectDragGestures { change, dragAmount ->
-                            if (isDraggable) {
-                                change.consume()
-                                offsetX += dragAmount.x
-                                offsetY += dragAmount.y
-                            }
-                        }
-                    }
-            ) {
-                Image(
-                    painter = painterResource(tool),
-                    contentDescription = "Herramienta arrastrable",
-                    modifier = Modifier.size(100.dp)
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(120.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            ImageSelectionList(
-                images = images,
-                selectedTool = selectedTool,
-                onImageSelected = { tool ->
-                    if (selectedTool == null) {
-                        selectedTool = tool
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar("Herramienta seleccionada correctamente")
-                        }
-                    }
-                }
-            )
         }
     }
 }

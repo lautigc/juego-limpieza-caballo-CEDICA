@@ -51,6 +51,10 @@ val horseParts = arrayOf(
 
 )
 
+val smoothedHorseParts = horseParts.map { part ->
+    part.copy(polygon = smoothPolygon(part.polygon, iterations = 2))
+}
+
 fun isPointInPolygon(x: Float, y: Float, polygon: List<Pair<Float, Float>>): Boolean {
     var intersectCount = 0
     for (i in polygon.indices) {
@@ -66,3 +70,20 @@ fun isPointInPolygon(x: Float, y: Float, polygon: List<Pair<Float, Float>>): Boo
     }
     return intersectCount % 2 == 1 // Si es impar, el punto está dentro
 }
+
+// algoritmo de chaikin
+fun smoothPolygon(polygon: List<Pair<Float, Float>>, iterations: Int = 2): List<Pair<Float, Float>> {
+    var smoothed = polygon.toList()
+    repeat(iterations) {
+        val newPoints = mutableListOf<Pair<Float, Float>>()
+        for (i in smoothed.indices) {
+            val p1 = smoothed[i]
+            val p2 = smoothed[(i + 1) % smoothed.size]
+            newPoints.add(Pair(0.75f * p1.first + 0.25f * p2.first, 0.75f * p1.second + 0.25f * p2.second))
+            newPoints.add(Pair(0.25f * p1.first + 0.75f * p2.first, 0.25f * p1.second + 0.75f * p2.second))
+        }
+        smoothed = newPoints
+    }
+    return smoothed
+}
+
