@@ -49,12 +49,11 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     val coroutineScope = rememberCoroutineScope()
     val scaffoldState = rememberBottomSheetScaffoldState()
 
-    var offsetX by remember { mutableFloatStateOf(-150f) }
-    var offsetY by remember { mutableFloatStateOf(-150f) }
+    var offsetX by remember { mutableFloatStateOf(0f) }
+    var offsetY by remember { mutableFloatStateOf(0f) }
     var isDraggable by remember { mutableStateOf(false) }
     var messageType by remember { mutableStateOf("selection") }
     var customMessage by remember { mutableStateOf<String?>(null) }
-
 
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
@@ -78,85 +77,86 @@ fun GameScreen(navigateToMenu: () -> Unit) {
             )
         },
         sheetPeekHeight = 0.dp,
-    ){
-        Box(
+    ) {
+        // Row para organizar las columnas
+        Row(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0xFFFFE4B5))
+                .padding(16.dp)
         ) {
-
-            Box(
+            // Columna 1: Botón "Volver al menú"
+            Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                contentAlignment = Alignment.BottomEnd
+                    .weight(1f)
+                    .fillMaxHeight(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
             ) {
-                Button(
-                    onClick = { coroutineScope.launch { scaffoldState.bottomSheetState.expand() } },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFADD8E6))
-                ) {
-                    Text("Herramientas", color = Color.Black)
+                Button(onClick = { navigateToMenu() }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFADD8E6))) {
+                    Text("Volver al menú", color = Color.Black)
                 }
             }
 
-            Box(
+            // Columna 2: Imagen del caballo (centrada)
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                contentAlignment = Alignment.TopStart
+                    .weight(3f)  // El caballo ocupa más espacio
+                    .fillMaxHeight(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                Button(onClick = { navigateToMenu() }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFADD8E6))){
-                    Text("Volver al menú", color = Color.Black)
-                }
+                Image(
+                    painter = painterResource(R.drawable.caballo),
+                    contentDescription = "Caballo",
+                    modifier = Modifier
+                        .size(350.dp)
+                        .border(
+                            width = if (selectedHorsePart) 4.dp else 0.dp,
+                            color = if (selectedHorsePart) Color.Black else Color.Transparent
+                        )
+                        .clickable {
+                            selectedHorsePart = true
+                            isDraggable = true
+                            customMessage = "¡Excelente! Seleccionaste la parte correcta del caballo"
+                            coroutineScope.launch {
+                                messageType = "success"
+                            }
+                        }
+                )
 
+            }
+
+            // Columna 3: Mensajes y Botón de herramientas
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
+            ) {
                 if (messageType.isNotEmpty()) {
                     MessageBox(
                         messageType = messageType,
                         customMessage = customMessage,
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
                     )
                 }
 
-            }
-
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
                 Spacer(modifier = Modifier.weight(1f))
 
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(3f),
+                        .height(60.dp)
+                        .width(80.dp)
+                        .border(2.dp, Color.Black, RoundedCornerShape(16.dp)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Image(
-                        painter = painterResource(R.drawable.caballo),
-                        contentDescription = "Caballo",
-                        modifier = Modifier
-                            .size(400.dp)
-                            .border(
-                                width = if (selectedHorsePart) 4.dp else 0.dp,
-                                color = if (selectedHorsePart) Color.Black else Color.Transparent
-                            )
-                            .clickable {
-                                selectedHorsePart = true
-                                isDraggable = true
-                                customMessage = "¡Excelente! Seleccionaste la parte correcta del caballo"
-                                coroutineScope.launch {
-                                    messageType = "success"
-                                }
-                            }
-                    )
-
                     selectedTool?.let { tool ->
                         Box(
                             modifier = Modifier
                                 .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
                                 .background(Color.Transparent)
-                                .size(100.dp)
                                 .pointerInput(Unit) {
                                     detectDragGestures { change, dragAmount ->
                                         if (isDraggable) {
@@ -174,7 +174,22 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                             )
                         }
                     }
+                }
 
+                Text(
+                    text = "Herramienta seleccionada",
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.Center,
+                    color = Color.Black,
+                    modifier = Modifier.padding(top = 2.dp, bottom = 12.dp)
+                )
+
+                Button(
+                    onClick = { coroutineScope.launch { scaffoldState.bottomSheetState.expand() } },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFADD8E6)),
+                ) {
+                    Text("Herramientas", color = Color.Black)
                 }
             }
         }
@@ -237,7 +252,6 @@ fun MessageBox(messageType: String, customMessage: String? = null, modifier: Mod
 
     Column(
         modifier = modifier
-            .fillMaxWidth(0.25F)
             .background(Color.Transparent, shape = RoundedCornerShape(16.dp))
             .border(2.dp, Color.Transparent, RoundedCornerShape(16.dp)),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -246,7 +260,7 @@ fun MessageBox(messageType: String, customMessage: String? = null, modifier: Mod
             painter = painterResource(id = image),
             contentDescription = "Avatar",
             modifier = Modifier
-                .size(125.dp)
+                .size(100.dp)
                 .clip(CircleShape)
                 .border(2.dp, Color.Black, CircleShape)
                 .background(Color(0xFFADD8E6))
@@ -254,7 +268,7 @@ fun MessageBox(messageType: String, customMessage: String? = null, modifier: Mod
 
         Text(
             text = message,
-            fontSize = 16.sp,
+            fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
             color = Color.Black,
             textAlign = TextAlign.Center,
