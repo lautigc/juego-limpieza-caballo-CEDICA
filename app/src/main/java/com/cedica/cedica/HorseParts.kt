@@ -55,6 +55,10 @@ val smoothedHorseParts = horseParts.map { part ->
     part.copy(polygon = smoothPolygon(part.polygon, iterations = 2))
 }
 
+fun selectRandomParts(n: Int): List<HorsePart> {
+    return smoothedHorseParts.shuffled().take(3)
+}
+
 fun isPointInPolygon(x: Float, y: Float, polygon: List<Pair<Float, Float>>): Boolean {
     var intersectCount = 0
     for (i in polygon.indices) {
