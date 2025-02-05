@@ -25,7 +25,7 @@ fun AddProfileButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
         text =
         {
             Text(
-                text = stringResource(R.string.register_button_title),
+                text = stringResource(R.string.register_button_label),
                 style = MaterialTheme.typography.labelLarge,
 
             )
