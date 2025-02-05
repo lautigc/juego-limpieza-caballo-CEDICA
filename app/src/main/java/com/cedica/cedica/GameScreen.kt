@@ -17,8 +17,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
@@ -29,6 +32,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameScreen(navigateToMenu: () -> Unit) {
     val images = listOf(
@@ -42,6 +46,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     var selectedTool by remember { mutableStateOf<Int?>(null) }
     var selectedHorsePart by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
+    val scaffoldState = rememberBottomSheetScaffoldState()
 
     var offsetX by remember { mutableFloatStateOf(-150f) }
     var offsetY by remember { mutableFloatStateOf(-150f) }
@@ -49,113 +54,127 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     var messageType by remember { mutableStateOf("selection") }
     var customMessage by remember { mutableStateOf<String?>(null) }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFFFE4B5))
-    ) {
 
+    BottomSheetScaffold(
+        scaffoldState = scaffoldState,
+        sheetContainerColor = Color(0xFFFFE4B5),
+        sheetShadowElevation = 8.dp,
+        sheetContent = {
+            ImageSelectionList(
+                images = images,
+                selectedTool = selectedTool,
+                onImageSelected = { tool ->
+                    if (selectedTool == null) {
+                        selectedTool = tool
+                        coroutineScope.launch {
+                            messageType = "success"
+                            delay(5000)
+                            customMessage = "¿Qué parte del caballo hay que limpiar ahora?"
+                            messageType = "selection"
+                        }
+                    }
+                }
+            )
+        },
+        sheetPeekHeight = 0.dp,
+    ){
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            contentAlignment = Alignment.TopStart
+                .fillMaxSize()
+                .background(Color(0xFFFFE4B5))
         ) {
-            Button(onClick = { navigateToMenu() }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFADD8E6))){
-                Text("Volver al menú", color = Color.Black)
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.BottomEnd
+            ) {
+                Button(
+                    onClick = { coroutineScope.launch { scaffoldState.bottomSheetState.expand() } },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFADD8E6))
+                ) {
+                    Text("Herramientas", color = Color.Black)
+                }
             }
-
-            if (messageType.isNotEmpty()) {
-                MessageBox(
-                    messageType = messageType,
-                    customMessage = customMessage,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                )
-            }
-
-        }
-
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.weight(1f))
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(3f),
-                contentAlignment = Alignment.Center
+                    .padding(16.dp),
+                contentAlignment = Alignment.TopStart
             ) {
-                Image(
-                    painter = painterResource(R.drawable.caballo),
-                    contentDescription = "Caballo",
-                    modifier = Modifier
-                        .size(400.dp)
-                        .border(
-                            width = if (selectedHorsePart) 4.dp else 0.dp,
-                            color = if (selectedHorsePart) Color.Black else Color.Transparent
-                        )
-                        .clickable {
-                            selectedHorsePart = true
-                            isDraggable = true
-                            customMessage = "¡Excelente! Seleccionaste la parte correcta del caballo"
-                            coroutineScope.launch {
-                                messageType = "success"
-                            }
-                        }
-                )
+                Button(onClick = { navigateToMenu() }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFADD8E6))){
+                    Text("Volver al menú", color = Color.Black)
+                }
 
-                selectedTool?.let { tool ->
-                    Box(
+                if (messageType.isNotEmpty()) {
+                    MessageBox(
+                        messageType = messageType,
+                        customMessage = customMessage,
                         modifier = Modifier
-                            .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
-                            .background(Color.Transparent)
-                            .size(100.dp)
-                            .pointerInput(Unit) {
-                                detectDragGestures { change, dragAmount ->
-                                    if (isDraggable) {
-                                        change.consume()
-                                        offsetX += dragAmount.x
-                                        offsetY += dragAmount.y
-                                    }
-                                }
-                            }
-                    ) {
-                        Image(
-                            painter = painterResource(tool),
-                            contentDescription = "Herramienta arrastrable",
-                            modifier = Modifier.size(60.dp)
-                        )
-                    }
+                            .align(Alignment.TopEnd)
+                    )
                 }
 
             }
 
-            Spacer(modifier = Modifier.weight(1f))
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(85.dp),
-                contentAlignment = Alignment.Center
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                ImageSelectionList(
-                    images = images,
-                    selectedTool = selectedTool,
-                    onImageSelected = { tool ->
-                        if (selectedTool == null) {
-                            selectedTool = tool
-                            coroutineScope.launch {
-                                messageType = "success"
-                                delay(5000)
-                                customMessage = "¿Qué parte del caballo hay que limpiar ahora?"
-                                messageType = "selection"
+                Spacer(modifier = Modifier.weight(1f))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(3f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.caballo),
+                        contentDescription = "Caballo",
+                        modifier = Modifier
+                            .size(400.dp)
+                            .border(
+                                width = if (selectedHorsePart) 4.dp else 0.dp,
+                                color = if (selectedHorsePart) Color.Black else Color.Transparent
+                            )
+                            .clickable {
+                                selectedHorsePart = true
+                                isDraggable = true
+                                customMessage = "¡Excelente! Seleccionaste la parte correcta del caballo"
+                                coroutineScope.launch {
+                                    messageType = "success"
+                                }
                             }
+                    )
+
+                    selectedTool?.let { tool ->
+                        Box(
+                            modifier = Modifier
+                                .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
+                                .background(Color.Transparent)
+                                .size(100.dp)
+                                .pointerInput(Unit) {
+                                    detectDragGestures { change, dragAmount ->
+                                        if (isDraggable) {
+                                            change.consume()
+                                            offsetX += dragAmount.x
+                                            offsetY += dragAmount.y
+                                        }
+                                    }
+                                }
+                        ) {
+                            Image(
+                                painter = painterResource(tool),
+                                contentDescription = "Herramienta arrastrable",
+                                modifier = Modifier.size(60.dp)
+                            )
                         }
                     }
-                )
+
+                }
             }
         }
     }
@@ -211,6 +230,7 @@ fun MessageBox(messageType: String, customMessage: String? = null, modifier: Mod
         "selection" -> Pair(customMessage ?: "¿Qué herramienta hay que seleccionar ahora?", R.drawable.vault_boy_thinking)
         "error" -> Pair(customMessage ?: "Ups... la herramienta seleccionada no es la correcta.", R.drawable.vault_boy_thumbs_down)
         "success" -> Pair(customMessage ?: "¡Perfecto! Has seleccionado la herramienta correcta", R.drawable.vault_boy_thumbs_up)
+        "complete" -> Pair(customMessage ?: "¡Perfecto! Has completado la limpieza del caballo", R.drawable.vault_boy_rich)
         else -> Pair("", 0)
     }
 
