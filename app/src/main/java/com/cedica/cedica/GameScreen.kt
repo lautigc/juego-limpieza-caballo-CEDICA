@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
@@ -260,4 +261,11 @@ fun MessageBox(messageType: String, customMessage: String? = null, modifier: Mod
             modifier = Modifier.fillMaxWidth()
         )
     }
+}
+
+
+@Preview(showBackground = true, widthDp = 720, heightDp = 360)
+@Composable
+fun PreviewGameScreen() {
+    GameScreen { println("hola") }
 }
