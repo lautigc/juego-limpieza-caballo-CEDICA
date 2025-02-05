@@ -89,8 +89,12 @@ dependencies {
     // Data store preferences
     implementation(libs.androidx.datastore.preferences)
 
+    // Room database
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
+
+    // ViewModel
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
 
 }
