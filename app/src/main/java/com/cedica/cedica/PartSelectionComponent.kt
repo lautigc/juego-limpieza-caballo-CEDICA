@@ -158,7 +158,7 @@ fun HorsePartSelectionRandom(randomPartsNumber: Int) {
     val animatedColor = remember { Animatable(Color.Red) }
 
     val parts by remember {
-        mutableStateOf(selectRandomParts(randomPartsNumber))
+        mutableStateOf(selectRandomParts(randomPartsNumber, null))
     }
 
     Box(
@@ -260,3 +260,4 @@ fun PreviewNormalHorse() {
 fun PreviewRandomPartsHorse() {
     HorsePartSelectionRandom(3)
 }
+

@@ -49,6 +49,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     val coroutineScope = rememberCoroutineScope()
     val scaffoldState = rememberBottomSheetScaffoldState()
 
+
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
     var isDraggable by remember { mutableStateOf(false) }

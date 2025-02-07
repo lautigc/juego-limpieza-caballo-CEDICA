@@ -51,12 +51,45 @@ val horseParts = arrayOf(
 
 )
 
-val smoothedHorseParts = horseParts.map { part ->
-    part.copy(polygon = smoothPolygon(part.polygon, iterations = 2))
+// TODO: podria aplicar enums en horseParts y en stages al igual que en horseParts
+
+data class Stage(
+    val stageNumber: Int,
+    val horsePart: String,
+    val tool: String,
+)
+val stages = arrayOf(
+    Stage(1, "Cabeza", "Rasqueta A..."),
+    Stage(2, "Cuerpo", "Rasqueta B..."),
+    Stage(3, "Cola", "Rasqueta C..."),
+    Stage(4, "Pierna izquierda", "Rasqueta C..."),
+    Stage(5, "Pierna derecha", "Rasqueta D..."),
+    Stage(6, "Cuello", "Rasqueta D..."),
+)
+
+data class StageInfo(val correctHorsePart: HorsePart, val incorrectRandomHorseParts: Array<HorsePart>, val tool: String)
+
+fun getStageInfo(stageNumber: Int, numRandomParts: Int = 2): StageInfo? {
+    /**
+    * Devuelve que parte y herramienta son las correctas
+    * además de partes incorrectas para desafiar.
+    * @stageNumber Es el numero de etapa
+    * @numRandomParts Es la cantidad de partes random se quiere, default 2
+    *
+    * */
+    val stage = stages.find { it.stageNumber == stageNumber } ?: return null
+    val correctHorsePart = horseParts.find { it.name == stage.horsePart } ?: return null
+    val horseParts =  selectRandomParts(numRandomParts, exceptPart = correctHorsePart)
+
+    return StageInfo(correctHorsePart, horseParts, stage.tool)
 }
 
-fun selectRandomParts(n: Int): List<HorsePart> {
-    return smoothedHorseParts.shuffled().take(3)
+fun selectRandomParts(n: Int, exceptPart: HorsePart?): Array<HorsePart> {
+    return smoothedHorseParts.shuffled().filter { h -> h == exceptPart }.take(n).toTypedArray()
+}
+
+val smoothedHorseParts = horseParts.map { part ->
+    part.copy(polygon = smoothPolygon(part.polygon, iterations = 2))
 }
 
 fun isPointInPolygon(x: Float, y: Float, polygon: List<Pair<Float, Float>>): Boolean {
