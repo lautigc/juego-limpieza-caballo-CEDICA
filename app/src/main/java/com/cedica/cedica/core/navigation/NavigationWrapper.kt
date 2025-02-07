@@ -8,6 +8,7 @@ import com.cedica.cedica.AboutScreen
 import com.cedica.cedica.ConfigurationScreen
 import com.cedica.cedica.GameScreen
 import com.cedica.cedica.MainMenuScreen
+import com.cedica.cedica.ui.profile.ProfileListScreen
 
 @Composable
 fun NavigationWrapper() {
@@ -34,6 +35,10 @@ fun NavigationWrapper() {
             AboutScreen {
                 navController.navigate(Menu)
             }
+        }
+
+        composable<UserListScreen> {
+            ProfileListScreen()
         }
     }
 }

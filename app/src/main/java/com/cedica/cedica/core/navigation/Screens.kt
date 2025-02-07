@@ -13,3 +13,6 @@ object Game
 
 @Serializable
 object About
+
+@Serializable
+object UserListScreen

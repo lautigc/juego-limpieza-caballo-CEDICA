@@ -33,7 +33,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.cedica.cedica.core.navigation.About
 import com.cedica.cedica.core.navigation.Game
+import com.cedica.cedica.core.navigation.Menu
 import com.cedica.cedica.core.navigation.NavigationWrapper
+import com.cedica.cedica.core.navigation.UserListScreen
 import com.cedica.cedica.ui.theme.CedicaTheme
 
 data class MenuItem(val text: String, val destination: Any)
@@ -75,7 +77,7 @@ fun TopBar(navController: NavController, modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.weight(1f))
 
         // Botón de perfil
-        IconButton(onClick = { navController.navigate(com.cedica.cedica.core.navigation.Configuration) }) {
+        IconButton(onClick = { navController.navigate(UserListScreen) }) {
             Icon(
                 imageVector = Icons.Rounded.AccountCircle,
                 contentDescription = "Perfil",
