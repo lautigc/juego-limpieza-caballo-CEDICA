@@ -1,5 +1,6 @@
 package com.cedica.cedica.data.user
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -20,8 +21,8 @@ import kotlinx.coroutines.flow.Flow
 data class User(
     @PrimaryKey(autoGenerate = true)  val id: Int = 0,
     val role: Role,
-    val firstName: String,
-    val lastName: String,
+    @ColumnInfo(collate = ColumnInfo.NOCASE) val firstName: String,
+    @ColumnInfo(collate = ColumnInfo.NOCASE) val lastName: String,
 )
 
 @Dao
