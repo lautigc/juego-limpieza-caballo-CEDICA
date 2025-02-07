@@ -49,7 +49,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cedica.cedica.R
-import com.cedica.cedica.data.permissions.Role
+import com.cedica.cedica.data.seed.users_seed
 import com.cedica.cedica.data.user.User
 import com.cedica.cedica.ui.theme.CedicaTheme
 
@@ -102,7 +102,7 @@ fun UserItem(
                 )
                 Spacer(Modifier.size(dimensionResource(R.dimen.padding_small)))
                 UserInformation(user, modifier = Modifier.align(Alignment.Top).weight(0.8f))
-                UserItemButton(
+                ExpandButton(
                     expanded = expanded,
                     onClick = { expanded = !expanded },
                 )
@@ -125,7 +125,7 @@ fun UserItem(
 }
 
 @Composable
-private fun UserItemButton(
+private fun ExpandButton(
     expanded: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -186,8 +186,6 @@ fun ActionButtonGroup(modifier: Modifier = Modifier) {
         Triple(Color.Red, Icons.Outlined.Delete) {},
     )
 
-
-
     SingleChoiceSegmentedButtonRow(modifier = modifier) {
         options.forEachIndexed { index, triple ->
             SegmentedButton(
@@ -232,14 +230,7 @@ fun ActionButtonGroup(modifier: Modifier = Modifier) {
 @Composable
 fun UserListPreview() {
     CedicaTheme (darkTheme = false) {
-        UserList(
-            listOf(
-                User(role = Role.ADMIN, firstName = "Fernando", lastName = "Campestrini".repeat(50)),
-                User(role = Role.ADMIN, firstName = "German", lastName = "Fernandez"),
-                User(role = Role.ADMIN, firstName = "Natalia", lastName = "Rivera"),
-                User(role = Role.ADMIN, firstName = "Pedro", lastName = "Cruz"),
-            )
-        )
+        UserList(users_seed)
     }
 }
 
@@ -250,14 +241,7 @@ fun UserListPreview() {
 @Composable
 fun UserListDarkPreview() {
     CedicaTheme(darkTheme = true) {
-        UserList(
-            listOf(
-                User(role = Role.ADMIN, firstName = "Fernando", lastName = "Campestrini".repeat(50)),
-                User(role = Role.ADMIN, firstName = "German", lastName = "Fernandez"),
-                User(role = Role.ADMIN, firstName = "Natalia", lastName = "Rivera"),
-                User(role = Role.ADMIN, firstName = "Pedro", lastName = "Cruz"),
-            )
-        )
+        UserList(users_seed)
     }
 }
 
@@ -265,9 +249,7 @@ fun UserListDarkPreview() {
 @Composable
 fun UserItemPreview() {
     CedicaTheme {
-        UserItem(
-            user = User(role = Role.ADMIN, firstName = "Fernando", lastName = "Campestrini")
-        )
+        UserItem(users_seed.first())
     }
 }
 
@@ -275,7 +257,7 @@ fun UserItemPreview() {
 @Composable
 fun UserItemButtonPreview() {
     CedicaTheme {
-        UserItemButton(
+        ExpandButton(
             expanded = false,
             onClick = {}
         )
@@ -297,7 +279,7 @@ fun UserIconPreview() {
 fun UserInformationPreview() {
     CedicaTheme {
         UserInformation(
-            user = User(role = Role.ADMIN, firstName = "Fernando", lastName = "Campestrini")
+            user = users_seed.first()
         )
     }
 }
