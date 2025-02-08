@@ -34,6 +34,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -42,10 +43,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun PreviewHorsePolygons() {
+fun PreviewHorsePolygons(selectedTool: Int?, onPartSelected: (String) -> Unit) {
     var imageSize by remember { mutableStateOf(IntSize.Zero) }
     val coroutineScope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
     val animatedColor = remember { Animatable(Color.Red) }
 
     // Tamaño original de la imagen (560x445)
@@ -58,7 +58,6 @@ fun PreviewHorsePolygons() {
             .background(Color(0xFFFFE4B5)),
         contentAlignment = Alignment.Center
     ) {
-        SnackbarHost(hostState = snackbarHostState, modifier = Modifier.align(Alignment.TopCenter))
         Image(
             painter = painterResource(R.drawable.caballo),
             contentDescription = "Caballo",
@@ -70,70 +69,67 @@ fun PreviewHorsePolygons() {
                 }
         )
 
-        LaunchedEffect(Unit) {
-            while (true) {
-                animatedColor.animateTo(Color.Yellow, animationSpec = tween(500))
-                animatedColor.animateTo(Color.LightGray, animationSpec = tween(500))
+        if(selectedTool != null){
+            LaunchedEffect(Unit) {
+                while (true) {
+                    animatedColor.animateTo(Color.Yellow, animationSpec = tween(500))
+                    animatedColor.animateTo(Color.LightGray, animationSpec = tween(500))
+                }
             }
-        }
 
-        Canvas(
-            modifier = Modifier
-                .fillMaxSize()
-                .aspectRatio(originalImageWidth / originalImageHeight)
-                .pointerInput(Unit) {
-                    detectTapGestures { offset ->
-                        val originalX = offset.x / imageSize.width
-                        val originalY = offset.y / imageSize.height
+            Canvas(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .aspectRatio(originalImageWidth / originalImageHeight)
+                    .pointerInput(Unit) {
+                        detectTapGestures { offset ->
+                            val originalX = offset.x / imageSize.width
+                            val originalY = offset.y / imageSize.height
 
-                        val selectedPart = horseParts.firstOrNull { part ->
-                            isPointInPolygon(originalX, originalY, part.polygon)
-                        }
-
-                        selectedPart?.let { part ->
-                            coroutineScope.launch {
-                                val snackbarJob = launch {
-                                    snackbarHostState.showSnackbar("Parte seleccionada: ${part.name}")
-                                }
-                                delay(500) // Reduce la duración manualmente (1 segundo)
-                                snackbarJob.cancel()
+                            val selectedPart = horseParts.firstOrNull { part ->
+                                isPointInPolygon(originalX, originalY, part.polygon)
                             }
-                        }
 
-                    }
-                })
-        {
-            smoothedHorseParts.forEach { part ->
-                drawPath(
-                    path = Path().apply {
-                        part.polygon.forEachIndexed { index, (x, y) ->
-                            val scaledX = x * imageSize.width
-                            val scaledY = y * imageSize.height
-                            if (index == 0) moveTo(scaledX, scaledY) else lineTo(scaledX, scaledY)
-                        }
-                        close()
-                    },
-                    color = animatedColor.value.copy(alpha = 0.3f),
-                    style = Fill
-                )
-                drawPath(
-                    path = Path().apply {
-                        part.polygon.forEachIndexed { index, (x, y) ->
-                            val scaledX = x * imageSize.width
-                            val scaledY = y * imageSize.height
-                            if (index == 0) moveTo(scaledX, scaledY) else lineTo(scaledX, scaledY)
-                        }
-                        close()
-                    },
-                    color = animatedColor.value,
-                    style = Stroke(width = 2.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f))
-                )
+                            selectedPart?.let { part ->
+                                onPartSelected(part.name)
+                            }
 
+                        }
+                    })
+            {
+                smoothedHorseParts.forEach { part ->
+                    drawPath(
+                        path = Path().apply {
+                            part.polygon.forEachIndexed { index, (x, y) ->
+                                val scaledX = x * imageSize.width
+                                val scaledY = y * imageSize.height
+                                if (index == 0) moveTo(scaledX, scaledY) else lineTo(scaledX, scaledY)
+                            }
+                            close()
+                        },
+                        color = animatedColor.value.copy(alpha = 0.3f),
+                        style = Fill
+                    )
+                    drawPath(
+                        path = Path().apply {
+                            part.polygon.forEachIndexed { index, (x, y) ->
+                                val scaledX = x * imageSize.width
+                                val scaledY = y * imageSize.height
+                                if (index == 0) moveTo(scaledX, scaledY) else lineTo(scaledX, scaledY)
+                            }
+                            close()
+                        },
+                        color = animatedColor.value,
+                        style = Stroke(width = 2.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f))
+                    )
+
+                }
             }
         }
     }
 }
 
+/*
 @Preview
 @Composable
 fun PreviewHorsePart() {
@@ -142,11 +138,7 @@ fun PreviewHorsePart() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(
-            text = "Vista previa de los polígonos",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
-        )
         PreviewHorsePolygons()
     }
 }
+*/

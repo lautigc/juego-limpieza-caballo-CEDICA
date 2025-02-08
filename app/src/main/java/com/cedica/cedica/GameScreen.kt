@@ -1,5 +1,8 @@
 package com.cedica.cedica
 
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.pm.ActivityInfo
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -24,6 +27,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,6 +40,10 @@ import kotlin.math.roundToInt
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameScreen(navigateToMenu: () -> Unit) {
+
+    // Esto es para orientar la pantalla en sentido horizontal
+    LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
+
     val images = listOf(
         R.drawable.cepillo_blando,
         R.drawable.cepillo_duro,
@@ -45,7 +53,6 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     )
 
     var selectedTool by remember { mutableStateOf<Int?>(null) }
-    var selectedHorsePart by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val scaffoldState = rememberBottomSheetScaffoldState()
 
@@ -54,6 +61,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     var isDraggable by remember { mutableStateOf(false) }
     var messageType by remember { mutableStateOf("selection") }
     var customMessage by remember { mutableStateOf<String?>(null) }
+    var attempts by remember { mutableStateOf(3) }
 
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
@@ -106,25 +114,27 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Image(
-                    painter = painterResource(R.drawable.caballo),
-                    contentDescription = "Caballo",
-                    modifier = Modifier
-                        .size(350.dp)
-                        .border(
-                            width = if (selectedHorsePart) 4.dp else 0.dp,
-                            color = if (selectedHorsePart) Color.Black else Color.Transparent
-                        )
-                        .clickable {
-                            selectedHorsePart = true
+                PreviewHorsePolygons(
+                    selectedTool = selectedTool,
+                    onPartSelected = { part ->
+                        if (part == "Cabeza") {
                             isDraggable = true
                             customMessage = "¡Excelente! Seleccionaste la parte correcta del caballo"
-                            coroutineScope.launch {
-                                messageType = "success"
+                            messageType = "success"
+                            attempts = 3
+                        } else {
+                            attempts -= 1
+                            if (attempts > 0) {
+                                customMessage = "Ups... Seleccionaste la parte incorrecta. Te quedan $attempts intentos."
+                                messageType = "error"
+                            } else {
+                                customMessage = "Has agotado tus intentos. Vuelve a intentarlo."
+                                messageType = "error"
+                                attempts = 3
                             }
                         }
-                )
 
+                    })
             }
 
             // Columna 3: Mensajes y Botón de herramientas
@@ -277,6 +287,19 @@ fun MessageBox(messageType: String, customMessage: String? = null, modifier: Mod
     }
 }
 
+@SuppressLint("ContextCastToActivity")
+@Composable
+fun LockScreenOrientation(orientation: Int) {
+    val activity = LocalContext.current as? Activity
+    LaunchedEffect(Unit) {
+        activity?.requestedOrientation = orientation
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        }
+    }
+}
 
 @Preview(showBackground = true, widthDp = 720, heightDp = 360)
 @Composable
