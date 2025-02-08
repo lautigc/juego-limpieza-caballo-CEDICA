@@ -23,7 +23,10 @@ data class User(
     val role: Role,
     @ColumnInfo(collate = ColumnInfo.NOCASE) val firstName: String,
     @ColumnInfo(collate = ColumnInfo.NOCASE) val lastName: String,
-)
+) {
+    val fullName: String
+        get() = "$firstName $lastName"
+}
 
 @Dao
 interface UserDao {
@@ -38,4 +41,7 @@ interface UserDao {
 
     @Query("SELECT * FROM User")
     fun getAllUsers(): Flow<List<User>>
+
+    @Query("SELECT * FROM User WHERE id = :id")
+    suspend fun getByID(id: Int): User
 }
