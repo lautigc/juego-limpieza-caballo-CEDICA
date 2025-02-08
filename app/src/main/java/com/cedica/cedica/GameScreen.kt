@@ -3,6 +3,7 @@ package com.cedica.cedica
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.ActivityInfo
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -56,12 +57,21 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     val coroutineScope = rememberCoroutineScope()
     val scaffoldState = rememberBottomSheetScaffoldState()
 
+
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
     var isDraggable by remember { mutableStateOf(false) }
     var messageType by remember { mutableStateOf("selection") }
     var customMessage by remember { mutableStateOf<String?>(null) }
     var attempts by remember { mutableStateOf(3) }
+    var numEtapa by remember { mutableStateOf(1) }
+
+    var stageInfo by remember { mutableStateOf(checkNotNull(getStageInfo(numEtapa)) { "No se encontró información para la etapa $numEtapa" }) }
+
+
+    val correctPart = stageInfo.correctHorsePart
+    val tool = stageInfo.tool
+    val parts = stageInfo.incorrectRandomHorseParts + correctPart
 
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
@@ -114,27 +124,31 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                PreviewHorsePolygons(
-                    selectedTool = selectedTool,
-                    onPartSelected = { part ->
-                        if (part == "Cabeza") {
-                            isDraggable = true
-                            customMessage = "¡Excelente! Seleccionaste la parte correcta del caballo"
-                            messageType = "success"
-                            attempts = 3
-                        } else {
-                            attempts -= 1
-                            if (attempts > 0) {
-                                customMessage = "Ups... Seleccionaste la parte incorrecta. Te quedan $attempts intentos."
-                                messageType = "error"
-                            } else {
-                                customMessage = "Has agotado tus intentos. Vuelve a intentarlo."
-                                messageType = "error"
+                if(selectedTool == null){
+                    HorseNormalState()
+                }else{
+                    HorsePartSelectionRandom(
+                        parts = parts,
+                        onPartSelected = { part ->
+                            if (part == "Cabeza") {
+                                isDraggable = true
+                                customMessage = "¡Excelente! Seleccionaste la parte correcta del caballo"
+                                messageType = "success"
                                 attempts = 3
+                            } else {
+                                attempts -= 1
+                                if (attempts > 0) {
+                                    customMessage = "Ups... Seleccionaste la parte incorrecta. Te quedan $attempts intentos."
+                                    messageType = "error"
+                                } else {
+                                    customMessage = "Has agotado tus intentos. Vuelve a intentarlo."
+                                    messageType = "error"
+                                    attempts = 3
+                                }
                             }
-                        }
 
-                    })
+                        })
+                }
             }
 
             // Columna 3: Mensajes y Botón de herramientas
