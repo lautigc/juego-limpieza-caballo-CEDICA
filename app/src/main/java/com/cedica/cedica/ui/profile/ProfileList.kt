@@ -24,6 +24,8 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -56,18 +58,36 @@ import com.cedica.cedica.ui.theme.CedicaTheme
 @Composable
 fun UserList(
     users: List<User>,
+    currentUser: User,
     modifier: Modifier = Modifier
-)
-{
+) {
+    val userItemModifier = Modifier.padding(dimensionResource(R.dimen.padding_small))
     LazyColumn(
         modifier = modifier,
         contentPadding = PaddingValues(dimensionResource(R.dimen.padding_small)),
     ) {
+        item {
+            Column(Modifier.border(3.dp, MaterialTheme.colorScheme.primaryContainer).then(userItemModifier)) {
+                Text("Usuario actual")
+                UserItem(
+                    user = users.first { it.id == currentUser.id },
+                    cardColors = CardDefaults.cardColors().copy(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        contentColor = MaterialTheme.colorScheme.secondary,
+                    ),
+                    currentUser = currentUser,
+                )
+            }
+        }
+
         itemsIndexed(users) { _, user ->
-            UserItem(
-                user = user,
-                modifier = Modifier.padding(dimensionResource(R.dimen.padding_small))
-            )
+            if (user.id != currentUser.id) {
+                UserItem(
+                    user = user,
+                    modifier = userItemModifier,
+                    currentUser = currentUser,
+                )
+            }
         }
         item { Spacer(modifier = Modifier.size(200.dp)) }
     }
@@ -76,11 +96,14 @@ fun UserList(
 @Composable
 fun UserItem(
     user: User,
+    currentUser: User,
+    cardColors: CardColors = CardDefaults.cardColors(),
     modifier: Modifier = Modifier
 ) {
     var expanded by rememberSaveable  { mutableStateOf(false) }
     Card(
-        modifier = modifier
+        modifier = modifier,
+        colors = cardColors,
     ) {
         Column(
             modifier = Modifier
@@ -116,7 +139,8 @@ fun UserItem(
                             bottom = dimensionResource(R.dimen.padding_small),
                             end = dimensionResource(R.dimen.padding_large),
                             start = dimensionResource(R.dimen.padding_large)
-                        )
+                        ),
+                        isCurrent = user.id == currentUser.id,
                     )
                 }
             }
@@ -178,13 +202,15 @@ fun UserInformation(
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
-fun ActionButtonGroup(modifier: Modifier = Modifier) {
-    val options = listOf(
-        Triple(Color.Green, Icons.AutoMirrored.Outlined.Login) {},
+fun ActionButtonGroup(modifier: Modifier = Modifier, isCurrent: Boolean = false) {
+    val options = mutableListOf(
         Triple(Color.Cyan, Icons.Outlined.Info) {},
         Triple(Color.Yellow, Icons.Outlined.Edit) {},
         Triple(Color.Red, Icons.Outlined.Delete) {},
     )
+    if (!isCurrent) {
+        options.addFirst(Triple(Color.Green, Icons.AutoMirrored.Outlined.Login) {})
+    }
 
     SingleChoiceSegmentedButtonRow(modifier = modifier) {
         options.forEachIndexed { index, triple ->
@@ -230,7 +256,7 @@ fun ActionButtonGroup(modifier: Modifier = Modifier) {
 @Composable
 fun UserListPreview() {
     CedicaTheme (darkTheme = false) {
-        UserList(users_seed)
+        UserList(users_seed, users_seed.first())
     }
 }
 
@@ -241,7 +267,7 @@ fun UserListPreview() {
 @Composable
 fun UserListDarkPreview() {
     CedicaTheme(darkTheme = true) {
-        UserList(users_seed)
+        UserList(users_seed, users_seed.first())
     }
 }
 
@@ -249,7 +275,7 @@ fun UserListDarkPreview() {
 @Composable
 fun UserItemPreview() {
     CedicaTheme {
-        UserItem(users_seed.first())
+        UserItem(users_seed.first(), currentUser = users_seed.get(2))
     }
 }
 

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.cedica.cedica.core.session.Session
 import com.cedica.cedica.data.DB
 import com.cedica.cedica.ui.home.MainMenuViewModel
+import com.cedica.cedica.ui.profile.ProfileListScreenViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 
@@ -13,11 +14,19 @@ import kotlinx.coroutines.runBlocking
  */
 object AppViewModelFactory {
     val Factory = viewModelFactory {
-        // Initializer for ItemEditViewModel
         initializer {
             MainMenuViewModel(
                 userID = runBlocking { Session.getUserID().first() },
                 db = DB,
+            )
+        }
+
+        initializer {
+            ProfileListScreenViewModel(
+                currentUserID = Session.getUserID(),
+                users = DB.userDao().getAllUsers(),
+                patients = DB.patientDao().getAllPatients(),
+                therapists = DB.therapistDao().getAllTherapists(),
             )
         }
     }
