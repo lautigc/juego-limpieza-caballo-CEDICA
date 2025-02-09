@@ -59,12 +59,12 @@ data class Stage(
     val tool: String,
 )
 val stages = arrayOf(
-    Stage(1, "Cabeza", "Rasqueta A..."),
-    Stage(2, "Cuerpo", "Rasqueta B..."),
-    Stage(3, "Cola", "Rasqueta C..."),
-    Stage(4, "Pierna izquierda", "Rasqueta C..."),
-    Stage(5, "Pierna derecha", "Rasqueta D..."),
-    Stage(6, "Cuello", "Rasqueta D..."),
+    Stage(1, "Cabeza", "Rasqueta blanda"),
+    Stage(2, "Cuerpo", "Cepillo blando"),
+    Stage(3, "Cola", "Cepillo duro"),
+    Stage(4, "Pierna izquierda", "Rasqueta blanda"),
+    Stage(5, "Pierna derecha", "Rasqueta blanda"),
+    Stage(6, "Cuello", "Rasqueta dura"),
 )
 
 data class StageInfo(val correctHorsePart: HorsePart, val incorrectRandomHorseParts: Array<HorsePart>, val tool: String)
