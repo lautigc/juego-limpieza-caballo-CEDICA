@@ -12,6 +12,14 @@ import androidx.room.Update
 import com.cedica.cedica.data.permissions.Role
 import kotlinx.coroutines.flow.Flow
 
+
+val GUEST_USER = User(
+    id = 0,
+    role = Role.GUEST,
+    firstName = "Invitado",
+    lastName = "",
+)
+
 @Entity(
     tableName = "User",
     indices = [
