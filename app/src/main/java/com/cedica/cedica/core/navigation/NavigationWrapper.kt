@@ -38,7 +38,11 @@ fun NavigationWrapper() {
         }
 
         composable<UserListScreen> {
-            ProfileListScreen()
+            ProfileListScreen(
+                onNavigateGuestLogin = {
+                    navController.navigate(Menu)
+                }
+            )
         }
     }
 }

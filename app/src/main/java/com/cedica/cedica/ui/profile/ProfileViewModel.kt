@@ -39,7 +39,7 @@ class ProfileListScreenViewModel(
                 users = userFlow,
                 therapists = therapistFlow,
                 patients = patientFlow,
-                currentUser = if (userID == 0) GuestUser else userFlow.first { it.id == userID },
+                currentUser = if (userID == GuestUser.id) GuestUser else userFlow.first { it.id == userID },
             )
         }.stateIn(
             scope = viewModelScope,
@@ -50,6 +50,12 @@ class ProfileListScreenViewModel(
     fun login(user: User) {
         viewModelScope.launch {
             this@ProfileListScreenViewModel.session.setUserID(user.id)
+        }
+    }
+
+    fun guestLogin() {
+        viewModelScope.launch {
+            this@ProfileListScreenViewModel.session.setUserID(GuestUser.id)
         }
     }
 

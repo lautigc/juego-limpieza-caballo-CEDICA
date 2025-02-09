@@ -23,6 +23,7 @@ import com.cedica.cedica.ui.theme.CedicaTheme
 @Composable
 fun ProfileListScreen(
     viewModel: ProfileListScreenViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    onNavigateGuestLogin: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val profileUiState by viewModel.uiState.collectAsState()
@@ -31,7 +32,11 @@ fun ProfileListScreen(
         users = profileUiState.users,
         currentUser = profileUiState.currentUser,
         modifier = modifier,
-        onLogin = { user: User -> viewModel.login(user) }
+        onLogin = { user: User -> viewModel.login(user) },
+        onGuestLogin = {
+            viewModel.guestLogin()
+            onNavigateGuestLogin()
+        }
     )
 }
 
@@ -40,6 +45,7 @@ private fun Screen(
     users: List<User>,
     currentUser: User,
     onLogin: (User) -> Unit = {},
+    onGuestLogin: () -> Unit = {},
     modifier: Modifier,
 ) {
     Box(modifier = modifier) {
@@ -54,7 +60,7 @@ private fun Screen(
                 FABItem(
                     icon = Icons.AutoMirrored.Filled.Login,
                     text = "Invitado",
-                    onClick = { onClick() }
+                    onClick = onGuestLogin
                 )
             ),
             modifier = Modifier
