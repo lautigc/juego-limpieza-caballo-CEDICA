@@ -78,14 +78,14 @@ fun getStageInfo(stageNumber: Int, numRandomParts: Int = 2): StageInfo? {
     *
     * */
     val stage = stages.find { it.stageNumber == stageNumber } ?: return null
-    val correctHorsePart = horseParts.find { it.name == stage.horsePart } ?: return null
+    val correctHorsePart = smoothedHorseParts.find { it.name == stage.horsePart } ?: return null
     val horseParts =  selectRandomParts(numRandomParts, exceptPart = correctHorsePart)
 
     return StageInfo(correctHorsePart, horseParts, stage.tool)
 }
 
 fun selectRandomParts(n: Int, exceptPart: HorsePart?): Array<HorsePart> {
-    return smoothedHorseParts.shuffled().filter { h -> h == exceptPart }.take(n).toTypedArray()
+    return smoothedHorseParts.shuffled().filter { h -> h != exceptPart }.take(n).toTypedArray()
 }
 
 val smoothedHorseParts = horseParts.map { part ->

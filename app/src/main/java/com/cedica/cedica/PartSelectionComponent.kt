@@ -86,7 +86,7 @@ fun HorsePartSelection() {
                     imageSize = coordinates.size
                 }
         )
-        // if (selectedTool != null)
+
         LaunchedEffect(Unit) {
             while (true) {
                 animatedColor.animateTo(Color.Yellow, animationSpec = tween(500))
