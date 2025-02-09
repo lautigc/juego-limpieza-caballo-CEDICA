@@ -30,16 +30,29 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.cedica.cedica.core.navigation.About
+import com.cedica.cedica.core.navigation.Game
+import com.cedica.cedica.core.navigation.Menu
 import com.cedica.cedica.core.navigation.NavigationWrapper
+import com.cedica.cedica.core.navigation.UserListScreen
 import com.cedica.cedica.ui.theme.CedicaTheme
 
+data class MenuItem(val text: String, val destination: Any)
+
+val menuItems = listOf(
+    MenuItem("Jugar", Game),
+    MenuItem("Progreso", About),
+    MenuItem("Acerca de", About)
+)
+
 @Composable
-fun MenuButton(text: String, modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
+fun MenuButton(text: String, modifier: Modifier = Modifier, navigateTo: () -> Unit) {
     FilledTonalButton(
-        onClick = onClick,
+        onClick = navigateTo,
         colors = ButtonDefaults.filledTonalButtonColors(
-            containerColor = Color(0xFFFFE4B5), // Fondo amarillo claro
-            contentColor = Color.Black // Texto negro
+            containerColor = Color(0xFFFFE4B5),
+            contentColor = Color.Black
         ),
         modifier = modifier.padding(8.dp)
     ) {
@@ -48,16 +61,7 @@ fun MenuButton(text: String, modifier: Modifier = Modifier, onClick: () -> Unit 
 }
 
 @Composable
-fun MenuButtons(navigateToGame: () -> Unit, modifier: Modifier) {
-    MenuButton("Jugar", modifier) { navigateToGame() }
-    Spacer(modifier = Modifier.height(32.dp))
-    MenuButton("Progreso", modifier)
-    Spacer(modifier = Modifier.height(32.dp))
-    MenuButton("Acerca de", modifier)
-}
-
-@Composable
-fun TopBar(navigateToConfiguration: () -> Unit, modifier: Modifier = Modifier) {
+fun TopBar(navController: NavController, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -73,7 +77,7 @@ fun TopBar(navigateToConfiguration: () -> Unit, modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.weight(1f))
 
         // Botón de perfil
-        IconButton(onClick = { /* Acción del perfil */ }) {
+        IconButton(onClick = { navController.navigate(UserListScreen) }) {
             Icon(
                 imageVector = Icons.Rounded.AccountCircle,
                 contentDescription = "Perfil",
@@ -82,7 +86,7 @@ fun TopBar(navigateToConfiguration: () -> Unit, modifier: Modifier = Modifier) {
         }
 
         // Botón de configuración
-        IconButton(onClick = { navigateToConfiguration() }) {
+        IconButton(onClick = { navController.navigate(com.cedica.cedica.core.navigation.Configuration) }) {
             Icon(
                 imageVector = Icons.Rounded.Settings,
                 contentDescription = "Configuración",
@@ -93,7 +97,7 @@ fun TopBar(navigateToConfiguration: () -> Unit, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun HorizontalLayout(navigateToGame: () -> Unit) {
+fun HorizontalLayout(navController: NavController) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -101,37 +105,45 @@ fun HorizontalLayout(navigateToGame: () -> Unit) {
             .fillMaxSize()
             .padding(horizontal = 16.dp)
     ) {
-        MenuButtons(navigateToGame, Modifier.weight(1f))
+        menuItems.forEach { item ->
+            MenuButton(item.text, Modifier.weight(1f)) {
+                navController.navigate(item.destination)
+            }
+        }
     }
 }
 
 @Composable
-fun VerticalLayout(navigateToGame: () -> Unit) {
+fun VerticalLayout(navController: NavController) {
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxSize()
-
     ) {
-        MenuButtons(navigateToGame, Modifier.fillMaxWidth(0.6f).scale(1.4f))
+        menuItems.forEach { item ->
+            MenuButton(text = item.text, Modifier.fillMaxWidth(0.6f).scale(1.4f)) {
+               navController.navigate(item.destination)
+            }
+            Spacer(modifier = Modifier.height(32.dp))
+        }
     }
 }
 
 @Composable
-fun MainMenuScreen(navigateToConfiguration: () -> Unit, navigateToGame: () -> Unit) {
+fun MainMenuScreen(navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFADD8E6))
     ) {
-        TopBar(navigateToConfiguration, modifier = Modifier.align(Alignment.TopStart))
+        TopBar(navController, modifier = Modifier.align(Alignment.TopStart))
 
         val isHorizontal = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
         if (isHorizontal) {
-            HorizontalLayout(navigateToGame)
+            HorizontalLayout(navController)
         } else {
-            VerticalLayout(navigateToGame)
+            VerticalLayout(navController)
         }
     }
 }

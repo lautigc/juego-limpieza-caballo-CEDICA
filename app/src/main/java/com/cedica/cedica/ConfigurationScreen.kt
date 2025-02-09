@@ -5,22 +5,30 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -29,6 +37,30 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
+
+@Composable
+fun ConfigurationScreen(navigateToMenu: () -> Unit) {
+    val scrollState = rememberScrollState()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFADD8E6))
+            .padding(16.dp)
+            .verticalScroll(scrollState),
+    ) {
+        Text(
+            text = "Configuración",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
+        HorizontalDivider(modifier = Modifier.padding(16.dp), color = Color.Black)
+        VolumeConfiguration()
+        HorizontalDivider(modifier = Modifier.padding(16.dp), color = Color.Black)
+        AccessibilityConfiguration()
+        ConfigButtons(navigateToMenu)
+    }
+}
 
 @Composable
 fun VolumeSlider(
@@ -44,7 +76,7 @@ fun VolumeSlider(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.padding(16.dp)
     ){
-        Text(text = label, style = MaterialTheme.typography.titleMedium)
+        Text(text = label, style = MaterialTheme.typography.titleSmall)
         Row (
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(vertical = 8.dp)
@@ -71,39 +103,67 @@ fun VolumeSlider(
 
 @Composable
 fun VolumeConfiguration() {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
-    ) {
+    Column {
+        Text("Volúmen", style = MaterialTheme.typography.titleMedium)
+        VolumeSlider(label = "General")
         VolumeSlider(label = "Música")
         VolumeSlider(label = "Efectos")
     }
 }
 
 @Composable
-fun ConfigurationScreen(navigateToMenu: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFADD8E6)) // Fondo azul claro
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
+fun ConfigButtons(navigateToMenu: () -> Unit) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Text(text = "Configuración", style = MaterialTheme.typography.titleLarge)
-        HorizontalDivider(modifier = Modifier.padding(16.dp), color = Color.Black)
-        VolumeConfiguration()
-        Row(
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            modifier = Modifier.fillMaxWidth()
+        Button(
+            onClick = { navigateToMenu() },
+            colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
         ) {
-            Button(onClick = { navigateToMenu() }) {
-                Text("Volver")
-            }
-            Button(onClick = { /* Acción de guardar */ }) {
-                Text("Guardar")
-            }
+            Text("Volver")
         }
+        Button(
+            onClick = { navigateToMenu() },
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+        ) {
+            Text("Guardar")
+        }
+    }
+}
+
+@Composable
+fun AccessibilityConfiguration() {
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text("Accesibilidad", style = MaterialTheme.typography.titleMedium)
+
+        var selectedVoice by remember { mutableStateOf("Masculino") }
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 8.dp)) {
+            Text("Voz:", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 8.dp))
+            Spacer(modifier = Modifier.weight(1f))
+
+            RadioButton(
+                selected = selectedVoice == "Masculino",
+                onClick = { selectedVoice = "Masculino" }
+            )
+            Text("Masculino", modifier = Modifier.clickable { selectedVoice = "Masculino" })
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            RadioButton(
+                selected = selectedVoice == "Femenino",
+                onClick = { selectedVoice = "Femenino" }
+            )
+            Text("Femenino", modifier = Modifier.clickable { selectedVoice = "Femenino" })
+        }
+
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 8.dp)) {
+            var hintsEnabled by remember { mutableStateOf(true) }
+            Text("Pistas:", style = MaterialTheme.typography.bodyMedium)
+            Spacer(modifier = Modifier.weight(1f))
+            Switch(checked = hintsEnabled, onCheckedChange = { hintsEnabled = it })
+        }
+
     }
 }
 
