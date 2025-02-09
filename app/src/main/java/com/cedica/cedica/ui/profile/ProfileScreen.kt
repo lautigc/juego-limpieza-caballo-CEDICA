@@ -3,6 +3,9 @@ package com.cedica.cedica.ui.profile
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Login
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -41,13 +44,28 @@ private fun Screen(
 ) {
     Box(modifier = modifier) {
         UserList(users = users, currentUser, onLogin = onLogin, modifier = Modifier.fillMaxWidth())
-        AddProfileButton(
-            onClick = {},
+        ExpandableFAB(
+            items = listOf(
+                FABItem(
+                    icon = Icons.Filled.Add,
+                    text = "Registrar",
+                    onClick = { onClick() }
+                ),
+                FABItem(
+                    icon = Icons.AutoMirrored.Filled.Login,
+                    text = "Invitado",
+                    onClick = { onClick() }
+                )
+            ),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(dimensionResource(R.dimen.padding_large))
+                .padding(dimensionResource(R.dimen.padding_medium))
         )
     }
+}
+
+fun onClick() {
+    TODO("Not yet implemented")
 }
 
 @Preview(showBackground = true)
