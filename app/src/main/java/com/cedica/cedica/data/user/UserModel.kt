@@ -13,7 +13,7 @@ import com.cedica.cedica.data.permissions.Role
 import kotlinx.coroutines.flow.Flow
 
 
-val GUEST_USER = User(
+val GuestUser = User(
     id = 0,
     role = Role.GUEST,
     firstName = "Invitado",

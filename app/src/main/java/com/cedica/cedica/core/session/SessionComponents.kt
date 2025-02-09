@@ -6,7 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.cedica.cedica.data.user.GUEST_USER
+import com.cedica.cedica.data.user.GuestUser
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -39,7 +39,7 @@ object Session {
 
     fun getUserID(): Flow<Int> {
         return this.dataStore.data.map { preferences ->
-            preferences[USER_ID] ?: GUEST_USER.id
+            preferences[USER_ID] ?: GuestUser.id
         }
     }
 }

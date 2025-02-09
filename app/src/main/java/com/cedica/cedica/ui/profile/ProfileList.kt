@@ -52,6 +52,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cedica.cedica.R
 import com.cedica.cedica.data.seed.users_seed
+import com.cedica.cedica.data.user.GuestUser
 import com.cedica.cedica.data.user.User
 import com.cedica.cedica.ui.theme.CedicaTheme
 
@@ -59,32 +60,41 @@ import com.cedica.cedica.ui.theme.CedicaTheme
 fun UserList(
     users: List<User>,
     currentUser: User,
+    onLogin: (User) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val userItemModifier = Modifier.padding(dimensionResource(R.dimen.padding_small))
+
     LazyColumn(
         modifier = modifier,
         contentPadding = PaddingValues(dimensionResource(R.dimen.padding_small)),
     ) {
-        item {
-            Column(Modifier.border(3.dp, MaterialTheme.colorScheme.primaryContainer).then(userItemModifier)) {
-                Text("Usuario actual")
-                UserItem(
-                    user = users.first { it.id == currentUser.id },
-                    cardColors = CardDefaults.cardColors().copy(
-                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                        contentColor = MaterialTheme.colorScheme.secondary,
-                    ),
-                    currentUser = currentUser,
-                )
+        if (currentUser.id != GuestUser.id) {
+            item {
+                Column(
+                    Modifier.border(3.dp, MaterialTheme.colorScheme.primaryContainer)
+                        .then(userItemModifier)
+                ) {
+                    Text("Usuario actual")
+                    UserItem(
+                        userItem = users.first { it.id == currentUser.id },
+                        cardColors = CardDefaults.cardColors().copy(
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                            contentColor = MaterialTheme.colorScheme.secondary,
+                        ),
+                        onLogin = { onLogin(currentUser) },
+                        currentUser = currentUser,
+                    )
+                }
             }
         }
 
         itemsIndexed(users) { _, user ->
             if (user.id != currentUser.id) {
                 UserItem(
-                    user = user,
+                    userItem = user,
                     modifier = userItemModifier,
+                    onLogin = { onLogin(user) },
                     currentUser = currentUser,
                 )
             }
@@ -95,9 +105,10 @@ fun UserList(
 
 @Composable
 fun UserItem(
-    user: User,
+    userItem: User,
     currentUser: User,
     cardColors: CardColors = CardDefaults.cardColors(),
+    onLogin: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var expanded by rememberSaveable  { mutableStateOf(false) }
@@ -124,7 +135,7 @@ fun UserItem(
                     modifier = Modifier.align(Alignment.CenterVertically)
                 )
                 Spacer(Modifier.size(dimensionResource(R.dimen.padding_small)))
-                UserInformation(user, modifier = Modifier.align(Alignment.Top).weight(0.8f))
+                UserInformation(userItem, modifier = Modifier.align(Alignment.Top).weight(0.8f))
                 ExpandButton(
                     expanded = expanded,
                     onClick = { expanded = !expanded },
@@ -140,7 +151,8 @@ fun UserItem(
                             end = dimensionResource(R.dimen.padding_large),
                             start = dimensionResource(R.dimen.padding_large)
                         ),
-                        isCurrent = user.id == currentUser.id,
+                        isCurrent = userItem.id == currentUser.id,
+                        onLogin = onLogin,
                     )
                 }
             }
@@ -200,16 +212,27 @@ fun UserInformation(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview
 @Composable
-fun ActionButtonGroup(modifier: Modifier = Modifier, isCurrent: Boolean = false) {
+fun ActionButtonGroup(
+    modifier: Modifier = Modifier,
+    isCurrent: Boolean = false,
+    onLogin: () -> Unit,
+) {
     val options = mutableListOf(
         Triple(Color.Cyan, Icons.Outlined.Info) {},
         Triple(Color.Yellow, Icons.Outlined.Edit) {},
         Triple(Color.Red, Icons.Outlined.Delete) {},
     )
+
     if (!isCurrent) {
-        options.addFirst(Triple(Color.Green, Icons.AutoMirrored.Outlined.Login) {})
+        options.add(
+            index = 0,
+            element = Triple(
+                first = Color.Green,
+                second = Icons.AutoMirrored.Outlined.Login,
+                third = { onLogin() }
+            )
+        )
     }
 
     SingleChoiceSegmentedButtonRow(modifier = modifier) {
@@ -236,8 +259,7 @@ fun ActionButtonGroup(modifier: Modifier = Modifier, isCurrent: Boolean = false)
                     disabledInactiveContentColor = triple.first,
                     disabledInactiveBorderColor = triple.first
                 ),
-                label =
-                {
+                label = {
                     Row {
                         Icon(imageVector = triple.second, contentDescription = null, tint = Color.Black)
                         Spacer(Modifier.size(dimensionResource(R.dimen.padding_small)))
@@ -256,7 +278,7 @@ fun ActionButtonGroup(modifier: Modifier = Modifier, isCurrent: Boolean = false)
 @Composable
 fun UserListPreview() {
     CedicaTheme (darkTheme = false) {
-        UserList(users_seed, users_seed.first())
+        UserList(users_seed, users_seed.first(), onLogin = {})
     }
 }
 
@@ -267,7 +289,7 @@ fun UserListPreview() {
 @Composable
 fun UserListDarkPreview() {
     CedicaTheme(darkTheme = true) {
-        UserList(users_seed, users_seed.first())
+        UserList(users_seed, users_seed.first(), onLogin = {})
     }
 }
 
@@ -275,7 +297,7 @@ fun UserListDarkPreview() {
 @Composable
 fun UserItemPreview() {
     CedicaTheme {
-        UserItem(users_seed.first(), currentUser = users_seed.get(2))
+        UserItem(users_seed.first(), currentUser = users_seed[2], onLogin = {})
     }
 }
 

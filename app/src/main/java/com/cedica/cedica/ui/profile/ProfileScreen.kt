@@ -12,38 +12,40 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cedica.cedica.R
-import com.cedica.cedica.core.session.Session
 import com.cedica.cedica.data.seed.users_seed
-import com.cedica.cedica.data.user.GUEST_USER
 import com.cedica.cedica.data.user.User
+import com.cedica.cedica.ui.AppViewModelProvider
 import com.cedica.cedica.ui.theme.CedicaTheme
-import kotlinx.coroutines.flow.first
 
 @Composable
 fun ProfileListScreen(
-    viewModel: ProfileListScreenViewModel = viewModel(),
-    session: Session = Session,
+    viewModel: ProfileListScreenViewModel = viewModel(factory = AppViewModelProvider.Factory),
     modifier: Modifier = Modifier
 ) {
     val profileUiState by viewModel.uiState.collectAsState()
 
-    Screen(profileUiState.users, profileUiState.currentUser, modifier)
+    Screen(
+        users = profileUiState.users,
+        currentUser = profileUiState.currentUser,
+        modifier = modifier,
+        onLogin = { user: User -> viewModel.login(user) }
+    )
 }
 
 @Composable
 private fun Screen(
     users: List<User>,
     currentUser: User,
+    onLogin: (User) -> Unit = {},
     modifier: Modifier,
 ) {
     Box(modifier = modifier) {
-        UserList(users = users, currentUser, modifier = Modifier.fillMaxWidth())
+        UserList(users = users, currentUser, onLogin = onLogin, modifier = Modifier.fillMaxWidth())
         AddProfileButton(
             onClick = {},
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(dimensionResource(R.dimen.padding_large))
-
         )
     }
 }
