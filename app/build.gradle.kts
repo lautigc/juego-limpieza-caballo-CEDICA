@@ -81,7 +81,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
 
     // Icons
-    implementation (libs.androidx.material.icons.extended)
+    implementation(libs.androidx.material.icons.extended)
 
     // Splash screen
     implementation(libs.androidx.core.splashscreen)
@@ -96,5 +96,4 @@ dependencies {
 
     // ViewModel
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-
 }

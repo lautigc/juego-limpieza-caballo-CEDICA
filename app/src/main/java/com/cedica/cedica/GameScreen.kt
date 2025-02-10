@@ -3,6 +3,7 @@ package com.cedica.cedica
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.ActivityInfo
+import android.media.SoundPool
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -64,10 +65,21 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     var messageType by remember { mutableStateOf("selection") }
     var customMessage by remember { mutableStateOf<String?>(null) }
     val gameState = remember { mutableStateOf(GameState()) }
-    var stageInfo by remember { mutableStateOf(checkNotNull(getStageInfo(gameState.value.getCurrentStage())) { "No se encontró información para la etapa $gameState.value.getCurrentStage()" }) }
-    var correctPart = stageInfo.correctHorsePart
-    var correctTool = stageInfo.tool
-    var parts = stageInfo.incorrectRandomHorseParts + correctPart
+    val stageInfo by remember { mutableStateOf(checkNotNull(getStageInfo(gameState.value.getCurrentStage())) { "No se encontró información para la etapa $gameState.value.getCurrentStage()" }) }
+    val correctPart = stageInfo.correctHorsePart
+    val correctTool = stageInfo.tool
+    val parts = stageInfo.incorrectRandomHorseParts + correctPart
+
+
+    // para el audio
+    val context = LocalContext.current
+    val soundPool = remember { SoundPool.Builder().setMaxStreams(1).build() }
+    val soundIds = mapOf(
+        "success" to soundPool.load(context, R.raw.successed2, 1),
+        "snort" to soundPool.load(context, R.raw.horse_snort, 1),
+        "trumpets" to soundPool.load(context, R.raw.success_trumpets, 1),
+        "wrong" to soundPool.load(context, R.raw.wrong, 1),
+    )
 
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
@@ -84,10 +96,12 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                         customMessage = "¡Excelente! Seleccionaste la herramienta correcta para la limpieza."
                         messageType = "success"
                         gameState.value.addScore(20)
+                        val play = soundIds["success"]?.let { soundPool.play(it, 1f, 1f, 1, 0, 1f) }
                     } else {
                         // Si la herramienta seleccionada es incorrecta
                         customMessage = "Ups... Seleccionaste la herramienta incorrecta. Intenta de nuevo."
                         messageType = "error"
+                        val play = soundIds["wrong"]?.let { soundPool.play(it, 1f, 1f, 1, 0, 1f) }
                     }
                 }
             )
@@ -130,6 +144,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                             coroutineScope.launch {
                                 customMessage = "¡Excelente! Seleccionaste la parte correcta del caballo"
                                 messageType = "success"
+                                val play = soundIds["success"]?.let { soundPool.play(it, 1f, 1f, 1, 0, 1f) }
                                 delay(5000)
                                 customMessage = "¿Qué herramienta debemos utilizar para limpiarla?"
                                 messageType = "selection"
@@ -137,6 +152,8 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                         } else {
                             customMessage = "Ups... Seleccionaste la parte incorrecta. Intenta de nuevo."
                             messageType = "error"
+                            val play =
+                                soundIds["wrong"]?.let { it1 -> soundPool.play(it1, 1f, 1f, 1, 0, 1f) }
                         }
                     })
             }
@@ -206,6 +223,12 @@ fun GameScreen(navigateToMenu: () -> Unit) {
             }
         }
     }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            soundPool.release()
+        }
+    }
 }
 
 @Composable
@@ -213,7 +236,6 @@ fun ImageSelectionList(
     images: List<Tool>,
     selectedTool: Int?,
     onImageSelected: (Tool) -> Unit,
-    modifier: Modifier = Modifier
 ) {
     LazyRow(
         horizontalArrangement = Arrangement.Center,

@@ -134,4 +134,3 @@ fun smoothPolygon(polygon: List<Pair<Float, Float>>, iterations: Int = 2): List<
     }
     return smoothed
 }
-
