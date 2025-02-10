@@ -24,6 +24,8 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -50,24 +52,52 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cedica.cedica.R
 import com.cedica.cedica.data.seed.users_seed
+import com.cedica.cedica.data.user.GuestUser
 import com.cedica.cedica.data.user.User
 import com.cedica.cedica.ui.theme.CedicaTheme
 
 @Composable
 fun UserList(
     users: List<User>,
+    currentUser: User,
+    onLogin: (User) -> Unit,
     modifier: Modifier = Modifier
-)
-{
+) {
+    val userItemModifier = Modifier.padding(dimensionResource(R.dimen.padding_small))
+
     LazyColumn(
         modifier = modifier,
         contentPadding = PaddingValues(dimensionResource(R.dimen.padding_small)),
     ) {
+        if (currentUser.id != GuestUser.id) {
+            item {
+                Column(
+                    Modifier.border(3.dp, MaterialTheme.colorScheme.primaryContainer)
+                        .then(userItemModifier)
+                ) {
+                    Text("Usuario actual")
+                    UserItem(
+                        userItem = users.first { it.id == currentUser.id },
+                        cardColors = CardDefaults.cardColors().copy(
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                            contentColor = MaterialTheme.colorScheme.secondary,
+                        ),
+                        onLogin = { onLogin(currentUser) },
+                        currentUser = currentUser,
+                    )
+                }
+            }
+        }
+
         itemsIndexed(users) { _, user ->
-            UserItem(
-                user = user,
-                modifier = Modifier.padding(dimensionResource(R.dimen.padding_small))
-            )
+            if (user.id != currentUser.id) {
+                UserItem(
+                    userItem = user,
+                    modifier = userItemModifier,
+                    onLogin = { onLogin(user) },
+                    currentUser = currentUser,
+                )
+            }
         }
         item { Spacer(modifier = Modifier.size(200.dp)) }
     }
@@ -75,12 +105,16 @@ fun UserList(
 
 @Composable
 fun UserItem(
-    user: User,
+    userItem: User,
+    currentUser: User,
+    cardColors: CardColors = CardDefaults.cardColors(),
+    onLogin: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var expanded by rememberSaveable  { mutableStateOf(false) }
     Card(
-        modifier = modifier
+        modifier = modifier,
+        colors = cardColors,
     ) {
         Column(
             modifier = Modifier
@@ -101,7 +135,7 @@ fun UserItem(
                     modifier = Modifier.align(Alignment.CenterVertically)
                 )
                 Spacer(Modifier.size(dimensionResource(R.dimen.padding_small)))
-                UserInformation(user, modifier = Modifier.align(Alignment.Top).weight(0.8f))
+                UserInformation(userItem, modifier = Modifier.align(Alignment.Top).weight(0.8f))
                 ExpandButton(
                     expanded = expanded,
                     onClick = { expanded = !expanded },
@@ -116,7 +150,9 @@ fun UserItem(
                             bottom = dimensionResource(R.dimen.padding_small),
                             end = dimensionResource(R.dimen.padding_large),
                             start = dimensionResource(R.dimen.padding_large)
-                        )
+                        ),
+                        isCurrent = userItem.id == currentUser.id,
+                        onLogin = onLogin,
                     )
                 }
             }
@@ -176,15 +212,28 @@ fun UserInformation(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview
 @Composable
-fun ActionButtonGroup(modifier: Modifier = Modifier) {
-    val options = listOf(
-        Triple(Color.Green, Icons.AutoMirrored.Outlined.Login) {},
+fun ActionButtonGroup(
+    modifier: Modifier = Modifier,
+    isCurrent: Boolean = false,
+    onLogin: () -> Unit,
+) {
+    val options = mutableListOf(
         Triple(Color.Cyan, Icons.Outlined.Info) {},
         Triple(Color.Yellow, Icons.Outlined.Edit) {},
         Triple(Color.Red, Icons.Outlined.Delete) {},
     )
+
+    if (!isCurrent) {
+        options.add(
+            index = 0,
+            element = Triple(
+                first = Color.Green,
+                second = Icons.AutoMirrored.Outlined.Login,
+                third = { onLogin() }
+            )
+        )
+    }
 
     SingleChoiceSegmentedButtonRow(modifier = modifier) {
         options.forEachIndexed { index, triple ->
@@ -210,8 +259,7 @@ fun ActionButtonGroup(modifier: Modifier = Modifier) {
                     disabledInactiveContentColor = triple.first,
                     disabledInactiveBorderColor = triple.first
                 ),
-                label =
-                {
+                label = {
                     Row {
                         Icon(imageVector = triple.second, contentDescription = null, tint = Color.Black)
                         Spacer(Modifier.size(dimensionResource(R.dimen.padding_small)))
@@ -230,7 +278,7 @@ fun ActionButtonGroup(modifier: Modifier = Modifier) {
 @Composable
 fun UserListPreview() {
     CedicaTheme (darkTheme = false) {
-        UserList(users_seed)
+        UserList(users_seed, users_seed.first(), onLogin = {})
     }
 }
 
@@ -241,7 +289,7 @@ fun UserListPreview() {
 @Composable
 fun UserListDarkPreview() {
     CedicaTheme(darkTheme = true) {
-        UserList(users_seed)
+        UserList(users_seed, users_seed.first(), onLogin = {})
     }
 }
 
@@ -249,7 +297,7 @@ fun UserListDarkPreview() {
 @Composable
 fun UserItemPreview() {
     CedicaTheme {
-        UserItem(users_seed.first())
+        UserItem(users_seed.first(), currentUser = users_seed[2], onLogin = {})
     }
 }
 
