@@ -1,6 +1,8 @@
 package com.cedica.cedica
 
-data class HorsePart(val name: String, val polygon: List<Pair<Float, Float>>)
+import androidx.annotation.DrawableRes
+
+data class HorsePart(val name: String, val polygon: List<Pair<Float, Float>>, @DrawableRes val drawableRes: Int)
 
 val horseParts = arrayOf(
     HorsePart("Cabeza", listOf(
@@ -10,7 +12,7 @@ val horseParts = arrayOf(
         0.0107143f to 0.2179775f,
         0.0857143f to 0.0179775f,
         0.2053571f to 0.0179775f
-    )),
+    ), R.drawable.caballo_cabeza),
     HorsePart(name = "Cuerpo", listOf(
         0.6714286f to 0.258427f,
         0.6928571f to 0.6044944f,
@@ -18,21 +20,21 @@ val horseParts = arrayOf(
         0.4767857f to 0.611236f,
         0.4821429f to 0.4719101f,
         0.4f to 0.2674157f
-    )),
+    ), R.drawable.caballo_cuerpo),
     HorsePart("Cola", listOf(
         0.9767857f to 0.2831461f,
         0.9946429f to 0.4426966f,
         0.9821429f to 0.8f,
         0.9178571f to 0.8044944f,
         0.8303571f to 0.3011236f
-    )),
+    ), R.drawable.caballo_cola),
     HorsePart("Pierna izquierda", listOf(
         0.4553571f to 0.5955056f,
         0.4928571f to 0.7820225f,
         0.4410714f to 0.9910112f,
         0.3410714f to 0.9842697f,
         0.3785714f to 0.4359551f
-    )),
+    ), R.drawable.caballo_pierna_izquierda),
     HorsePart("Pierna derecha", listOf(
         0.8285714f to 0.3842697f,
         0.8785714f to 0.6898876f,
@@ -41,17 +43,26 @@ val horseParts = arrayOf(
         0.7464286f to 0.988764f,
         0.7017857f to 0.4292135f,
         0.7482143f to 0.3280899f
-    )),
+    ), R.drawable.caballo_pierna_derecha),
     HorsePart("Cuello", listOf(
         0.3303571f to 0.5011236f,
         0.2017857f to 0.2921348f,
         0.2732143f to 0.1820225f,
         0.3803571f to 0.2921348f
-    ))
+    ), R.drawable.caballo_cuello)
 
 )
 
-// TODO: podria aplicar enums en horseParts y en stages al igual que en horseParts
+enum class DrawableParts(@DrawableRes val imageRes: Int) {
+    CABEZA(R.drawable.caballo_cabeza),
+    CUERPO(R.drawable.caballo_cuerpo),
+    COLA(R.drawable.caballo_cola),
+    PIERNA_IZQUIERDA(R.drawable.caballo_pierna_izquierda),
+    PIERNA_DERECHA(R.drawable.caballo_pierna_derecha),
+    CUELLO(R.drawable.caballo_cuello)
+}
+
+// TODO: podria aplicar enums en horseParts y en stages al igual que en DrawableParts
 
 data class Stage(
     val stageNumber: Int,

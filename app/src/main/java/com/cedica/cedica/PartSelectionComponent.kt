@@ -2,9 +2,11 @@ package com.cedica.cedica
 
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
@@ -21,6 +23,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
@@ -30,6 +33,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
@@ -243,6 +247,24 @@ fun HorsePartSelectionRandom(randomPartsNumber: Int) {
     }
 }
 
+@Composable
+fun ZoomedHorsePart(part: HorsePart) {
+    Box(
+        modifier = Modifier
+            .size(350.dp)
+            .background(Color(0xFFFFE4B5)),
+        contentAlignment = Alignment.Center
+    ) {
+        Image(
+            painter = painterResource(part.drawableRes),
+            contentDescription = "Parte del caballo: ${part.name}",
+            modifier = Modifier
+                .fillMaxSize()
+                .aspectRatio(originalImageWidth / originalImageHeight)
+        )
+    }
+}
+
 @Preview
 @Composable
 fun PreviewHorsePart() {
@@ -261,3 +283,8 @@ fun PreviewRandomPartsHorse() {
     HorsePartSelectionRandom(3)
 }
 
+@Preview
+@Composable
+fun PreviewZoomedHorsePart() {
+    ZoomedHorsePart(horseParts[1])
+}
