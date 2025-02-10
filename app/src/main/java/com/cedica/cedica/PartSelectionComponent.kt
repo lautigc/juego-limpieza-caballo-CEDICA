@@ -1,5 +1,6 @@
 package com.cedica.cedica
 
+import android.util.Log
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -155,15 +156,17 @@ fun HorsePartSelection() {
 }
 
 @Composable
-fun HorsePartSelectionRandom(randomPartsNumber: Int) {
+fun HorsePartSelectionRandom(parts: Array<HorsePart>, onPartSelected: (String) -> Unit) {
     var imageSize by remember { mutableStateOf(IntSize.Zero) }
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     val animatedColor = remember { Animatable(Color.Red) }
 
+    /*
     val parts by remember {
         mutableStateOf(selectRandomParts(randomPartsNumber, null))
     }
+    */
 
     Box(
         modifier = Modifier
@@ -204,13 +207,7 @@ fun HorsePartSelectionRandom(randomPartsNumber: Int) {
                         }
 
                         selectedPart?.let { part ->
-                            coroutineScope.launch {
-                                val snackbarJob = launch {
-                                    snackbarHostState.showSnackbar("Parte seleccionada: ${part.name}")
-                                }
-                                delay(500)
-                                snackbarJob.cancel()
-                            }
+                            onPartSelected(part.name)
                         }
 
                     }
@@ -280,7 +277,7 @@ fun PreviewNormalHorse() {
 @Preview
 @Composable
 fun PreviewRandomPartsHorse() {
-    HorsePartSelectionRandom(3)
+    //HorsePartSelectionRandom(3)
 }
 
 @Preview

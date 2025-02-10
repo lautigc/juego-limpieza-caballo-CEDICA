@@ -1,5 +1,8 @@
 package com.cedica.cedica
 
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.pm.ActivityInfo
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -24,6 +27,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,28 +37,37 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
+data class Tool(val imageRes: Int, val name: String)
+
+val tools = listOf(
+    Tool(R.drawable.cepillo_blando, "Cepillo blando"),
+    Tool(R.drawable.cepillo_duro, "Cepillo duro"),
+    Tool(R.drawable.escarba_vasos, "Escarba vasos"),
+    Tool(R.drawable.rasqueta_blanda, "Rasqueta blanda"),
+    Tool(R.drawable.rasqueta_dura, "Rasqueta dura")
+)
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameScreen(navigateToMenu: () -> Unit) {
-    val images = listOf(
-        R.drawable.cepillo_blando,
-        R.drawable.cepillo_duro,
-        R.drawable.escarba_vasos,
-        R.drawable.rasqueta_blanda,
-        R.drawable.rasqueta_dura
-    )
+
+    // Esto es para orientar la pantalla en sentido horizontal
+    LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
+
 
     var selectedTool by remember { mutableStateOf<Int?>(null) }
-    var selectedHorsePart by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val scaffoldState = rememberBottomSheetScaffoldState()
-
-
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
-    var isDraggable by remember { mutableStateOf(false) }
     var messageType by remember { mutableStateOf("selection") }
     var customMessage by remember { mutableStateOf<String?>(null) }
+    val gameState = remember { mutableStateOf(GameState()) }
+    var stageInfo by remember { mutableStateOf(checkNotNull(getStageInfo(gameState.value.getCurrentStage())) { "No se encontró información para la etapa $gameState.value.getCurrentStage()" }) }
+    var correctPart = stageInfo.correctHorsePart
+    var correctTool = stageInfo.tool
+    var parts = stageInfo.incorrectRandomHorseParts + correctPart
 
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
@@ -62,17 +75,19 @@ fun GameScreen(navigateToMenu: () -> Unit) {
         sheetShadowElevation = 8.dp,
         sheetContent = {
             ImageSelectionList(
-                images = images,
+                images = tools,
                 selectedTool = selectedTool,
                 onImageSelected = { tool ->
-                    if (selectedTool == null) {
-                        selectedTool = tool
-                        coroutineScope.launch {
-                            messageType = "success"
-                            delay(5000)
-                            customMessage = "¿Qué parte del caballo hay que limpiar ahora?"
-                            messageType = "selection"
-                        }
+                    if (tool.name == correctTool) {
+                        // Si la herramienta seleccionada es la correcta
+                        selectedTool = tool.imageRes
+                        customMessage = "¡Excelente! Seleccionaste la herramienta correcta para la limpieza."
+                        messageType = "success"
+                        gameState.value.addScore(20)
+                    } else {
+                        // Si la herramienta seleccionada es incorrecta
+                        customMessage = "Ups... Seleccionaste la herramienta incorrecta. Intenta de nuevo."
+                        messageType = "error"
                     }
                 }
             )
@@ -107,25 +122,23 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Image(
-                    painter = painterResource(R.drawable.caballo),
-                    contentDescription = "Caballo",
-                    modifier = Modifier
-                        .size(350.dp)
-                        .border(
-                            width = if (selectedHorsePart) 4.dp else 0.dp,
-                            color = if (selectedHorsePart) Color.Black else Color.Transparent
-                        )
-                        .clickable {
-                            selectedHorsePart = true
-                            isDraggable = true
-                            customMessage = "¡Excelente! Seleccionaste la parte correcta del caballo"
+                HorsePartSelectionRandom(
+                    parts = parts,
+                    onPartSelected = { part ->
+                        if (part == correctPart.name) {
+                            gameState.value.addScore(20)
                             coroutineScope.launch {
+                                customMessage = "¡Excelente! Seleccionaste la parte correcta del caballo"
                                 messageType = "success"
+                                delay(5000)
+                                customMessage = "¿Qué herramienta debemos utilizar para limpiarla?"
+                                messageType = "selection"
                             }
+                        } else {
+                            customMessage = "Ups... Seleccionaste la parte incorrecta. Intenta de nuevo."
+                            messageType = "error"
                         }
-                )
-
+                    })
             }
 
             // Columna 3: Mensajes y Botón de herramientas
@@ -160,11 +173,9 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                                 .background(Color.Transparent)
                                 .pointerInput(Unit) {
                                     detectDragGestures { change, dragAmount ->
-                                        if (isDraggable) {
-                                            change.consume()
-                                            offsetX += dragAmount.x
-                                            offsetY += dragAmount.y
-                                        }
+                                        change.consume()
+                                        offsetX += dragAmount.x
+                                        offsetY += dragAmount.y
                                     }
                                 }
                         ) {
@@ -199,20 +210,20 @@ fun GameScreen(navigateToMenu: () -> Unit) {
 
 @Composable
 fun ImageSelectionList(
-    images: List<Int>,
+    images: List<Tool>,
     selectedTool: Int?,
-    onImageSelected: (Int) -> Unit,
+    onImageSelected: (Tool) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyRow(
         horizontalArrangement = Arrangement.Center,
         modifier = Modifier.fillMaxWidth()
     ) {
-        items(images) { imageRes ->
+        items(images) { tool ->
             SelectableImage(
-                imageRes = imageRes,
-                isSelected = selectedTool == imageRes,
-                onClick = { onImageSelected(imageRes) }
+                imageRes = tool.imageRes,
+                isSelected = selectedTool == tool.imageRes,
+                onClick = { onImageSelected(tool) }
             )
         }
     }
@@ -244,7 +255,7 @@ fun SelectableImage(imageRes: Int, isSelected: Boolean, onClick: () -> Unit) {
 @Composable
 fun MessageBox(messageType: String, customMessage: String? = null, modifier: Modifier = Modifier) {
     val (message, image) = when (messageType) {
-        "selection" -> Pair(customMessage ?: "¿Qué herramienta hay que seleccionar ahora?", R.drawable.vault_boy_thinking)
+        "selection" -> Pair(customMessage ?: "¿Qué parte del caballo debemos seleccionar ahora?", R.drawable.vault_boy_thinking)
         "error" -> Pair(customMessage ?: "Ups... la herramienta seleccionada no es la correcta.", R.drawable.vault_boy_thumbs_down)
         "success" -> Pair(customMessage ?: "¡Perfecto! Has seleccionado la herramienta correcta", R.drawable.vault_boy_thumbs_up)
         "complete" -> Pair(customMessage ?: "¡Perfecto! Has completado la limpieza del caballo", R.drawable.vault_boy_rich)
@@ -278,6 +289,19 @@ fun MessageBox(messageType: String, customMessage: String? = null, modifier: Mod
     }
 }
 
+@SuppressLint("ContextCastToActivity")
+@Composable
+fun LockScreenOrientation(orientation: Int) {
+    val activity = LocalContext.current as? Activity
+    LaunchedEffect(Unit) {
+        activity?.requestedOrientation = orientation
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        }
+    }
+}
 
 @Preview(showBackground = true, widthDp = 720, heightDp = 360)
 @Composable

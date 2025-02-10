@@ -10,3 +10,9 @@ object Configuration
 
 @Serializable
 object Game
+
+@Serializable
+object About
+
+@Serializable
+object UserListScreen
