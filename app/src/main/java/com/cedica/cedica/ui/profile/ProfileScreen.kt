@@ -55,7 +55,7 @@ private fun Screen(
                 FABItem(
                     icon = Icons.Filled.Add,
                     text = "Registrar",
-                    onClick = { onClick() }
+                    onClick = { }
                 ),
                 FABItem(
                     icon = Icons.AutoMirrored.Filled.Login,
@@ -68,10 +68,6 @@ private fun Screen(
                 .padding(dimensionResource(R.dimen.padding_medium))
         )
     }
-}
-
-fun onClick() {
-    TODO("Not yet implemented")
 }
 
 @Preview(showBackground = true)
