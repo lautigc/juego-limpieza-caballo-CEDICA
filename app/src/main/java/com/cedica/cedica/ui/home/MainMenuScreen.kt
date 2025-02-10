@@ -1,4 +1,4 @@
-package com.cedica.cedica
+package com.cedica.cedica.ui.home
 
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.Settings
@@ -20,22 +21,28 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.cedica.cedica.R
 import com.cedica.cedica.core.navigation.About
 import com.cedica.cedica.core.navigation.Game
-import com.cedica.cedica.core.navigation.Menu
-import com.cedica.cedica.core.navigation.NavigationWrapper
 import com.cedica.cedica.core.navigation.UserListScreen
+import com.cedica.cedica.ui.AppViewModelProvider
 import com.cedica.cedica.ui.theme.CedicaTheme
 
 data class MenuItem(val text: String, val destination: Any)
@@ -61,7 +68,7 @@ fun MenuButton(text: String, modifier: Modifier = Modifier, navigateTo: () -> Un
 }
 
 @Composable
-fun TopBar(navController: NavController, modifier: Modifier = Modifier) {
+fun TopBar(navController: NavController, modifier: Modifier = Modifier, firstNameUser: String) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -77,13 +84,22 @@ fun TopBar(navController: NavController, modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.weight(1f))
 
         // Botón de perfil
-        IconButton(onClick = { navController.navigate(UserListScreen) }) {
-            Icon(
-                imageVector = Icons.Rounded.AccountCircle,
-                contentDescription = "Perfil",
-                modifier = Modifier.size(60.dp)
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            IconButton(onClick = { navController.navigate(UserListScreen) }) {
+                Icon(
+                    imageVector = Icons.Rounded.AccountCircle,
+                    contentDescription = "Perfil",
+                    modifier = Modifier.size(80.dp)
+                )
+            }
+            Text(
+                text = firstNameUser,
+                style = MaterialTheme.typography.labelSmall,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.width(60.dp),
             )
         }
+
 
         // Botón de configuración
         IconButton(onClick = { navController.navigate(com.cedica.cedica.core.navigation.Configuration) }) {
@@ -123,7 +139,7 @@ fun VerticalLayout(navController: NavController) {
     ) {
         menuItems.forEach { item ->
             MenuButton(text = item.text, Modifier.fillMaxWidth(0.6f).scale(1.4f)) {
-               navController.navigate(item.destination)
+                navController.navigate(item.destination)
             }
             Spacer(modifier = Modifier.height(32.dp))
         }
@@ -131,15 +147,33 @@ fun VerticalLayout(navController: NavController) {
 }
 
 @Composable
-fun MainMenuScreen(navController: NavController) {
+fun MainMenuScreen(
+    navController: NavController,
+    viewModel: MainMenuViewModel = viewModel(factory = AppViewModelProvider.Factory)
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    MainMenu(navController, firstNameUser = uiState.user.firstName)
+}
+
+@Composable
+private fun MainMenu(
+    navController: NavController,
+    firstNameUser: String
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFADD8E6))
     ) {
-        TopBar(navController, modifier = Modifier.align(Alignment.TopStart))
+        TopBar(
+            navController,
+            modifier = Modifier.align(Alignment.TopStart),
+            firstNameUser = firstNameUser
+        )
 
-        val isHorizontal = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val isHorizontal =
+            LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
         if (isHorizontal) {
             HorizontalLayout(navController)
         } else {
@@ -152,7 +186,7 @@ fun MainMenuScreen(navController: NavController) {
 @Composable
 fun PreviewMainMenuVertical() {
     CedicaTheme {
-        NavigationWrapper()
+        MainMenu(navController = rememberNavController(), firstNameUser = "Invitado")
     }
 }
 
@@ -160,6 +194,6 @@ fun PreviewMainMenuVertical() {
 @Composable
 fun PreviewMainMenuHorizontal() {
     CedicaTheme {
-        NavigationWrapper()
+        MainMenu(navController = rememberNavController(), firstNameUser = "Invitado")
     }
 }

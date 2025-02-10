@@ -12,6 +12,14 @@ import androidx.room.Update
 import com.cedica.cedica.data.permissions.Role
 import kotlinx.coroutines.flow.Flow
 
+
+val GuestUser = User(
+    id = 0,
+    role = Role.GUEST,
+    firstName = "Invitado",
+    lastName = "",
+)
+
 @Entity(
     tableName = "User",
     indices = [
@@ -23,7 +31,10 @@ data class User(
     val role: Role,
     @ColumnInfo(collate = ColumnInfo.NOCASE) val firstName: String,
     @ColumnInfo(collate = ColumnInfo.NOCASE) val lastName: String,
-)
+) {
+    val fullName: String
+        get() = "$firstName $lastName"
+}
 
 @Dao
 interface UserDao {
@@ -38,4 +49,7 @@ interface UserDao {
 
     @Query("SELECT * FROM User")
     fun getAllUsers(): Flow<List<User>>
+
+    @Query("SELECT * FROM User WHERE id = :id")
+    suspend fun getByID(id: Int): User
 }

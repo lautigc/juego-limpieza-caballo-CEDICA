@@ -7,7 +7,7 @@ import androidx.navigation.compose.rememberNavController
 import com.cedica.cedica.AboutScreen
 import com.cedica.cedica.ConfigurationScreen
 import com.cedica.cedica.GameScreen
-import com.cedica.cedica.MainMenuScreen
+import com.cedica.cedica.ui.home.MainMenuScreen
 import com.cedica.cedica.ui.profile.ProfileListScreen
 
 @Composable
@@ -38,7 +38,11 @@ fun NavigationWrapper() {
         }
 
         composable<UserListScreen> {
-            ProfileListScreen()
+            ProfileListScreen(
+                onNavigateGuestLogin = {
+                    navController.navigate(Menu)
+                }
+            )
         }
     }
 }
