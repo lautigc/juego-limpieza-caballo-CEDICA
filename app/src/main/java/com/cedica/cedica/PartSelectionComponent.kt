@@ -277,7 +277,7 @@ fun PreviewNormalHorse() {
 @Preview
 @Composable
 fun PreviewRandomPartsHorse() {
-    //HorsePartSelectionRandom(3)
+    HorsePartSelectionRandom(selectRandomParts(3, horseParts[0])) { println("a") }
 }
 
 @Preview
