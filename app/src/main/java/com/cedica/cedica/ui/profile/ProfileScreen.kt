@@ -1,20 +1,14 @@
 package com.cedica.cedica.ui.profile
 
-import androidx.compose.foundation.layout.Box
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Login
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.cedica.cedica.R
 import com.cedica.cedica.data.seed.users_seed
 import com.cedica.cedica.data.user.User
 import com.cedica.cedica.ui.AppViewModelProvider
@@ -42,6 +36,7 @@ fun ProfileListScreen(
     )
 }
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 private fun Screen(
     users: List<User>,
@@ -49,34 +44,23 @@ private fun Screen(
     onLogin: (User) -> Unit = {},
     onGuestLogin: () -> Unit = {},
     onUserSetting: () -> Unit,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
 ) {
-    Box(modifier = modifier) {
+    Scaffold(
+        floatingActionButton = {
+            ExpandableFAB(onGuestLogin = onGuestLogin)
+        }
+    ) { _ ->
         UserList(
             users = users,
-            currentUser,
+            currentUser = currentUser,
             onLogin = onLogin,
             onUserSetting = onUserSetting,
-            modifier = Modifier.fillMaxWidth())
-        ExpandableFAB(
-            items = listOf(
-                FABItem(
-                    icon = Icons.Filled.Add,
-                    text = "Registrar",
-                    onClick = { }
-                ),
-                FABItem(
-                    icon = Icons.AutoMirrored.Filled.Login,
-                    text = "Invitado",
-                    onClick = onGuestLogin
-                )
-            ),
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(dimensionResource(R.dimen.padding_medium))
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable
