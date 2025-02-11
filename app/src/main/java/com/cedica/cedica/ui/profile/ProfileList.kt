@@ -22,6 +22,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Help
 import androidx.compose.material.icons.automirrored.outlined.Login
@@ -260,7 +262,7 @@ fun ItemUserActions(
             modifier = Modifier.padding(end = dimensionResource(R.dimen.padding_large))
         )
 
-        HorizontalDivider(modifier = Modifier.padding(bottom = dimensionResource(R.dimen.padding_medium)))
+        HorizontalDivider(modifier = Modifier.padding(bottom = dimensionResource(R.dimen.padding_large)))
 
         if(!isCurrent) {
             BottomSheetMenuItem(
@@ -320,7 +322,7 @@ fun ItemUserActions(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomSheetMenu(
-    expandElement: @Composable () -> Unit = {},
+    expandElement: @Composable (onExpandedMenu: () -> Unit) -> Unit = {},
     contentPaddingValues: PaddingValues = PaddingValues(0.dp),
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit = {},
@@ -328,19 +330,20 @@ fun BottomSheetMenu(
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
+    val expandButton = {
+        scope.launch {
+            sheetState.expand()
+        }.invokeOnCompletion {
+            showBottomSheet = true
+        }
+    }
 
     Box(
-        Modifier.clickable(
-            onClick = {
-                scope.launch {
-                    sheetState.expand()
-                }.invokeOnCompletion {
-                    showBottomSheet = true
-                }
-            },
+        modifier.clickable(
+            onClick = { expandButton() },
         )
     ) {
-        expandElement()
+        expandElement({ expandButton() })
     }
 
     if (showBottomSheet) {
@@ -355,7 +358,11 @@ fun BottomSheetMenu(
             sheetState = sheetState,
             modifier = modifier,
         ) {
-            Column(modifier = Modifier.navigationBarsPadding().padding(contentPaddingValues)) {
+            Column(modifier = Modifier
+                .navigationBarsPadding()
+                .padding(contentPaddingValues)
+                .verticalScroll(rememberScrollState())
+            ) {
                 content()
             }
         }
@@ -371,7 +378,9 @@ fun BottomSheetMenuItem(
     onClick: () -> Unit = {},
 ) {
     Row(
-        modifier = modifier.clickable { onClick() }.fillMaxWidth(),
+        modifier = modifier
+            .clickable { onClick() }
+            .fillMaxWidth(),
         horizontalArrangement = horizontalArrangement,
     ) {
         leadingIcon?.invoke()
