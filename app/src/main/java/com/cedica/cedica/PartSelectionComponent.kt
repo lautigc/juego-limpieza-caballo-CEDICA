@@ -158,10 +158,12 @@ fun HorsePartSelection() {
 @Composable
 fun HorsePartSelectionRandom(parts: Array<HorsePart>, onPartSelected: (String) -> Unit) {
     var imageSize by remember { mutableStateOf(IntSize.Zero) }
-    val coroutineScope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
     val animatedColor = remember { Animatable(Color.Red) }
+    var displayedParts by remember { mutableStateOf(parts.toList()) }
 
+    LaunchedEffect(parts) {
+        displayedParts = parts.toList()  // Asegura que se actualiza con cada etapa
+    }
     /*
     val parts by remember {
         mutableStateOf(selectRandomParts(randomPartsNumber, null))
@@ -174,7 +176,6 @@ fun HorsePartSelectionRandom(parts: Array<HorsePart>, onPartSelected: (String) -
             .background(Color(0xFFFFE4B5)),
         contentAlignment = Alignment.Center
     ) {
-        SnackbarHost(hostState = snackbarHostState, modifier = Modifier.align(Alignment.TopCenter))
         Image(
             painter = painterResource(R.drawable.caballo),
             contentDescription = "Caballo",
@@ -202,7 +203,7 @@ fun HorsePartSelectionRandom(parts: Array<HorsePart>, onPartSelected: (String) -
                         val originalX = offset.x / imageSize.width
                         val originalY = offset.y / imageSize.height
 
-                        val selectedPart = parts.firstOrNull { part ->
+                        val selectedPart = displayedParts.firstOrNull { part ->
                             isPointInPolygon(originalX, originalY, part.polygon)
                         }
 

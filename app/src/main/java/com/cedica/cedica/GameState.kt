@@ -15,8 +15,35 @@ data class GameState(
     private var startTime: LocalDateTime = LocalDateTime.now(),
     private var endTime: LocalDateTime? = null,
     private var completionTime: Duration? = null,
-    private var elapsedTime: Long = 0L // Segundos transcurridos durante la partida
+    private var elapsedTime: Long = 0L,
+    private var selectedTool: Int? = null,
+    private var messageType: String = "selection",
+    private var customMessage: String? = null
 ) {
+
+    fun advanceStage(finalStage: Int): Boolean {
+        if (currentStage < finalStage){
+            currentStage++
+            resetStageState()
+            return true
+        } else {
+            finishGame()
+            return false
+        }
+    }
+
+    private fun resetStageState() {
+        selectedTool = null
+        messageType = "selection"
+        customMessage = null
+    }
+
+    private fun finishGame() {
+        endTime = LocalDateTime.now()
+        completionTime = Duration.between(startTime, endTime)
+        messageType = "success"
+        messageType = "Finalizaste el juego!"
+    }
 
     fun addScore(points: Int) {
         score += points
@@ -26,9 +53,16 @@ data class GameState(
         if (attemptsLeft > 0) attemptsLeft--
     }
 
-    fun finishGame() {
-        endTime = LocalDateTime.now()
-        completionTime = Duration.between(startTime, endTime)
+    fun setSelectedTool(selectedTool: Int){
+        this.selectedTool = selectedTool
+    }
+
+    fun setMessageType(messageType: String){
+        this.messageType = messageType
+    }
+
+    fun setCustomMessage(customMessage: String){
+        this.customMessage = customMessage
     }
 
     @RequiresApi(Build.VERSION_CODES.S)
@@ -54,4 +88,7 @@ data class GameState(
     fun getStartDate(): String = startDate
     fun getElapsedTime(): Long = elapsedTime
     fun getCompletionTime(): Duration? = completionTime
+    fun getSelectedTool(): Int? = selectedTool
+    fun getMessageType(): String = messageType
+    fun getCustomMessage(): String? = customMessage
 }

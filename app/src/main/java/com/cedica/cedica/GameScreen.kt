@@ -64,21 +64,19 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     // Esto es para orientar la pantalla en sentido horizontal
     LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
 
-
-    var selectedTool by remember { mutableStateOf<Int?>(null) }
     val coroutineScope = rememberCoroutineScope()
     val scaffoldState = rememberBottomSheetScaffoldState()
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
-    var messageType by remember { mutableStateOf("selection") }
-    var customMessage by remember { mutableStateOf<String?>(null) }
     val gameState = remember { mutableStateOf(GameState()) }
-    val stageInfo by remember { mutableStateOf(checkNotNull(getStageInfo(gameState.value.getCurrentStage())) { "No se encontró información para la etapa $gameState.value.getCurrentStage()" }) }
-    val correctPart = stageInfo.correctHorsePart
-    val correctTool = stageInfo.tool
-    val parts = stageInfo.incorrectRandomHorseParts + correctPart
+    var stageInfo by remember { mutableStateOf(checkNotNull(getStageInfo(gameState.value.getCurrentStage())) { "No se encontró información para la etapa $gameState.value.getCurrentStage()" }) }
+    var parts by remember { mutableStateOf(emptyArray<HorsePart>()) }
 
+    LaunchedEffect(stageInfo) {
+        parts = stageInfo.incorrectRandomHorseParts + stageInfo.correctHorsePart
+    }
 
+    val cantStages = stages.size
     // para el audio
     val context = LocalContext.current
     val soundPool = remember { SoundPool.Builder().setMaxStreams(1).build() }
@@ -96,19 +94,22 @@ fun GameScreen(navigateToMenu: () -> Unit) {
         sheetContent = {
             ImageSelectionList(
                 images = tools,
-                selectedTool = selectedTool,
+                selectedTool = gameState.value.getSelectedTool(),
                 onImageSelected = { tool ->
-                    if (tool.name == correctTool) {
+                    if (tool.name == stageInfo.tool) {
                         // Si la herramienta seleccionada es la correcta
-                        selectedTool = tool.imageRes
-                        customMessage = "¡Excelente! Seleccionaste la herramienta correcta para la limpieza."
-                        messageType = "success"
+                        gameState.value = gameState.value.copy(selectedTool = tool.imageRes)
+                        gameState.value.setCustomMessage("¡Excelente! Seleccionaste la herramienta correcta para la limpieza.")
+                        gameState.value.setMessageType("success")
                         gameState.value.addScore(20)
                         val play = soundIds["success"]?.let { soundPool.play(it, 1f, 1f, 1, 0, 1f) }
+                        gameState.value.advanceStage(cantStages)
+                        stageInfo = checkNotNull(getStageInfo(gameState.value.getCurrentStage()))
+                        parts = stageInfo.incorrectRandomHorseParts + stageInfo.correctHorsePart
                     } else {
                         // Si la herramienta seleccionada es incorrecta
-                        customMessage = "Ups... Seleccionaste la herramienta incorrecta. Intenta de nuevo."
-                        messageType = "error"
+                        gameState.value.setCustomMessage("Ups... Seleccionaste la herramienta incorrecta. Intenta de nuevo.")
+                        gameState.value.setMessageType("error")
                         val play = soundIds["wrong"]?.let { soundPool.play(it, 1f, 1f, 1, 0, 1f) }
                     }
                 }
@@ -208,19 +209,19 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                 HorsePartSelectionRandom(
                     parts = parts,
                     onPartSelected = { part ->
-                        if (part == correctPart.name) {
+                        if (part == stageInfo.correctHorsePart.name) {
                             gameState.value.addScore(20)
                             coroutineScope.launch {
-                                customMessage = "¡Excelente! Seleccionaste la parte correcta del caballo"
-                                messageType = "success"
+                                gameState.value.setCustomMessage("¡Excelente! Seleccionaste la parte correcta del caballo")
+                                gameState.value.setMessageType("success")
                                 val play = soundIds["success"]?.let { soundPool.play(it, 1f, 1f, 1, 0, 1f) }
                                 delay(5000)
-                                customMessage = "¿Qué herramienta debemos utilizar para limpiarla?"
-                                messageType = "selection"
+                                gameState.value.setCustomMessage("¿Qué herramienta debemos utilizar para limpiarla?")
+                                gameState.value.setMessageType("selection")
                             }
                         } else {
-                            customMessage = "Ups... Seleccionaste la parte incorrecta. Intenta de nuevo."
-                            messageType = "error"
+                            gameState.value.setCustomMessage("Ups... Seleccionaste la parte incorrecta. Intenta de nuevo.")
+                            gameState.value.setMessageType("error")
                             val play =
                                 soundIds["wrong"]?.let { it1 -> soundPool.play(it1, 1f, 1f, 1, 0, 1f) }
                         }
@@ -235,10 +236,10 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
-                if (messageType.isNotEmpty()) {
+                if (gameState.value.getMessageType().isNotEmpty()) {
                     MessageBox(
-                        messageType = messageType,
-                        customMessage = customMessage,
+                        messageType = gameState.value.getMessageType(),
+                        customMessage = gameState.value.getCustomMessage(),
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     )
                 }
@@ -252,7 +253,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                         .border(2.dp, Color.Black, RoundedCornerShape(16.dp)),
                     contentAlignment = Alignment.Center
                 ) {
-                    selectedTool?.let { tool ->
+                    gameState.value.getSelectedTool()?.let { tool ->
                         Box(
                             modifier = Modifier
                                 .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
