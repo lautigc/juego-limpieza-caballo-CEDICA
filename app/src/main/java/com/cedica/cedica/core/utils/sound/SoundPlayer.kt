@@ -3,6 +3,7 @@ package com.cedica.cedica.core.utils.sound
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.SoundPool
+import com.cedica.cedica.R
 
 class SoundPlayer(private val context: Context) {
     private val soundPool: SoundPool
@@ -15,7 +16,7 @@ class SoundPlayer(private val context: Context) {
             .build()
 
         soundPool = SoundPool.Builder()
-            .setMaxStreams(1)
+            .setMaxStreams(2)
             .setAudioAttributes(audioAttributes)
             .build()
     }

@@ -80,12 +80,13 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     } else {
         soundPlayer = remember { null }
     }
-    LaunchedEffect(Unit) {
-        soundPlayer?.loadSound("success", R.raw.successed2)
-        soundPlayer?.loadSound("snort", R.raw.horse_snort)
-        soundPlayer?.loadSound("trumpets", R.raw.success_trumpets)
-        soundPlayer?.loadSound("wrong", R.raw.wrong)
-        soundPlayer?.loadSound("notification", R.raw.new_notification)
+    soundPlayer?.let {
+        LaunchedEffect(Unit) {
+            soundPlayer.loadSound("success", R.raw.successed2)
+            soundPlayer.loadSound("snort", R.raw.snort_cut)
+            soundPlayer.loadSound("wrong", R.raw.wrong)
+            soundPlayer.loadSound("notification", R.raw.new_notification)
+        }
     }
 
     BottomSheetScaffold(
