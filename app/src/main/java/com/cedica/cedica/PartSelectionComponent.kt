@@ -177,7 +177,9 @@ fun HorsePartSelectionRandom(parts: Array<HorsePart>, onPartSelected: (String) -
         LaunchedEffect(Unit) {
             while (true) {
                 animatedColor.animateTo(Color.Yellow, animationSpec = tween(500))
+                delay(500)
                 animatedColor.animateTo(Color.LightGray, animationSpec = tween(500))
+                delay(500)
             }
         }
 
@@ -231,6 +233,7 @@ fun HorsePartSelectionRandom(parts: Array<HorsePart>, onPartSelected: (String) -
         }
     }
 }
+
 
 @Composable
 fun ZoomedHorsePart(part: HorsePart) {
