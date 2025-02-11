@@ -98,7 +98,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                 onImageSelected = { tool ->
                     if (tool.name == stageInfo.tool) {
                         // Si la herramienta seleccionada es la correcta
-                        gameState.value = gameState.value.copy(selectedTool = tool.imageRes)
+                        gameState.value.setSelectedTool(tool.imageRes)
                         gameState.value.setCustomMessage("¡Excelente! Seleccionaste la herramienta correcta para la limpieza.")
                         gameState.value.setMessageType("success")
                         gameState.value.addScore(20)

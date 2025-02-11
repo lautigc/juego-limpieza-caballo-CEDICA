@@ -33,7 +33,7 @@ data class GameState(
     }
 
     private fun resetStageState() {
-        selectedTool = null
+        // selectedTool = null
         messageType = "selection"
         customMessage = null
     }
