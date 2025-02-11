@@ -284,5 +284,5 @@ fun PreviewRandomPartsHorse() {
 @Preview
 @Composable
 fun PreviewZoomedHorsePart() {
-    ZoomedHorsePart(horseParts[1])
+    ZoomedHorsePart(horseParts[0])
 }

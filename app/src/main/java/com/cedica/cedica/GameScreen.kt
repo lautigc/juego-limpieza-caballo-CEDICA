@@ -71,6 +71,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     val gameState = remember { mutableStateOf(GameState()) }
     var stageInfo by remember { mutableStateOf(checkNotNull(getStageInfo(gameState.value.getCurrentStage())) { "No se encontró información para la etapa $gameState.value.getCurrentStage()" }) }
     var parts by remember { mutableStateOf(emptyArray<HorsePart>()) }
+    var showZoomedView by remember { mutableStateOf(false) }
 
     LaunchedEffect(stageInfo) {
         parts = stageInfo.incorrectRandomHorseParts + stageInfo.correctHorsePart
@@ -102,6 +103,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                         gameState.value.setCustomMessage("¡Excelente! Seleccionaste la herramienta correcta para la limpieza.")
                         gameState.value.setMessageType("success")
                         gameState.value.addScore(20)
+                        showZoomedView = false
                         val play = soundIds["success"]?.let { soundPool.play(it, 1f, 1f, 1, 0, 1f) }
                         gameState.value.advanceStage(cantStages)
                         stageInfo = checkNotNull(getStageInfo(gameState.value.getCurrentStage()))
@@ -206,26 +208,32 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                HorsePartSelectionRandom(
-                    parts = parts,
-                    onPartSelected = { part ->
-                        if (part == stageInfo.correctHorsePart.name) {
-                            gameState.value.addScore(20)
-                            coroutineScope.launch {
-                                gameState.value.setCustomMessage("¡Excelente! Seleccionaste la parte correcta del caballo")
-                                gameState.value.setMessageType("success")
-                                val play = soundIds["success"]?.let { soundPool.play(it, 1f, 1f, 1, 0, 1f) }
-                                delay(5000)
-                                gameState.value.setCustomMessage("¿Qué herramienta debemos utilizar para limpiarla?")
-                                gameState.value.setMessageType("selection")
+                if(!showZoomedView){
+                    HorsePartSelectionRandom(
+                        parts = parts,
+                        onPartSelected = { part ->
+                            if (part == stageInfo.correctHorsePart.name) {
+                                gameState.value.addScore(20)
+                                showZoomedView = true
+                                coroutineScope.launch {
+                                    gameState.value.setCustomMessage("¡Excelente! Seleccionaste la parte correcta del caballo")
+                                    gameState.value.setMessageType("success")
+                                    val play = soundIds["success"]?.let { soundPool.play(it, 1f, 1f, 1, 0, 1f) }
+                                    delay(5000)
+                                    gameState.value.setCustomMessage("¿Qué herramienta debemos utilizar para limpiarla?")
+                                    gameState.value.setMessageType("selection")
+                                }
+                            } else {
+                                gameState.value.setCustomMessage("Ups... Seleccionaste la parte incorrecta. Intenta de nuevo.")
+                                gameState.value.setMessageType("error")
+                                val play =
+                                    soundIds["wrong"]?.let { it1 -> soundPool.play(it1, 1f, 1f, 1, 0, 1f) }
                             }
-                        } else {
-                            gameState.value.setCustomMessage("Ups... Seleccionaste la parte incorrecta. Intenta de nuevo.")
-                            gameState.value.setMessageType("error")
-                            val play =
-                                soundIds["wrong"]?.let { it1 -> soundPool.play(it1, 1f, 1f, 1, 0, 1f) }
-                        }
-                    })
+                        })
+                } else {
+                    ZoomedHorsePart(stageInfo.correctHorsePart)
+                }
+
             }
 
             // Columna 3: Mensajes y Botón de herramientas
