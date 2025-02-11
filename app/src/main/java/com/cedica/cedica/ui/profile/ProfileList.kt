@@ -79,7 +79,8 @@ import kotlinx.coroutines.launch
 fun UserList(
     users: List<User>,
     currentUser: User,
-    onLogin: (User) -> Unit,
+    onLogin: (User) -> Unit = {},
+    onUserSetting: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val userItemModifier = Modifier.padding(dimensionResource(R.dimen.padding_small))
@@ -104,12 +105,13 @@ fun UserList(
                     Text("Usuario actual")
                     UserItem(
                         userItem = users.first { it.id == currentUser.id },
+                        currentUser = currentUser,
                         cardColors = CardDefaults.cardColors().copy(
                             containerColor = MaterialTheme.colorScheme.tertiaryContainer,
                             contentColor = MaterialTheme.colorScheme.secondary,
                         ),
                         onLogin = { onLogin(currentUser) },
-                        currentUser = currentUser,
+                        onUserSetting = onUserSetting,
                     )
                 }
             }
@@ -121,6 +123,7 @@ fun UserList(
                     userItem = user,
                     modifier = userItemModifier,
                     onLogin = { onLogin(user) },
+                    onUserSetting = onUserSetting,
                     currentUser = currentUser,
                 )
             }
@@ -135,7 +138,8 @@ fun UserItem(
     currentUser: User,
     cardColors: CardColors = CardDefaults.cardColors(),
     onLogin: () -> Unit,
-    modifier: Modifier = Modifier
+    onUserSetting: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Card(
         modifier = modifier,
@@ -159,6 +163,7 @@ fun UserItem(
                 ItemUserActions(
                     isCurrent = userItem.id == currentUser.id,
                     onLogin = onLogin,
+                    onUserSetting = onUserSetting,
                     userItem = userItem
                 )
             }
@@ -221,7 +226,8 @@ fun UserInformation(
 @Composable
 fun ItemUserActions(
     isCurrent: Boolean = false,
-    onLogin: () -> Unit,
+    onLogin: () -> Unit = {},
+    onUserSetting: () -> Unit = {},
     userItem: User,
     modifier: Modifier = Modifier,
 ) {
@@ -294,7 +300,7 @@ fun ItemUserActions(
         BottomSheetMenuItem(
             label = "Configuracion",
             leadingIcon = { Icon(Icons.Filled.Settings, contentDescription = null) },
-            onClick = {},
+            onClick = onUserSetting,
             modifier = itemModifier
         )
         BottomSheetMenuItem(
@@ -386,7 +392,7 @@ fun BottomSheetMenuItem(
 @Composable
 fun UserListPreview() {
     CedicaTheme (darkTheme = false) {
-        UserList(users_seed, users_seed.first(), onLogin = {})
+        UserList(users_seed, users_seed.first(), onLogin = {}, { })
     }
 }
 
@@ -397,7 +403,7 @@ fun UserListPreview() {
 @Composable
 fun UserListDarkPreview() {
     CedicaTheme(darkTheme = true) {
-        UserList(users_seed, users_seed.first(), onLogin = {})
+        UserList(users_seed, users_seed.first(), onLogin = {}, { })
     }
 }
 
@@ -405,7 +411,11 @@ fun UserListDarkPreview() {
 @Composable
 fun UserItemPreview() {
     CedicaTheme {
-        UserItem(users_seed.first(), currentUser = users_seed[2], onLogin = {})
+        UserItem(
+            users_seed.first(),
+            currentUser = users_seed[2],
+            onLogin = {},
+            onUserSetting = {  })
     }
 }
 

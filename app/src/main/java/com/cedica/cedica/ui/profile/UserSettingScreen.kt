@@ -174,7 +174,8 @@ private fun SoundSettingSection(optionModifier: Modifier) {
         Option(
             label = "Tipo de voz",
             secondaryText = null,
-            selector = { VoiceSelector() }
+            selector = { VoiceSelector() },
+            arrangementSelector = Arrangement.Center
         )
     )
 
