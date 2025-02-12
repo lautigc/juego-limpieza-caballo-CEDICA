@@ -1,13 +1,11 @@
-package com.cedica.cedica
+package com.cedica.cedica.ui.game
 
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.os.Build
 import androidx.annotation.RequiresApi
-import android.media.SoundPool
 import android.util.Log
-import android.view.View
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -23,8 +21,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
@@ -47,8 +47,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.sp
+import com.cedica.cedica.core.utils.HorsePart
+import com.cedica.cedica.R
 import com.cedica.cedica.core.utils.isInPreview
 import com.cedica.cedica.core.utils.sound.SoundPlayer
+import com.cedica.cedica.core.utils.getStageInfo
+import com.cedica.cedica.core.utils.stages
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -99,6 +103,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     var zoomedImageSize by remember { mutableStateOf(IntSize.Zero) }
     var zoomedImagePosition by remember { mutableStateOf(IntOffset.Zero) }
     var showCompletionDialog by remember { mutableStateOf(false) }
+    var showWelcomeDialog by remember { mutableStateOf(true) }
 
     LaunchedEffect(stageInfo) {
         parts = stageInfo.incorrectRandomHorseParts + stageInfo.correctHorsePart
@@ -120,6 +125,13 @@ fun GameScreen(navigateToMenu: () -> Unit) {
             soundPlayer.loadSound("wrong", R.raw.wrong)
             soundPlayer.loadSound("notification", R.raw.new_notification)
         }
+    }
+
+    if(showWelcomeDialog) {
+        WelcomeDialog() { showWelcomeDialog = false }
+        gameState.value = gameState.value.copy(
+            elapsedTime = 0
+        )
     }
 
     if (showCompletionDialog) {
@@ -299,8 +311,8 @@ fun GameScreen(navigateToMenu: () -> Unit) {
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                var absolutX by remember { mutableStateOf(0f) }
-                var absolutY by remember { mutableStateOf(0f) }
+                var absoluteX by remember { mutableStateOf(0f) }
+                var absoluteY by remember { mutableStateOf(0f) }
 
                 Box(
                     modifier = Modifier
@@ -315,10 +327,14 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                                 .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
                                 .background(Color.Transparent)
                                 .onGloballyPositioned { coordinates ->
-                                    val positionInRoot = coordinates.positionInRoot() // Obtienes la posición global de la herramienta
-                                    Log.d("GameDebug", "Tool Absolute Position: x=${positionInRoot.x}, y=${positionInRoot.y}")
-                                    absolutX = positionInRoot.x
-                                    absolutY = positionInRoot.y
+                                    val positionInRoot =
+                                        coordinates.positionInRoot() // Obtienes la posición global de la herramienta
+                                    Log.d(
+                                        "GameDebug",
+                                        "Tool Absolute Position: x=${positionInRoot.x}, y=${positionInRoot.y}"
+                                    )
+                                    absoluteX = positionInRoot.x
+                                    absoluteY = positionInRoot.y
                                 }
                                 .pointerInput(Unit) {
                                     detectDragGestures { change, dragAmount ->
@@ -326,19 +342,41 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                                         offsetX += dragAmount.x
                                         offsetY += dragAmount.y
 
-                                        Log.d("GameDebug", "Fun = ${isOverZoomedImage(absolutX, absolutY, zoomedImagePosition, zoomedImageSize)}")
-                                        if (isOverZoomedImage(absolutX, absolutY, zoomedImagePosition, zoomedImageSize)) {
+                                        Log.d(
+                                            "GameDebug",
+                                            "Fun = ${
+                                                isOverZoomedImage(
+                                                    absoluteX,
+                                                    absoluteY,
+                                                    zoomedImagePosition,
+                                                    zoomedImageSize
+                                                )
+                                            }"
+                                        )
+                                        if (isOverZoomedImage(
+                                                absoluteX,
+                                                absoluteY,
+                                                zoomedImagePosition,
+                                                zoomedImageSize
+                                            )
+                                        ) {
                                             gameState.value.reduceDirtLevel(2)
-                                            Log.d("GameDebug", "Cant suciedad = ${gameState.value.getAmountDirtyPart()}")
+                                            Log.d(
+                                                "GameDebug",
+                                                "Cant suciedad = ${gameState.value.getAmountDirtyPart()}"
+                                            )
 
                                             if (gameState.value.getAmountDirtyPart() <= 0) {
                                                 gameState.value.addScore(20)
-                                                isAdvanceStageEnabled = gameState.value.advanceStage(cantStages)
+                                                isAdvanceStageEnabled =
+                                                    gameState.value.advanceStage(cantStages)
                                                 if (isAdvanceStageEnabled) {
                                                     offsetX = 0f
                                                     offsetY = 0f
-                                                    stageInfo = checkNotNull(getStageInfo(gameState.value.getCurrentStage()))
-                                                    parts = stageInfo.incorrectRandomHorseParts + stageInfo.correctHorsePart
+                                                    stageInfo =
+                                                        checkNotNull(getStageInfo(gameState.value.getCurrentStage()))
+                                                    parts =
+                                                        stageInfo.incorrectRandomHorseParts + stageInfo.correctHorsePart
                                                 } else {
                                                     showCompletionDialog = true
                                                 }
@@ -436,10 +474,18 @@ fun SelectableImage(imageRes: Int, isSelected: Boolean, onClick: () -> Unit) {
 @Composable
 fun MessageBox(messageType: String, customMessage: String? = null, modifier: Modifier = Modifier) {
     val (message, image) = when (messageType) {
-        "selection" -> Pair(customMessage ?: "¿Qué parte del caballo debemos seleccionar ahora?", R.drawable.vault_boy_thinking)
-        "error" -> Pair(customMessage ?: "Ups... la herramienta seleccionada no es la correcta.", R.drawable.vault_boy_thumbs_down)
-        "success" -> Pair(customMessage ?: "¡Perfecto! Has seleccionado la herramienta correcta", R.drawable.vault_boy_thumbs_up)
-        "complete" -> Pair(customMessage ?: "¡Felicitaciones! Has completado la limpieza del caballo", R.drawable.vault_boy_rich)
+        "selection" -> Pair(customMessage ?: "¿Qué parte del caballo debemos seleccionar ahora?",
+            R.drawable.vault_boy_thinking
+        )
+        "error" -> Pair(customMessage ?: "Ups... la herramienta seleccionada no es la correcta.",
+            R.drawable.vault_boy_thumbs_down
+        )
+        "success" -> Pair(customMessage ?: "¡Perfecto! Has seleccionado la herramienta correcta",
+            R.drawable.vault_boy_thumbs_up
+        )
+        "complete" -> Pair(customMessage ?: "¡Felicitaciones! Has completado la limpieza del caballo",
+            R.drawable.vault_boy_rich
+        )
         else -> Pair("", 0)
     }
 
@@ -486,6 +532,7 @@ fun LockScreenOrientation(orientation: Int) {
 
 @Composable
 fun CompletionDialog(score: Int, time: String, onDismiss: () -> Unit) {
+    val scrollState = rememberScrollState()
     AlertDialog(
         onDismissRequest = onDismiss, // Cierra el diálogo al tocar fuera de él
         title = {
@@ -506,12 +553,13 @@ fun CompletionDialog(score: Int, time: String, onDismiss: () -> Unit) {
         text = {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.verticalScroll(scrollState)
             ) {
                 // Mensaje de finalización
                 MessageBox(
                     messageType = "complete",
-                    modifier = Modifier.padding(vertical = 8.dp)
+                    modifier = Modifier.padding(vertical = 4.dp)
                 )
 
                 // Puntaje final
@@ -538,7 +586,8 @@ fun CompletionDialog(score: Int, time: String, onDismiss: () -> Unit) {
         confirmButton = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Button(
                     onClick = onDismiss,
@@ -552,9 +601,57 @@ fun CompletionDialog(score: Int, time: String, onDismiss: () -> Unit) {
     )
 }
 
+
+@Composable
+fun WelcomeDialog(onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss, // Cierra el diálogo al tocar fuera de él
+        title = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = "A jugar y a aprender!",
+                    style = TextStyle(
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+                )
+                Text(
+                    text = "Después de correr por todos lados y ensuciarse, tenemos como desafío limpiar a Coquito",
+                    color = Color.Black
+                )
+            }
+        },
+        confirmButton = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Button(
+                    onClick = onDismiss,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFADD8E6))
+                ) {
+                    Text("Vamos", color = Color.Black)
+                }
+            }
+        },
+        containerColor = Color(0xFFFFE4B5) // Color de fondo del diálogo
+    )
+}
+
 @RequiresApi(Build.VERSION_CODES.S)
 @Preview(showBackground = true, widthDp = 720, heightDp = 360)
 @Composable
 fun PreviewGameScreen() {
     GameScreen { println("hola") }
+}
+
+@Preview
+@Composable
+fun PreviewDialog() {
+    WelcomeDialog() { println() }
 }

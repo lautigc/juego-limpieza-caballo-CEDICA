@@ -1,4 +1,4 @@
-package com.cedica.cedica
+package com.cedica.cedica.ui.game
 
 import android.os.Build
 import androidx.annotation.RequiresApi

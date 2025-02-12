@@ -1,4 +1,4 @@
-package com.cedica.cedica
+package com.cedica.cedica.ui.game
 
 import android.graphics.BitmapFactory
 import androidx.compose.animation.Animatable
@@ -31,17 +31,22 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.alpha
+import com.cedica.cedica.R
+import com.cedica.cedica.core.utils.HorsePart
+import com.cedica.cedica.core.utils.generateStains
+import com.cedica.cedica.core.utils.horseParts
+import com.cedica.cedica.core.utils.isPointInPolygon
+import com.cedica.cedica.core.utils.selectRandomParts
+import com.cedica.cedica.core.utils.smoothedHorseParts
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
