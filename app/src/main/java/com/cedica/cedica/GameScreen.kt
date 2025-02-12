@@ -7,6 +7,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import android.media.SoundPool
 import android.util.Log
+import android.view.View
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -34,6 +35,9 @@ import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -64,11 +68,11 @@ fun isOverZoomedImage(
     imageSize: IntSize
 ): Boolean {
 
-    val scaleFactorX = imageSize.width.toFloat() / originalImageWidth
-    val scaleFactorY = imageSize.height.toFloat() / originalImageHeight
-
-    val adjustedToolX = (toolX * scaleFactorX) + imagePosition.x.toFloat()
-    val adjustedToolY = (toolY * scaleFactorY) + imagePosition.y.toFloat()
+//    val scaleFactorX = imageSize.width.toFloat() / originalImageWidth
+//    val scaleFactorY = imageSize.height.toFloat() / originalImageHeight
+//
+//    val adjustedToolX = (toolX * scaleFactorX) + imagePosition.x.toFloat()
+//    val adjustedToolY = (toolY * scaleFactorY) + imagePosition.y.toFloat()
 
     val imageLeft = imagePosition.x.toFloat()
     val imageTop = imagePosition.y.toFloat()
@@ -76,11 +80,11 @@ fun isOverZoomedImage(
     val imageBottom = imageTop + imageSize.height.toFloat()
 
     Log.d("GameDebug", "Tool Position: x=$toolX, y=$toolY")
-    Log.d("GameDebug", "Scale Factors: scaleFactorX=$scaleFactorX, scaleFactorY=$scaleFactorY")
-    Log.d("GameDebug", "Adjusted Tool Position: x=$adjustedToolX, y=$adjustedToolY")
+//    Log.d("GameDebug", "Scale Factors: scaleFactorX=$scaleFactorX, scaleFactorY=$scaleFactorY")
+//    Log.d("GameDebug", "Adjusted Tool Position: x=$adjustedToolX, y=$adjustedToolY")
     Log.d("GameDebug", "Image Bounds: left=$imageLeft, right=$imageRight, top=$imageTop, bottom=$imageBottom")
 
-    return adjustedToolX in imageLeft..imageRight && adjustedToolY in imageTop..imageBottom
+    return toolX in imageLeft..imageRight && toolY in imageTop..imageBottom
 }
 
 
@@ -286,6 +290,9 @@ fun GameScreen(navigateToMenu: () -> Unit) {
 
                 Spacer(modifier = Modifier.weight(1f))
 
+                var absolutX by remember { mutableStateOf(0f) }
+                var absolutY by remember { mutableStateOf(0f) }
+
                 Box(
                     modifier = Modifier
                         .height(60.dp)
@@ -298,13 +305,20 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                             modifier = Modifier
                                 .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
                                 .background(Color.Transparent)
+                                .onGloballyPositioned { coordinates ->
+                                    val positionInRoot = coordinates.positionInRoot() // Obtienes la posición global de la herramienta
+                                    Log.d("GameDebug", "Tool Absolute Position: x=${positionInRoot.x}, y=${positionInRoot.y}")
+                                    absolutX = positionInRoot.x
+                                    absolutY = positionInRoot.y
+                                }
                                 .pointerInput(Unit) {
                                     detectDragGestures { change, dragAmount ->
                                         change.consume()
                                         offsetX += dragAmount.x
                                         offsetY += dragAmount.y
-                                        Log.d("GameDebug", "Fun = ${isOverZoomedImage(offsetX, offsetY, zoomedImagePosition, zoomedImageSize)}")
-                                        if (isOverZoomedImage(offsetX, offsetY, zoomedImagePosition, zoomedImageSize)) {
+
+                                        Log.d("GameDebug", "Fun = ${isOverZoomedImage(absolutX, absolutY, zoomedImagePosition, zoomedImageSize)}")
+                                        if (isOverZoomedImage(absolutX, absolutY, zoomedImagePosition, zoomedImageSize)) {
                                             gameState.value.reduceDirtLevel(10)
                                             Log.d("GameDebug", "Cant suciedad = ${gameState.value.getAmountDirtyPart()}")
 

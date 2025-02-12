@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.res.painterResource
@@ -252,7 +253,8 @@ fun ZoomedHorsePart(part: HorsePart, onImagePositioned: (IntSize, IntOffset) -> 
     Box(
         modifier = Modifier
             .size(350.dp)
-            .background(Color(0xFFFFE4B5)),
+            .background(Color(0xFFFFE4B5))
+        ,
         contentAlignment = Alignment.Center
     ) {
         Image(
