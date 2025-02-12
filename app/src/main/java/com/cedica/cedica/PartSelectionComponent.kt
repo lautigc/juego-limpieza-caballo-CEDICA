@@ -33,11 +33,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
-<<<<<<< HEAD
 import androidx.compose.ui.layout.positionInRoot
-=======
 import androidx.compose.ui.platform.LocalContext
->>>>>>> df0b35b4d7194e6931dc3efb74fa053bd4dcc32c
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
