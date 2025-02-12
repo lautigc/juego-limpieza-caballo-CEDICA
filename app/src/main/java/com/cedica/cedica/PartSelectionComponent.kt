@@ -32,9 +32,11 @@ import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
@@ -246,7 +248,7 @@ fun HorsePartSelectionRandom(parts: Array<HorsePart>, onPartSelected: (String) -
 }
 
 @Composable
-fun ZoomedHorsePart(part: HorsePart) {
+fun ZoomedHorsePart(part: HorsePart, onImagePositioned: (IntSize, IntOffset) -> Unit) {
     Box(
         modifier = Modifier
             .size(350.dp)
@@ -259,6 +261,14 @@ fun ZoomedHorsePart(part: HorsePart) {
             modifier = Modifier
                 .fillMaxSize()
                 .aspectRatio(originalImageWidth / originalImageHeight)
+                .onGloballyPositioned { coordinates ->
+                    val size = coordinates.size
+                    val position = IntOffset(
+                        coordinates.positionInRoot().x.toInt(),
+                        coordinates.positionInRoot().y.toInt()
+                    )
+                    onImagePositioned(size, position)
+                }
         )
     }
 }
@@ -284,5 +294,5 @@ fun PreviewRandomPartsHorse() {
 @Preview
 @Composable
 fun PreviewZoomedHorsePart() {
-    ZoomedHorsePart(horseParts[0])
+    //ZoomedHorsePart(horseParts[0])
 }

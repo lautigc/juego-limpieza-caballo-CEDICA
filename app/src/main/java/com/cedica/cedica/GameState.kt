@@ -10,6 +10,7 @@ data class GameState(
     private var score: Int = 0,
     private var difficulty: String = "Normal",
     private var currentStage: Int = 1,
+    private var amountDirtyPart: Int = 100,
     private var attemptsLeft: Int = 3,
     private val startDate: String = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
     private var startTime: LocalDateTime = LocalDateTime.now(),
@@ -34,6 +35,7 @@ data class GameState(
 
     private fun resetStageState() {
         // selectedTool = null
+        amountDirtyPart = 100
         messageType = "selection"
         customMessage = null
     }
@@ -81,9 +83,14 @@ data class GameState(
         elapsedTime++
     }
 
+    fun reduceDirtLevel(amount: Int) {
+        amountDirtyPart -= amount
+    }
+
     fun getScore(): Int = score
     fun getDifficulty(): String = difficulty
     fun getCurrentStage(): Int = currentStage
+    fun getAmountDirtyPart(): Int = amountDirtyPart
     fun getAttemptsLeft(): Int = attemptsLeft
     fun getStartDate(): String = startDate
     fun getElapsedTime(): Long = elapsedTime

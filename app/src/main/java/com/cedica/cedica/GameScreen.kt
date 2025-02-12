@@ -6,6 +6,7 @@ import android.content.pm.ActivityInfo
 import android.os.Build
 import androidx.annotation.RequiresApi
 import android.media.SoundPool
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -40,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -54,6 +56,32 @@ val tools = listOf(
     Tool(R.drawable.rasqueta_blanda, "Rasqueta blanda"),
     Tool(R.drawable.rasqueta_dura, "Rasqueta dura")
 )
+
+fun isOverZoomedImage(
+    toolX: Float,
+    toolY: Float,
+    imagePosition: IntOffset,
+    imageSize: IntSize
+): Boolean {
+
+    val scaleFactorX = imageSize.width.toFloat() / originalImageWidth
+    val scaleFactorY = imageSize.height.toFloat() / originalImageHeight
+
+    val adjustedToolX = (toolX * scaleFactorX) + imagePosition.x.toFloat()
+    val adjustedToolY = (toolY * scaleFactorY) + imagePosition.y.toFloat()
+
+    val imageLeft = imagePosition.x.toFloat()
+    val imageTop = imagePosition.y.toFloat()
+    val imageRight = imageLeft + imageSize.width.toFloat()
+    val imageBottom = imageTop + imageSize.height.toFloat()
+
+    Log.d("GameDebug", "Tool Position: x=$toolX, y=$toolY")
+    Log.d("GameDebug", "Scale Factors: scaleFactorX=$scaleFactorX, scaleFactorY=$scaleFactorY")
+    Log.d("GameDebug", "Adjusted Tool Position: x=$adjustedToolX, y=$adjustedToolY")
+    Log.d("GameDebug", "Image Bounds: left=$imageLeft, right=$imageRight, top=$imageTop, bottom=$imageBottom")
+
+    return adjustedToolX in imageLeft..imageRight && adjustedToolY in imageTop..imageBottom
+}
 
 
 @RequiresApi(Build.VERSION_CODES.S)
@@ -72,6 +100,8 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     var stageInfo by remember { mutableStateOf(checkNotNull(getStageInfo(gameState.value.getCurrentStage())) { "No se encontró información para la etapa $gameState.value.getCurrentStage()" }) }
     var parts by remember { mutableStateOf(emptyArray<HorsePart>()) }
     var showZoomedView by remember { mutableStateOf(false) }
+    var zoomedImageSize by remember { mutableStateOf(IntSize.Zero) }
+    var zoomedImagePosition by remember { mutableStateOf(IntOffset.Zero) }
 
     LaunchedEffect(stageInfo) {
         parts = stageInfo.incorrectRandomHorseParts + stageInfo.correctHorsePart
@@ -103,11 +133,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                         gameState.value.setCustomMessage("¡Excelente! Seleccionaste la herramienta correcta para la limpieza.")
                         gameState.value.setMessageType("success")
                         gameState.value.addScore(20)
-                        showZoomedView = false
                         val play = soundIds["success"]?.let { soundPool.play(it, 1f, 1f, 1, 0, 1f) }
-                        gameState.value.advanceStage(cantStages)
-                        stageInfo = checkNotNull(getStageInfo(gameState.value.getCurrentStage()))
-                        parts = stageInfo.incorrectRandomHorseParts + stageInfo.correctHorsePart
                     } else {
                         // Si la herramienta seleccionada es incorrecta
                         gameState.value.setCustomMessage("Ups... Seleccionaste la herramienta incorrecta. Intenta de nuevo.")
@@ -231,7 +257,13 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                             }
                         })
                 } else {
-                    ZoomedHorsePart(stageInfo.correctHorsePart)
+                    ZoomedHorsePart(
+                        part = stageInfo.correctHorsePart,
+                        onImagePositioned = { size, position ->
+                            zoomedImageSize = size
+                            zoomedImagePosition = position
+                        }
+                    )
                 }
 
             }
@@ -271,6 +303,24 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                                         change.consume()
                                         offsetX += dragAmount.x
                                         offsetY += dragAmount.y
+                                        Log.d("GameDebug", "Fun = ${isOverZoomedImage(offsetX, offsetY, zoomedImagePosition, zoomedImageSize)}")
+                                        if (isOverZoomedImage(offsetX, offsetY, zoomedImagePosition, zoomedImageSize)) {
+                                            gameState.value.reduceDirtLevel(10)
+                                            Log.d("GameDebug", "Cant suciedad = ${gameState.value.getAmountDirtyPart()}")
+
+                                            if (gameState.value.getAmountDirtyPart() <= 0) {
+                                                gameState.value.addScore(20)
+                                                coroutineScope.launch {
+                                                    showZoomedView = false
+                                                    gameState.value.setCustomMessage("¡La parte está limpia! Avanzando a la siguiente etapa.")
+                                                    gameState.value.setMessageType("success")
+                                                    delay(3000)
+                                                    gameState.value.advanceStage(cantStages)
+                                                    stageInfo = checkNotNull(getStageInfo(gameState.value.getCurrentStage()))
+                                                    parts = stageInfo.incorrectRandomHorseParts + stageInfo.correctHorsePart
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                         ) {
