@@ -24,8 +24,8 @@ data class GameState(
 
     fun advanceStage(finalStage: Int): Boolean {
         if (currentStage < finalStage){
-            currentStage++
             resetStageState()
+            currentStage+=1
             return true
         } else {
             finishGame()
@@ -34,7 +34,7 @@ data class GameState(
     }
 
     private fun resetStageState() {
-        // selectedTool = null
+        selectedTool = null
         amountDirtyPart = 100
         messageType = "selection"
         customMessage = null

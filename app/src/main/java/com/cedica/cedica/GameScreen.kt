@@ -25,6 +25,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -35,7 +36,6 @@ import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
@@ -68,21 +68,10 @@ fun isOverZoomedImage(
     imageSize: IntSize
 ): Boolean {
 
-//    val scaleFactorX = imageSize.width.toFloat() / originalImageWidth
-//    val scaleFactorY = imageSize.height.toFloat() / originalImageHeight
-//
-//    val adjustedToolX = (toolX * scaleFactorX) + imagePosition.x.toFloat()
-//    val adjustedToolY = (toolY * scaleFactorY) + imagePosition.y.toFloat()
-
     val imageLeft = imagePosition.x.toFloat()
     val imageTop = imagePosition.y.toFloat()
     val imageRight = imageLeft + imageSize.width.toFloat()
     val imageBottom = imageTop + imageSize.height.toFloat()
-
-    Log.d("GameDebug", "Tool Position: x=$toolX, y=$toolY")
-//    Log.d("GameDebug", "Scale Factors: scaleFactorX=$scaleFactorX, scaleFactorY=$scaleFactorY")
-//    Log.d("GameDebug", "Adjusted Tool Position: x=$adjustedToolX, y=$adjustedToolY")
-    Log.d("GameDebug", "Image Bounds: left=$imageLeft, right=$imageRight, top=$imageTop, bottom=$imageBottom")
 
     return toolX in imageLeft..imageRight && toolY in imageTop..imageBottom
 }
@@ -104,8 +93,10 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     var stageInfo by remember { mutableStateOf(checkNotNull(getStageInfo(gameState.value.getCurrentStage())) { "No se encontró información para la etapa $gameState.value.getCurrentStage()" }) }
     var parts by remember { mutableStateOf(emptyArray<HorsePart>()) }
     var showZoomedView by remember { mutableStateOf(false) }
+    var isAdvanceStageEnabled by remember { mutableStateOf(false) }
     var zoomedImageSize by remember { mutableStateOf(IntSize.Zero) }
     var zoomedImagePosition by remember { mutableStateOf(IntOffset.Zero) }
+    var showCompletionDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(stageInfo) {
         parts = stageInfo.incorrectRandomHorseParts + stageInfo.correctHorsePart
@@ -122,6 +113,14 @@ fun GameScreen(navigateToMenu: () -> Unit) {
         "wrong" to soundPool.load(context, R.raw.wrong, 1),
     )
 
+    if (showCompletionDialog) {
+        CompletionDialog(
+            score = gameState.value.getScore(),
+            time = gameState.value.getFormattedElapsedTime(),
+            onDismiss = { navigateToMenu() }
+        )
+    }
+
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
         sheetContainerColor = Color(0xFFFFE4B5),
@@ -131,18 +130,20 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                 images = tools,
                 selectedTool = gameState.value.getSelectedTool(),
                 onImageSelected = { tool ->
-                    if (tool.name == stageInfo.tool) {
-                        // Si la herramienta seleccionada es la correcta
-                        gameState.value.setSelectedTool(tool.imageRes)
-                        gameState.value.setCustomMessage("¡Excelente! Seleccionaste la herramienta correcta para la limpieza.")
-                        gameState.value.setMessageType("success")
-                        gameState.value.addScore(20)
-                        val play = soundIds["success"]?.let { soundPool.play(it, 1f, 1f, 1, 0, 1f) }
-                    } else {
-                        // Si la herramienta seleccionada es incorrecta
-                        gameState.value.setCustomMessage("Ups... Seleccionaste la herramienta incorrecta. Intenta de nuevo.")
-                        gameState.value.setMessageType("error")
-                        val play = soundIds["wrong"]?.let { soundPool.play(it, 1f, 1f, 1, 0, 1f) }
+                    if (showZoomedView && gameState.value.getSelectedTool() == null) {
+                        if (tool.name == stageInfo.tool) {
+                            // Si la herramienta seleccionada es la correcta
+                            gameState.value.setSelectedTool(tool.imageRes)
+                            gameState.value.setCustomMessage("¡Excelente! Seleccionaste la herramienta correcta para la limpieza.")
+                            gameState.value.setMessageType("success")
+                            gameState.value.addScore(20)
+                            val play = soundIds["success"]?.let { soundPool.play(it, 1f, 1f, 1, 0, 1f) }
+                        } else {
+                            // Si la herramienta seleccionada es incorrecta
+                            gameState.value.setCustomMessage("Ups... Seleccionaste la herramienta incorrecta. Intenta de nuevo.")
+                            gameState.value.setMessageType("error")
+                            val play = soundIds["wrong"]?.let { soundPool.play(it, 1f, 1f, 1, 0, 1f) }
+                        }
                     }
                 }
             )
@@ -249,7 +250,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                                     gameState.value.setCustomMessage("¡Excelente! Seleccionaste la parte correcta del caballo")
                                     gameState.value.setMessageType("success")
                                     val play = soundIds["success"]?.let { soundPool.play(it, 1f, 1f, 1, 0, 1f) }
-                                    delay(5000)
+                                    delay(2000)
                                     gameState.value.setCustomMessage("¿Qué herramienta debemos utilizar para limpiarla?")
                                     gameState.value.setMessageType("selection")
                                 }
@@ -319,19 +320,27 @@ fun GameScreen(navigateToMenu: () -> Unit) {
 
                                         Log.d("GameDebug", "Fun = ${isOverZoomedImage(absolutX, absolutY, zoomedImagePosition, zoomedImageSize)}")
                                         if (isOverZoomedImage(absolutX, absolutY, zoomedImagePosition, zoomedImageSize)) {
-                                            gameState.value.reduceDirtLevel(10)
+                                            gameState.value.reduceDirtLevel(2)
                                             Log.d("GameDebug", "Cant suciedad = ${gameState.value.getAmountDirtyPart()}")
 
                                             if (gameState.value.getAmountDirtyPart() <= 0) {
                                                 gameState.value.addScore(20)
+                                                isAdvanceStageEnabled = gameState.value.advanceStage(cantStages)
+                                                if (isAdvanceStageEnabled) {
+                                                    offsetX = 0f
+                                                    offsetY = 0f
+                                                    stageInfo = checkNotNull(getStageInfo(gameState.value.getCurrentStage()))
+                                                    parts = stageInfo.incorrectRandomHorseParts + stageInfo.correctHorsePart
+                                                } else {
+                                                    showCompletionDialog = true
+                                                }
                                                 coroutineScope.launch {
                                                     showZoomedView = false
                                                     gameState.value.setCustomMessage("¡La parte está limpia! Avanzando a la siguiente etapa.")
                                                     gameState.value.setMessageType("success")
                                                     delay(3000)
-                                                    gameState.value.advanceStage(cantStages)
-                                                    stageInfo = checkNotNull(getStageInfo(gameState.value.getCurrentStage()))
-                                                    parts = stageInfo.incorrectRandomHorseParts + stageInfo.correctHorsePart
+                                                    gameState.value.setMessageType("selection")
+                                                    gameState.value.setCustomMessage("¿Qué parte del caballo debemos seleccionar ahora?")
                                                 }
                                             }
                                         }
@@ -422,7 +431,7 @@ fun MessageBox(messageType: String, customMessage: String? = null, modifier: Mod
         "selection" -> Pair(customMessage ?: "¿Qué parte del caballo debemos seleccionar ahora?", R.drawable.vault_boy_thinking)
         "error" -> Pair(customMessage ?: "Ups... la herramienta seleccionada no es la correcta.", R.drawable.vault_boy_thumbs_down)
         "success" -> Pair(customMessage ?: "¡Perfecto! Has seleccionado la herramienta correcta", R.drawable.vault_boy_thumbs_up)
-        "complete" -> Pair(customMessage ?: "¡Perfecto! Has completado la limpieza del caballo", R.drawable.vault_boy_rich)
+        "complete" -> Pair(customMessage ?: "¡Felicitaciones! Has completado la limpieza del caballo", R.drawable.vault_boy_rich)
         else -> Pair("", 0)
     }
 
@@ -465,6 +474,74 @@ fun LockScreenOrientation(orientation: Int) {
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         }
     }
+}
+
+@Composable
+fun CompletionDialog(score: Int, time: String, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss, // Cierra el diálogo al tocar fuera de él
+        title = {
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "¡Juego Completado!",
+                    style = TextStyle(
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+                )
+            }
+        },
+        text = {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Mensaje de finalización
+                MessageBox(
+                    messageType = "complete",
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+
+                // Puntaje final
+                Text(
+                    text = "Puntaje Final: $score",
+                    style = TextStyle(
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.Black
+                    )
+                )
+
+                // Tiempo final
+                Text(
+                    text = "Tiempo Final: $time",
+                    style = TextStyle(
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.Black
+                    )
+                )
+            }
+        },
+        confirmButton = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Button(
+                    onClick = onDismiss,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFADD8E6))
+                ) {
+                    Text("Volver al Menú", color = Color.Black)
+                }
+            }
+        },
+        containerColor = Color(0xFFFFE4B5) // Color de fondo del diálogo
+    )
 }
 
 @RequiresApi(Build.VERSION_CODES.S)
