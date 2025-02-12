@@ -19,6 +19,7 @@ fun ProfileListScreen(
     viewModel: ProfileListScreenViewModel = viewModel(factory = AppViewModelProvider.Factory),
     onNavigateGuestLogin: () -> Unit = {},
     onNavigateUserSetting: () -> Unit = {},
+    onNavigateUserLogin: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val profileUiState by viewModel.uiState.collectAsState()
@@ -27,7 +28,10 @@ fun ProfileListScreen(
         users = profileUiState.users,
         currentUser = profileUiState.currentUser,
         modifier = modifier,
-        onLogin = { user: User -> viewModel.login(user) },
+        onLogin = { user: User ->
+            viewModel.login(user)
+            onNavigateUserLogin()
+        },
         onGuestLogin = {
             viewModel.guestLogin()
             onNavigateGuestLogin()

@@ -3,6 +3,7 @@ package com.cedica.cedica.ui.profile
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -29,10 +31,12 @@ import androidx.compose.material.icons.automirrored.outlined.Help
 import androidx.compose.material.icons.automirrored.outlined.Login
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.automirrored.outlined.Send
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Feedback
@@ -42,6 +46,7 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -50,6 +55,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -97,27 +103,7 @@ fun UserList(
             ),
         contentPadding = PaddingValues(dimensionResource(R.dimen.padding_small)),
     ) {
-        if (currentUser.id != GuestUser.id) {
-            item {
-                Column(
-                    Modifier
-                        .border(3.dp, MaterialTheme.colorScheme.primaryContainer)
-                        .then(userItemModifier)
-                ) {
-                    Text("Usuario actual")
-                    UserItem(
-                        userItem = users.first { it.id == currentUser.id },
-                        currentUser = currentUser,
-                        cardColors = CardDefaults.cardColors().copy(
-                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                            contentColor = MaterialTheme.colorScheme.secondary,
-                        ),
-                        onLogin = { onLogin(currentUser) },
-                        onUserSetting = onUserSetting,
-                    )
-                }
-            }
-        }
+        CurrentUserItem(currentUser, userItemModifier, users, onLogin, onUserSetting)
 
         itemsIndexed(users) { _, user ->
             if (user.id != currentUser.id) {
@@ -134,6 +120,55 @@ fun UserList(
     }
 }
 
+
+public fun LazyListScope.CurrentUserItem(
+    currentUser: User,
+    userItemModifier: Modifier,
+    users: List<User>,
+    onLogin: (User) -> Unit,
+    onUserSetting: () -> Unit
+) {
+
+
+    if (currentUser.id != GuestUser.id) {
+        item {
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.inversePrimary,
+                ),
+                shape = MaterialTheme.shapes.medium,
+            ) {
+//                Text(
+//                    style = MaterialTheme.typography.titleMedium,
+//                    modifier = Modifier.padding(
+//                        top = dimensionResource(R.dimen.padding_medium),
+//                        start = dimensionResource(R.dimen.padding_medium),
+//                        bottom = dimensionResource(R.dimen.padding_extra_small),
+//                    ),
+//                    text = "Usuario actual",
+//                )
+                OutlinedCard(
+                    elevation = CardDefaults.cardElevation(defaultElevation = 16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    ),
+                    border = BorderStroke(4.dp, MaterialTheme.colorScheme.primary),
+                    modifier = Modifier.padding(all = dimensionResource(R.dimen.padding_medium))
+                ) {
+                    ContentItem(
+                        userItem = currentUser,
+                        currentUser = currentUser,
+                        onLogin = { onLogin(currentUser) },
+                        onUserSetting = onUserSetting,
+                    )
+                }
+
+            }
+        }
+    }
+}
+
 @Composable
 fun UserItem(
     userItem: User,
@@ -147,28 +182,42 @@ fun UserItem(
         modifier = modifier,
         colors = cardColors,
     ) {
-        Column {
-            Row(
+        ContentItem(userItem, currentUser, onLogin, onUserSetting)
+    }
+}
+
+@Composable
+private fun ContentItem(
+    userItem: User,
+    currentUser: User,
+    onLogin: () -> Unit,
+    onUserSetting: () -> Unit
+) {
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(dimensionResource(R.dimen.padding_medium))
+        ) {
+            UserIcon(
+                rememberVectorPainter(Icons.Filled.Person),
+                modifier = Modifier.align(Alignment.CenterVertically)
+            )
+            Spacer(Modifier.size(dimensionResource(R.dimen.padding_small)))
+            UserInformation(
+                userItem,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(dimensionResource(R.dimen.padding_medium))
-            ) {
-                UserIcon(
-                    rememberVectorPainter(Icons.Filled.Person),
-                    modifier = Modifier.align(Alignment.CenterVertically)
-                )
-                Spacer(Modifier.size(dimensionResource(R.dimen.padding_small)))
-                UserInformation(userItem, modifier = Modifier
                     .align(Alignment.Top)
-                    .weight(0.8f))
-                Spacer(modifier = Modifier.weight(1f))
-                ItemUserActions(
-                    isCurrent = userItem.id == currentUser.id,
-                    onLogin = onLogin,
-                    onUserSetting = onUserSetting,
-                    userItem = userItem
-                )
-            }
+                    .weight(0.8f),
+                isSelected = userItem.id == currentUser.id
+            )
+            //Spacer(modifier = Modifier.weight(1f))
+            ItemUserActions(
+                isCurrent = userItem.id == currentUser.id,
+                onLogin = onLogin,
+                onUserSetting = onUserSetting,
+                userItem = userItem
+            )
         }
     }
 }
@@ -212,16 +261,27 @@ fun UserIcon(
 @Composable
 fun UserInformation(
     user: User,
+    isSelected: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier) {
+    Row(modifier = modifier) {
         Text(
             text = user.firstName + " " + user.lastName,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(top = dimensionResource(R.dimen.padding_small))
+                .weight(0.7f)
         )
+        if (isSelected) {
+            Icon(
+                Icons.Outlined.CheckCircle,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.align(Alignment.CenterVertically)
+                    .weight(0.3f)
+            )
+        }
     }
 }
 
@@ -327,7 +387,9 @@ fun BottomSheetMenu(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit = {},
 ) {
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true,
+    )
     val scope = rememberCoroutineScope()
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
     val expandButton = {
