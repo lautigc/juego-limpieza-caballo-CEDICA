@@ -5,12 +5,17 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.sqlite.db.SupportSQLiteDatabase
+import com.cedica.cedica.data.seed.users_seed
 import com.cedica.cedica.data.user.Patient
 import com.cedica.cedica.data.user.PatientDao
 import com.cedica.cedica.data.user.Therapist
 import com.cedica.cedica.data.user.TherapistDao
 import com.cedica.cedica.data.user.User
 import com.cedica.cedica.data.user.UserDao
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 private val DB_NAME = "cedica_db"
@@ -44,13 +49,22 @@ abstract class AppDatabase : RoomDatabase(), RepositoryDao {
             // if the Instance is not null, return it, otherwise create a new database instance.
             return Instance ?: synchronized(this) {
                 Room.databaseBuilder(context, AppDatabase::class.java, DB_NAME)
+                    .addCallback(
+                        object: Callback() {
+                            override fun onCreate(db: SupportSQLiteDatabase) {
+                                super.onCreate(db)
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    Instance?.userDao()?.insert(users_seed)
+                                }
+                            }
+                        }
+                    )
                     .build()
                     .also { Instance = it }
             }
         }
     }
 }
-
 object DB: RepositoryDao {
 
     // Must be initialized before use, if not, it will throw an exception for lateinit.

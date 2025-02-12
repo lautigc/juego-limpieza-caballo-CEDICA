@@ -47,6 +47,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.sp
+import com.cedica.cedica.core.utils.isInPreview
+import com.cedica.cedica.core.utils.sound.SoundPlayer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -103,15 +105,22 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     }
 
     val cantStages = stages.size
-    // para el audio
-    val context = LocalContext.current
-    val soundPool = remember { SoundPool.Builder().setMaxStreams(1).build() }
-    val soundIds = mapOf(
-        "success" to soundPool.load(context, R.raw.successed2, 1),
-        "snort" to soundPool.load(context, R.raw.horse_snort, 1),
-        "trumpets" to soundPool.load(context, R.raw.success_trumpets, 1),
-        "wrong" to soundPool.load(context, R.raw.wrong, 1),
-    )
+    // para el audio (solo disponible fuera de la preview)
+    val soundPlayer: SoundPlayer?
+    if(!isInPreview()) {
+        val context = LocalContext.current
+        soundPlayer = remember { SoundPlayer(context) }
+    } else {
+        soundPlayer = remember { null }
+    }
+    soundPlayer?.let {
+        LaunchedEffect(Unit) {
+            soundPlayer.loadSound("success", R.raw.successed2)
+            soundPlayer.loadSound("snort", R.raw.snort_cut)
+            soundPlayer.loadSound("wrong", R.raw.wrong)
+            soundPlayer.loadSound("notification", R.raw.new_notification)
+        }
+    }
 
     if (showCompletionDialog) {
         CompletionDialog(
@@ -137,16 +146,15 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                             gameState.value.setCustomMessage("¡Excelente! Seleccionaste la herramienta correcta para la limpieza.")
                             gameState.value.setMessageType("success")
                             gameState.value.addScore(20)
-                            val play = soundIds["success"]?.let { soundPool.play(it, 1f, 1f, 1, 0, 1f) }
+                            soundPlayer?.playSound("success")
                         } else {
                             // Si la herramienta seleccionada es incorrecta
                             gameState.value.setCustomMessage("Ups... Seleccionaste la herramienta incorrecta. Intenta de nuevo.")
                             gameState.value.setMessageType("error")
-                            val play = soundIds["wrong"]?.let { soundPool.play(it, 1f, 1f, 1, 0, 1f) }
+                            soundPlayer?.playSound("wrong")
                         }
                     }
-                }
-            )
+                })
         },
         sheetPeekHeight = 0.dp,
     ) {
@@ -249,7 +257,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                                 coroutineScope.launch {
                                     gameState.value.setCustomMessage("¡Excelente! Seleccionaste la parte correcta del caballo")
                                     gameState.value.setMessageType("success")
-                                    val play = soundIds["success"]?.let { soundPool.play(it, 1f, 1f, 1, 0, 1f) }
+                                    soundPlayer?.playSound("success")
                                     delay(2000)
                                     gameState.value.setCustomMessage("¿Qué herramienta debemos utilizar para limpiarla?")
                                     gameState.value.setMessageType("selection")
@@ -257,8 +265,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                             } else {
                                 gameState.value.setCustomMessage("Ups... Seleccionaste la parte incorrecta. Intenta de nuevo.")
                                 gameState.value.setMessageType("error")
-                                val play =
-                                    soundIds["wrong"]?.let { it1 -> soundPool.play(it1, 1f, 1f, 1, 0, 1f) }
+                                soundPlayer?.playSound("wrong")
                             }
                         })
                 } else {
@@ -267,6 +274,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                         onImagePositioned = { size, position ->
                             zoomedImageSize = size
                             zoomedImagePosition = position
+
                         }
                     )
                 }
@@ -377,7 +385,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
 
     DisposableEffect(Unit) {
         onDispose {
-            soundPool.release()
+            soundPlayer?.release()
         }
     }
 }

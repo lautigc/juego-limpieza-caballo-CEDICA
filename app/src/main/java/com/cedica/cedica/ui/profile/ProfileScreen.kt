@@ -1,20 +1,14 @@
 package com.cedica.cedica.ui.profile
 
-import androidx.compose.foundation.layout.Box
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Login
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.cedica.cedica.R
 import com.cedica.cedica.data.seed.users_seed
 import com.cedica.cedica.data.user.User
 import com.cedica.cedica.ui.AppViewModelProvider
@@ -24,6 +18,8 @@ import com.cedica.cedica.ui.theme.CedicaTheme
 fun ProfileListScreen(
     viewModel: ProfileListScreenViewModel = viewModel(factory = AppViewModelProvider.Factory),
     onNavigateGuestLogin: () -> Unit = {},
+    onNavigateUserSetting: () -> Unit = {},
+    onNavigateUserLogin: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val profileUiState by viewModel.uiState.collectAsState()
@@ -32,53 +28,54 @@ fun ProfileListScreen(
         users = profileUiState.users,
         currentUser = profileUiState.currentUser,
         modifier = modifier,
-        onLogin = { user: User -> viewModel.login(user) },
+        onLogin = { user: User ->
+            viewModel.login(user)
+            onNavigateUserLogin()
+        },
         onGuestLogin = {
             viewModel.guestLogin()
             onNavigateGuestLogin()
-        }
+        },
+        onUserSetting = onNavigateUserSetting
     )
 }
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 private fun Screen(
     users: List<User>,
     currentUser: User,
     onLogin: (User) -> Unit = {},
     onGuestLogin: () -> Unit = {},
-    modifier: Modifier,
+    onUserSetting: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    Box(modifier = modifier) {
-        UserList(users = users, currentUser, onLogin = onLogin, modifier = Modifier.fillMaxWidth())
-        ExpandableFAB(
-            items = listOf(
-                FABItem(
-                    icon = Icons.Filled.Add,
-                    text = "Registrar",
-                    onClick = { onClick() }
-                ),
-                FABItem(
-                    icon = Icons.AutoMirrored.Filled.Login,
-                    text = "Invitado",
-                    onClick = onGuestLogin
-                )
-            ),
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(dimensionResource(R.dimen.padding_medium))
+    Scaffold(
+        floatingActionButton = {
+            ExpandableFAB(onGuestLogin = onGuestLogin)
+        }
+    ) { _ ->
+        UserList(
+            users = users,
+            currentUser = currentUser,
+            onLogin = onLogin,
+            onUserSetting = onUserSetting,
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }
 
-fun onClick() {
-    TODO("Not yet implemented")
-}
 
 @Preview(showBackground = true)
 @Composable
 fun ProfileScreenPreview() {
     CedicaTheme {
-        Screen(users = users_seed, currentUser = users_seed.first(), modifier = Modifier)
+        Screen(
+            users = users_seed,
+            currentUser = users_seed.first(),
+            onUserSetting = { },
+            modifier = Modifier
+        )
     }
 }
 
@@ -86,7 +83,12 @@ fun ProfileScreenPreview() {
 @Composable
 fun EmptyProfileScreenPreview() {
     CedicaTheme {
-        Screen(users = emptyList(), currentUser = users_seed.first(), modifier = Modifier)
+        Screen(
+            users = emptyList(),
+            currentUser = users_seed.first(),
+            onUserSetting = { },
+            modifier = Modifier
+        )
     }
 }
 
@@ -94,7 +96,12 @@ fun EmptyProfileScreenPreview() {
 @Composable
 fun ProfileScreenDarkPreview() {
     CedicaTheme(darkTheme = true) {
-        Screen(users = users_seed, currentUser = users_seed.first(), modifier = Modifier)
+        Screen(
+            users = users_seed,
+            currentUser = users_seed.first(),
+            onUserSetting = { },
+            modifier = Modifier
+        )
     }
 }
 
