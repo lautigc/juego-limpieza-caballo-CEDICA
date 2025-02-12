@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -124,7 +126,7 @@ fun SettingOption(
                     text = secondaryText,
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 3,
-                    modifier = Modifier.verticalScroll(rememberScrollState())
+                    modifier = Modifier.heightIn(max = 80.dp).verticalScroll(rememberScrollState())
                 )
             }
         }
@@ -152,13 +154,13 @@ fun UserSettingScreen() {
         bottom = dimensionResource(R.dimen.padding_medium)
     )
 
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(dimensionResource(R.dimen.padding_medium))
     ) {
-        DifficultySettingSection(optionModifier = optionModifier)
-        SoundSettingSection(optionModifier = optionModifier)
+        item { DifficultySettingSection(optionModifier = optionModifier) }
+        item { SoundSettingSection(optionModifier = optionModifier) }
     }
 }
 
