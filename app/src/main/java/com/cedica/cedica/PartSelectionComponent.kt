@@ -257,7 +257,7 @@ fun ZoomedHorsePart(part: HorsePart) {
 }
 
 @Composable
-fun DirtyHorsePart(part: HorsePart = horseParts[1]) {
+fun DirtyHorsePart(part: HorsePart = horseParts[4]) {
     val context = LocalContext.current
     val bitmap = remember {
         BitmapFactory.decodeResource(context.resources, part.drawableRes)
@@ -273,15 +273,14 @@ fun DirtyHorsePart(part: HorsePart = horseParts[1]) {
             drawImage(imageBitmap, Offset.Zero)
 
             stains.forEach { (position, radius) ->
-                // Verificar si el píxel en la posición de la mancha es transparente
                     val pixel = bitmap.getPixel(position.x.toInt(), position.y.toInt())
                     val alpha = pixel.alpha
-                    if (alpha != 0) { // Si el píxel no es transparente
+                    if (alpha != 0) {
                         drawCircle(
-                            color = Color.Red.copy(alpha = 0.7f), // Manchas semitransparentes
+                            color = Color(0xFFFFE4B5).copy(alpha = 0.7f),
                             radius = radius,
                             center = position,
-                            blendMode = BlendMode.SrcIn
+                            blendMode = BlendMode.SrcIn,
                         )
                     }
             }
