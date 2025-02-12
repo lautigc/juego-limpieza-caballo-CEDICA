@@ -1,6 +1,7 @@
 package com.cedica.cedica
 
 import androidx.annotation.DrawableRes
+import androidx.compose.ui.geometry.Offset
 
 data class HorsePart(val name: String, val polygon: List<Pair<Float, Float>>, @DrawableRes val drawableRes: Int)
 
@@ -133,4 +134,14 @@ fun smoothPolygon(polygon: List<Pair<Float, Float>>, iterations: Int = 2): List<
         smoothed = newPoints
     }
     return smoothed
+}
+
+// genera una lista de n manchas para la parte del caballo
+fun generateStains(numRandomStains: Int, width: Int, height: Int) : List<Pair<Offset, Float>> {
+    return List(numRandomStains) {
+        Offset(
+            x = (0..width.toInt()).random().toFloat(),
+            y = (0..height.toInt()).random().toFloat()
+        ) to (10..50).random().toFloat() // Radio aleatorio entre 10 y 50
+    }
 }
