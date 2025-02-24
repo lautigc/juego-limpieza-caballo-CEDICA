@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.os.Build
+import android.speech.tts.TextToSpeech
 import androidx.annotation.RequiresApi
 import android.util.Log
 import androidx.compose.foundation.background
@@ -55,6 +56,7 @@ import com.cedica.cedica.core.utils.getStageInfo
 import com.cedica.cedica.core.utils.stages
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.Locale
 import kotlin.math.roundToInt
 
 data class Tool(val imageRes: Int, val name: String)
@@ -111,10 +113,16 @@ fun GameScreen(navigateToMenu: () -> Unit) {
 
     val cantStages = stages.size
     // para el audio (solo disponible fuera de la preview)
+    val context = LocalContext.current
     val soundPlayer: SoundPlayer?
+    val textToSpeech = remember { mutableStateOf<TextToSpeech?>(null) }
     if(!isInPreview()) {
-        val context = LocalContext.current
         soundPlayer = remember { SoundPlayer(context) }
+        textToSpeech.value = TextToSpeech(context) {status ->
+            if(status == TextToSpeech.SUCCESS) {
+                textToSpeech.value?.language = Locale.getDefault()
+            }
+        }
     } else {
         soundPlayer = remember { null }
     }
@@ -185,6 +193,11 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
+
+                Button(onClick = { textToSpeech.value?.speak("Hola", TextToSpeech.QUEUE_FLUSH, null, null) }) {
+                    Text("Hablá")
+                }
+
                 Button(onClick = { navigateToMenu() }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFADD8E6))) {
                     Text("Volver al menú", color = Color.Black)
                 }
