@@ -10,6 +10,8 @@ import com.cedica.cedica.ui.home.AboutScreen
 import com.cedica.cedica.ui.home.ConfigurationScreen
 import com.cedica.cedica.ui.game.GameScreen
 import com.cedica.cedica.ui.home.MainMenuScreen
+import com.cedica.cedica.ui.home.StatisticsScreen
+import com.cedica.cedica.ui.home.sampleGameSessions
 import com.cedica.cedica.ui.profile.ProfileListScreen
 import com.cedica.cedica.ui.profile.UserSettingScreen
 
@@ -17,7 +19,15 @@ import com.cedica.cedica.ui.profile.UserSettingScreen
 @Composable
 fun NavigationWrapper() {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = Menu) {
+    NavHost(navController = navController, startDestination = Stats) {
+        // TODO: quitar
+        composable<Stats> {
+            StatisticsScreen(
+                studentName = "Juan Pérez",
+                gameSessions = sampleGameSessions
+            )
+        }
+
         composable<Menu> {
             MainMenuScreen(
                 navController = navController
