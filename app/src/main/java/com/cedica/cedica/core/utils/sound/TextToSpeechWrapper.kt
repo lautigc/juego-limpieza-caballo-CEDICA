@@ -7,11 +7,29 @@ import java.util.Locale
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
+// TODO: reemplazar mock por acceso a la config real
+
+data class Config(
+    val voiceEnabled: Boolean,
+    val voiceType: String
+)
+
+val config = Config(voiceEnabled = true, voiceType = "Masculino")
+
+
 class TextToSpeechWrapper(private val context: Context) {
     private var tts: TextToSpeech? = null
     private var isInitialized = false
 
     suspend fun initialize(): Boolean = suspendCoroutine { continuation ->
+        // TODO: Tomar la configuracion de ayuda y de tipo de voz
+        // Si no tiene config de voz mantener el objeto como null
+        // Establecer masculino/femenino segun la config
+        if (!config.voiceEnabled) {
+            continuation.resume(false)
+            return@suspendCoroutine
+        }
+
         this.tts = TextToSpeech(context) { status ->
             if (status == TextToSpeech.SUCCESS) {
                 tts?.language = Locale.getDefault()
@@ -37,4 +55,5 @@ class TextToSpeechWrapper(private val context: Context) {
         this.tts?.stop()
         this.tts?.shutdown()
     }
+
 }
