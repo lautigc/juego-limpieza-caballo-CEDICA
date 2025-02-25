@@ -1,27 +1,38 @@
 package com.cedica.cedica.core.utils
 
+import java.text.SimpleDateFormat
+
+import android.os.Environment
+import android.util.Log
 import com.cedica.cedica.ui.home.GameSession
 import com.itextpdf.kernel.pdf.PdfDocument
 import com.itextpdf.kernel.pdf.PdfWriter
 import com.itextpdf.layout.Document
 import com.itextpdf.layout.element.Paragraph
 import com.itextpdf.layout.properties.TextAlignment
+import java.io.File
 import java.io.FileWriter
+import java.io.OutputStreamWriter
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
+import java.util.Date
+import java.util.Locale
 
-fun exportToCSV(gameSessions: List<GameSession>, filePath: String) {
+fun exportToCSV(gameSessions: List<GameSession>) {
     val csvHeader = "Fecha,Nivel,Aciertos,Errores,Tiempo (segundos)\n"
     val csvRows = gameSessions.joinToString("\n") { session ->
         "${session.date},${session.difficultyLevel},${session.correctAnswers},${session.incorrectAnswers},${session.timeSpent}"
     }
 
-    FileWriter(filePath).use { writer ->
+    val file = File(getDateForName("csv"))
+    OutputStreamWriter(file.outputStream(), StandardCharsets.UTF_8).use { writer ->
         writer.write(csvHeader)
         writer.write(csvRows)
     }
 }
 
-fun exportToPDF(gameSessions: List<GameSession>, filePath: String) {
-    val pdfWriter = PdfWriter(filePath)
+fun exportToPDF(gameSessions: List<GameSession>) {
+    val pdfWriter = PdfWriter(getDateForName("pdf"))
     val pdfDocument = PdfDocument(pdfWriter)
     val document = Document(pdfDocument)
 
@@ -45,5 +56,15 @@ fun exportToPDF(gameSessions: List<GameSession>, filePath: String) {
     }
 
     document.close()
+}
+
+fun getDateForName(extension: String): String {
+    val dateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
+    val dateStr = dateFormat.format(Date())
+
+    val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+    val filePath = File(downloadsDir, "historial_partidas_$dateStr.$extension").absolutePath
+    Log.d("FileDebug", "La descarga se guardó en $filePath")
+    return filePath
 }
 

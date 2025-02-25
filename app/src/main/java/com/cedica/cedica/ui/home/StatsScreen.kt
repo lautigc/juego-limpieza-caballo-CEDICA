@@ -1,11 +1,13 @@
 package com.cedica.cedica.ui.home
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -16,7 +18,6 @@ import androidx.compose.ui.unit.sp
 import com.cedica.cedica.core.utils.exportToCSV
 import com.cedica.cedica.core.utils.exportToPDF
 import com.cedica.cedica.ui.theme.CedicaTheme
-
 
 // Modelo de datos
 data class GameSession(
@@ -57,6 +58,7 @@ val sampleGameSessions = listOf(
 fun StatisticsScreen(studentName: String, gameSessions: List<GameSession>) {
     Column(
         modifier = Modifier
+            .background(Color(0xFFADD8E6))
             .fillMaxSize()
             .padding(16.dp)
     ) {
@@ -93,9 +95,13 @@ fun StatisticsScreen(studentName: String, gameSessions: List<GameSession>) {
                 .padding(top = 16.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
-            Button(onClick = { exportToPDF(gameSessions, "ruta/al/archivo.pdf")})
+            Button(onClick = {
+                exportToPDF(gameSessions)
+            })
             { Text("Exportar PDF") }
-            Button(onClick = { exportToCSV(gameSessions, "ruta/al/archivo.csv") })
+            Button(onClick = {
+                exportToCSV(gameSessions)
+            })
             { Text("Exportar CSV") }
         }
     }
@@ -157,7 +163,8 @@ fun GameSessionItem(session: GameSession) {
             .padding(vertical = 4.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
+                .padding(16.dp)
         ) {
             Text(text = "Fecha: ${session.date}", fontWeight = FontWeight.Bold)
             Text(text = "Nivel: ${session.difficultyLevel}")
@@ -169,7 +176,6 @@ fun GameSessionItem(session: GameSession) {
 }
 
 
-// Preview
 @Preview(showBackground = true)
 @Composable
 fun StatisticsScreenPreview() {

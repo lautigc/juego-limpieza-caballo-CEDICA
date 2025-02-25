@@ -20,6 +20,5 @@ object UserListScreen
 @Serializable
 object UserSetting
 
-// TODO: quitar
 @Serializable
 object Stats

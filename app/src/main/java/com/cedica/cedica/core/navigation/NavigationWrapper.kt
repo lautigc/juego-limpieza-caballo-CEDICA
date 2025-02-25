@@ -19,15 +19,7 @@ import com.cedica.cedica.ui.profile.UserSettingScreen
 @Composable
 fun NavigationWrapper() {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = Stats) {
-        // TODO: quitar
-        composable<Stats> {
-            StatisticsScreen(
-                studentName = "Juan Pérez",
-                gameSessions = sampleGameSessions
-            )
-        }
-
+    NavHost(navController = navController, startDestination = Menu) {
         composable<Menu> {
             MainMenuScreen(
                 navController = navController
@@ -61,6 +53,14 @@ fun NavigationWrapper() {
 
         composable<UserSetting> {
             UserSettingScreen()
+        }
+
+        composable<Stats> {
+            // TODO: quitar parametros cuando se tomen los datos
+            StatisticsScreen(
+                studentName = "Juan",
+                gameSessions = sampleGameSessions
+            )
         }
     }
 }
