@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.os.Build
-import android.speech.tts.TextToSpeech
 import androidx.annotation.RequiresApi
 import android.util.Log
 import androidx.compose.foundation.background
@@ -53,10 +52,10 @@ import com.cedica.cedica.R
 import com.cedica.cedica.core.utils.isInPreview
 import com.cedica.cedica.core.utils.sound.SoundPlayer
 import com.cedica.cedica.core.utils.getStageInfo
+import com.cedica.cedica.core.utils.sound.TextToSpeechWrapper
 import com.cedica.cedica.core.utils.stages
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.util.Locale
 import kotlin.math.roundToInt
 
 data class Tool(val imageRes: Int, val name: String)
@@ -112,27 +111,26 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     }
 
     val cantStages = stages.size
+
     // para el audio (solo disponible fuera de la preview)
     val context = LocalContext.current
     val soundPlayer: SoundPlayer?
-    val textToSpeech = remember { mutableStateOf<TextToSpeech?>(null) }
+    val speech: TextToSpeechWrapper?
     if(!isInPreview()) {
         soundPlayer = remember { SoundPlayer(context) }
-        textToSpeech.value = TextToSpeech(context) {status ->
-            if(status == TextToSpeech.SUCCESS) {
-                textToSpeech.value?.language = Locale.getDefault()
-            }
-        }
+        speech = remember { TextToSpeechWrapper(context) }
     } else {
         soundPlayer = remember { null }
+        speech = remember { null }
     }
-    soundPlayer?.let {
-        LaunchedEffect(Unit) {
-            soundPlayer.loadSound("success", R.raw.successed2)
-            soundPlayer.loadSound("snort", R.raw.snort_cut)
-            soundPlayer.loadSound("wrong", R.raw.wrong)
-            soundPlayer.loadSound("notification", R.raw.new_notification)
-        }
+
+    LaunchedEffect(Unit) {
+        // TODO: cargar a demanda y en el init del wrapper
+        soundPlayer?.loadSound("success", R.raw.successed2)
+        soundPlayer?.loadSound("snort", R.raw.snort_cut)
+        soundPlayer?.loadSound("wrong", R.raw.wrong)
+        soundPlayer?.loadSound("notification", R.raw.new_notification)
+        speech?.initialize()
     }
 
     if(showWelcomeDialog) {
@@ -194,7 +192,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                 verticalArrangement = Arrangement.Top
             ) {
 
-                Button(onClick = { textToSpeech.value?.speak("Hola", TextToSpeech.QUEUE_FLUSH, null, null) }) {
+                Button(onClick = { speech?.speak("hola") }) {
                     Text("Hablá")
                 }
 
@@ -437,8 +435,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     DisposableEffect(Unit) {
         onDispose {
             soundPlayer?.release()
-            textToSpeech.value?.stop()
-            textToSpeech.value?.shutdown()
+            speech?.release()
         }
     }
 }
