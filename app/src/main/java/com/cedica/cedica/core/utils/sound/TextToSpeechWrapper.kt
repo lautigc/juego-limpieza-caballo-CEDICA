@@ -22,9 +22,6 @@ class TextToSpeechWrapper(private val context: Context) {
     private var isInitialized = false
 
     suspend fun initialize(): Boolean = suspendCoroutine { continuation ->
-        // TODO: Tomar la configuracion de ayuda y de tipo de voz
-        // Si no tiene config de voz mantener el objeto como null
-        // Establecer masculino/femenino segun la config
         if (!config.voiceEnabled) {
             continuation.resume(false)
             return@suspendCoroutine
@@ -33,6 +30,23 @@ class TextToSpeechWrapper(private val context: Context) {
         this.tts = TextToSpeech(context) { status ->
             if (status == TextToSpeech.SUCCESS) {
                 tts?.language = Locale.getDefault()
+
+                // Obtener la lista de voces disponibles en el idioma del sistema
+                val voices = tts?.voices?.filter { it.locale.language == Locale.getDefault().language }
+
+                // Buscar una voz masculina o femenina
+                val selectedVoice = voices?.find { voice ->
+                    (config.voiceType == "Masculino" && !voice.name.contains("female", true)) ||
+                            (config.voiceType == "Femenino" && voice.name.contains("female", true))
+                }
+
+                if (selectedVoice != null) {
+                    tts?.setVoice(selectedVoice)
+                    Log.d("TTSDebug", "Voz seleccionada: ${selectedVoice.name}")
+                } else {
+                    Log.d("TTSDebug", "No se encontró una voz ${config.voiceType}, se usa la predeterminada")
+                }
+
                 this.isInitialized = true
                 continuation.resume(true)
             } else {
