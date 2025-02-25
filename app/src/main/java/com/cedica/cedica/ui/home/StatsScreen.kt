@@ -8,6 +8,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -18,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import com.cedica.cedica.core.utils.exportToCSV
 import com.cedica.cedica.core.utils.exportToPDF
 import com.cedica.cedica.ui.theme.CedicaTheme
+import kotlinx.coroutines.launch
 
 // Modelo de datos
 data class GameSession(
@@ -56,53 +59,67 @@ val sampleGameSessions = listOf(
 // Pantalla de estadísticas
 @Composable
 fun StatisticsScreen(studentName: String, gameSessions: List<GameSession>) {
-    Column(
-        modifier = Modifier
-            .background(Color(0xFFADD8E6))
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        // Título
-        Text(
-            text = "Progreso de $studentName",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
-        // Gráficos
-        PerformanceCharts(gameSessions)
-
-        // Historial de partidas
-        Text(
-            text = "Historial de Partidas",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
-        )
-
-        Box(
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { paddingValues ->
+        Column(
             modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
+                .background(Color(0xFFADD8E6))
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp)
         ) {
-            GameHistoryList(gameSessions)
-        }
+            // Título
+            Text(
+                text = "Progreso de $studentName",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-        ) {
-            Button(onClick = {
-                exportToPDF(gameSessions)
-            })
-            { Text("Exportar PDF") }
-            Button(onClick = {
-                exportToCSV(gameSessions)
-            })
-            { Text("Exportar CSV") }
+            // Gráficos
+            PerformanceCharts(gameSessions)
+
+            // Historial de partidas
+            Text(
+                text = "Historial de Partidas",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+            )
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                GameHistoryList(gameSessions)
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+            ) {
+                Button(onClick = {
+                    exportToPDF(gameSessions)
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar("El pdf se guardó en descargas")
+                    }
+                })
+                { Text("Exportar PDF") }
+                Button(onClick = {
+                    exportToCSV(gameSessions)
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar("El csv se guardó en descargas")
+                    }
+                })
+                { Text("Exportar CSV") }
+            }
         }
     }
 }
