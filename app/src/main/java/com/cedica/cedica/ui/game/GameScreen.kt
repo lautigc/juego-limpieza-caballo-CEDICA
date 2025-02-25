@@ -437,6 +437,8 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     DisposableEffect(Unit) {
         onDispose {
             soundPlayer?.release()
+            textToSpeech.value?.stop()
+            textToSpeech.value?.shutdown()
         }
     }
 }
