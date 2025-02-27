@@ -1,5 +1,6 @@
 package com.cedica.cedica.ui.home
 
+import android.graphics.Paint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -10,9 +11,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -124,41 +130,111 @@ fun StatisticsScreen(studentName: String, gameSessions: List<GameSession>) {
     }
 }
 
-// Gráficos de desempeño
 @Composable
 fun PerformanceCharts(gameSessions: List<GameSession>) {
-    val maxCorrect = gameSessions.maxOfOrNull { it.correctAnswers } ?: 0
-    val maxIncorrect = gameSessions.maxOfOrNull { it.incorrectAnswers } ?: 0
-    val maxY = maxOf(maxCorrect, maxIncorrect)
+    Column {
+        // Canvas for the chart
+        Canvas(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+        ) {
+            // Calculate maximum y-value for scaling
+            val maxCorrect = gameSessions.maxOfOrNull { it.correctAnswers } ?: 0
+            val maxIncorrect = gameSessions.maxOfOrNull { it.incorrectAnswers } ?: 0
+            val maxY = maxOf(maxCorrect, maxIncorrect)
+            val yScale = if (maxY > 0) size.height / maxY else 0f
 
-    Canvas(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp)
-    ) {
-        val barWidth = size.width / (gameSessions.size * 2)
-        val yScale = size.height / maxY
+            // Define spacing and padding in dp, converted to pixels
+            val smallGapDp = 4.dp    // Gap between correct and incorrect bars
+            val largeGapDp = 16.dp   // Gap between sessions
+            val leftPaddingDp = 32.dp // Space for y-axis
+            val smallGapPx = with(density) { smallGapDp.toPx() }
+            val largeGapPx = with(density) { largeGapDp.toPx() }
+            val leftPaddingPx = with(density) { leftPaddingDp.toPx() }
 
-        gameSessions.forEachIndexed { index, session ->
-            val correctBarHeight = session.correctAnswers * yScale
-            val incorrectBarHeight = session.incorrectAnswers * yScale
+            // Calculate bar width based on available space
+            val n = gameSessions.size
+            val totalGapsWidth = if (n > 0) n * smallGapPx + (n - 1) * largeGapPx else 0f
+            val availableWidth = size.width - leftPaddingPx
+            val totalBarsWidth = availableWidth - totalGapsWidth
+            val barWidth = if (n > 0 && totalBarsWidth > 0) totalBarsWidth / (2 * n) else 10f
 
-            // Dibujar barras de aciertos
-            drawRect(
-                color = Color.Green,
-                topLeft = Offset(barWidth * index * 2, size.height - correctBarHeight),
-                size = androidx.compose.ui.geometry.Size(barWidth, correctBarHeight)
+            // Draw y-axis line
+            drawLine(
+                start = Offset(leftPaddingPx, 0f),
+                end = Offset(leftPaddingPx, size.height),
+                color = Color.Gray,
+                strokeWidth = 2f
             )
 
-            // Dibujar barras de errores
-            drawRect(
-                color = Color.Red,
-                topLeft = Offset(barWidth * (index * 2 + 1), size.height - incorrectBarHeight),
-                size = androidx.compose.ui.geometry.Size(barWidth, incorrectBarHeight)
-            )
+            // Draw y-axis ticks and labels
+            val numTicks = 5
+            for (k in 0..numTicks) {
+                val fraction = k / numTicks.toFloat()
+                val y = size.height * (1 - fraction)
+                // Tick mark
+                drawLine(
+                    start = Offset(leftPaddingPx - 8f, y),
+                    end = Offset(leftPaddingPx, y),
+                    color = Color.Gray,
+                    strokeWidth = 2f
+                )
+                // Tick label
+                drawIntoCanvas {
+                    it.nativeCanvas.drawText(
+                        String.format("%.1f", fraction * maxY),
+                        leftPaddingPx - 12f,
+                        y + 4f,
+                        Paint().apply {
+                            color = Color.Black.toArgb()
+                            textSize = with(density) { 12.sp.toPx() }
+                            textAlign = Paint.Align.RIGHT
+                        }
+                    )
+                }
+            }
+
+            // Draw bars
+            var currentX = leftPaddingPx
+            gameSessions.forEach { session ->
+                val correctBarHeight = session.correctAnswers * yScale
+                val incorrectBarHeight = session.incorrectAnswers * yScale
+
+                // Correct answers bar (green)
+                drawRect(
+                    color = Color.Green,
+                    topLeft = Offset(currentX, size.height - correctBarHeight),
+                    size = Size(barWidth, correctBarHeight)
+                )
+
+                // Incorrect answers bar (red)
+                val rightBarX = currentX + barWidth + smallGapPx
+                drawRect(
+                    color = Color.Red,
+                    topLeft = Offset(rightBarX, size.height - incorrectBarHeight),
+                    size = Size(barWidth, incorrectBarHeight)
+                )
+
+                // Update position for next session
+                currentX = rightBarX + barWidth + largeGapPx
+            }
+        }
+
+        // Legend below the chart
+        Row(
+            modifier = Modifier.padding(top = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(modifier = Modifier.size(16.dp).background(Color.Green))
+            Text("Aciertos", modifier = Modifier.padding(start = 4.dp))
+            Spacer(modifier = Modifier.width(16.dp))
+            Box(modifier = Modifier.size(16.dp).background(Color.Red))
+            Text("Errores", modifier = Modifier.padding(start = 4.dp))
         }
     }
 }
+
 
 // Historial de partidas
 @Composable
