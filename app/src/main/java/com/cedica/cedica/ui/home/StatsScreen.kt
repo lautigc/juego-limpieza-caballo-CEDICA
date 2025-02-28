@@ -5,13 +5,12 @@ import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -86,18 +85,18 @@ val sampleGameSessions = listOf(
 
 )
 
-// Pantalla de estadísticas
 @Composable
 fun StatisticsScreen(studentName: String, gameSessions: List<GameSession>) {
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    var showChart by remember { mutableStateOf(true) } // Estado para controlar la visibilidad del gráfico
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
-                .background(Color(0xFFADD8E6))
+                .background(Color(0xFFADD8E6)) // Fondo azul claro
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp)
@@ -110,14 +109,27 @@ fun StatisticsScreen(studentName: String, gameSessions: List<GameSession>) {
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            // Gráficos
-            Text("Partidas recientes")
-            Box(modifier = Modifier
-                .background(Color.LightGray)
-                .border(2.dp, Color.Black)
-                .padding(16.dp)
-            ) {
-                PerformanceCharts(gameSessions)
+            // Botón para alternar la visibilidad del gráfico
+            Button(onClick = { showChart = !showChart },
+                modifier = Modifier
+                    .padding(bottom = 8.dp)
+            )
+            {
+                Text(
+                    text = if (showChart) "Ocultar gráfico de partidas recientes" else "Mostrar gráfico de partidas recientes",
+                )
+            }
+
+            // Gráfico de partidas recientes (visible solo si showChart es true)
+            if (showChart) {
+                Box(
+                    modifier = Modifier
+                        .background(Color.LightGray)
+                        .border(2.dp, Color.Black)
+                        .padding(16.dp)
+                ) {
+                    PerformanceCharts(gameSessions)
+                }
             }
 
             // Historial de partidas
@@ -130,36 +142,110 @@ fun StatisticsScreen(studentName: String, gameSessions: List<GameSession>) {
 
             Box(
                 modifier = Modifier
-                    .weight(1f)
+                    .weight(1f) // Ocupa el espacio restante
                     .fillMaxWidth()
             ) {
                 GameHistoryList(gameSessions)
             }
 
+            // Botones de exportación
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 Button(onClick = {
                     exportToPDF(gameSessions)
                     coroutineScope.launch {
                         snackbarHostState.showSnackbar("El pdf se guardó en descargas")
                     }
-                })
-                { Text("Exportar PDF") }
+                }) { Text("Exportar PDF") }
                 Button(onClick = {
                     exportToCSV(gameSessions)
                     coroutineScope.launch {
                         snackbarHostState.showSnackbar("El csv se guardó en descargas")
                     }
-                })
-                { Text("Exportar CSV") }
+                }) { Text("Exportar CSV") }
             }
         }
     }
 }
+
+// Pantalla de estadísticas
+//@Composable
+//fun StatisticsScreen(studentName: String, gameSessions: List<GameSession>) {
+//    val snackbarHostState = remember { SnackbarHostState() }
+//    val coroutineScope = rememberCoroutineScope()
+//
+//    Scaffold(
+//        snackbarHost = { SnackbarHost(snackbarHostState) }
+//    ) { paddingValues ->
+//        Column(
+//            modifier = Modifier
+//                .background(Color(0xFFADD8E6))
+//                .fillMaxSize()
+//                .padding(paddingValues)
+//                .padding(16.dp)
+//        ) {
+//            // Título
+//            Text(
+//                text = "Progreso de $studentName",
+//                fontSize = 24.sp,
+//                fontWeight = FontWeight.Bold,
+//                modifier = Modifier.padding(bottom = 16.dp)
+//            )
+//
+//            // Gráficos
+//            Text("Partidas recientes")
+//            Box(modifier = Modifier
+//                .background(Color.LightGray)
+//                .border(2.dp, Color.Black)
+//                .padding(16.dp)
+//            ) {
+//                PerformanceCharts(gameSessions)
+//            }
+//
+//            // Historial de partidas
+//            Text(
+//                text = "Historial de Partidas",
+//                fontSize = 20.sp,
+//                fontWeight = FontWeight.Bold,
+//                modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+//            )
+//
+//            Box(
+//                modifier = Modifier
+//                    .weight(1f)
+//                    .fillMaxWidth()
+//            ) {
+//                GameHistoryList(gameSessions)
+//            }
+//
+//            Row(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(top = 16.dp),
+//                horizontalArrangement = Arrangement.SpaceEvenly,
+//            ) {
+//                Button(onClick = {
+//                    exportToPDF(gameSessions)
+//                    coroutineScope.launch {
+//                        snackbarHostState.showSnackbar("El pdf se guardó en descargas")
+//                    }
+//                })
+//                { Text("Exportar PDF") }
+//                Button(onClick = {
+//                    exportToCSV(gameSessions)
+//                    coroutineScope.launch {
+//                        snackbarHostState.showSnackbar("El csv se guardó en descargas")
+//                    }
+//                })
+//                { Text("Exportar CSV") }
+//            }
+//        }
+//    }
+//}
 
 @Composable
 fun PerformanceCharts(gameSessions: List<GameSession>) {
