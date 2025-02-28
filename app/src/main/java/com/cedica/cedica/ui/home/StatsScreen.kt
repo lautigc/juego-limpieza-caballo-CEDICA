@@ -113,6 +113,7 @@ fun StatisticsScreen(studentName: String, gameSessions: List<GameSession>) {
             // Gráficos
             Text("Partidas recientes")
             Box(modifier = Modifier
+                .background(Color.LightGray)
                 .border(2.dp, Color.Black)
                 .padding(16.dp)
             ) {
@@ -166,13 +167,13 @@ fun PerformanceCharts(gameSessions: List<GameSession>) {
         Canvas(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
+                .height(220.dp) // Aumentamos la altura para dar espacio a las etiquetas del eje x
         ) {
             var fGameSessions = gameSessions.toMutableList()
             val len = fGameSessions.size
             val cut = 5 // valor de corte
             if (len > cut) {
-                fGameSessions = fGameSessions.slice(IntRange(len-cut,len-1)).toMutableList()
+                fGameSessions = fGameSessions.slice(IntRange(len - cut, len - 1)).toMutableList()
                 Log.d("longitud", "sesiones les ${fGameSessions.size}")
             }
 
@@ -197,15 +198,15 @@ fun PerformanceCharts(gameSessions: List<GameSession>) {
             val totalBarsWidth = availableWidth - totalGapsWidth
             val barWidth = if (n > 0 && totalBarsWidth > 0) totalBarsWidth / (2 * n) else 10f
 
-            // Linea del eje x
+            // Línea del eje x
             drawLine(
-                start = Offset(leftPaddingPx-2, size.height+2),
-                end = Offset(size.width+12, size.height+2),
+                start = Offset(leftPaddingPx - 2, size.height + 2),
+                end = Offset(size.width + 12, size.height + 2),
                 color = Color.Gray,
                 strokeWidth = 4f
             )
 
-            // Linea del eje y
+            // Línea del eje y
             drawLine(
                 start = Offset(leftPaddingPx, 0f),
                 end = Offset(leftPaddingPx, size.height),
@@ -213,22 +214,22 @@ fun PerformanceCharts(gameSessions: List<GameSession>) {
                 strokeWidth = 4f
             )
 
-            // Draw y-axis ticks and labels
+            // Etiquetas y marcas del eje y
             val numTicks = 5
             for (k in 0..numTicks) {
                 val fraction = k / numTicks.toFloat()
                 val y = size.height * (1 - fraction)
-                // Tick mark
+                // Marca
                 drawLine(
                     start = Offset(leftPaddingPx - 8f, y),
                     end = Offset(leftPaddingPx, y),
                     color = Color.Gray,
                     strokeWidth = 2f
                 )
-                // Tick label
+                // Etiqueta
                 drawIntoCanvas {
                     it.nativeCanvas.drawText(
-                        String.format(Locale.getDefault(),"%.0f", fraction * maxY),
+                        String.format(Locale.getDefault(), "%.0f", fraction * maxY),
                         leftPaddingPx - 12f,
                         y + 4f,
                         Paint().apply {
@@ -240,20 +241,20 @@ fun PerformanceCharts(gameSessions: List<GameSession>) {
                 }
             }
 
-            // Draw bars
+            // Dibujar barras y etiquetas del eje x
             var currentX = leftPaddingPx + moveBarsFromLeft
-            fGameSessions.forEach { session ->
+            fGameSessions.forEachIndexed { index, session ->
                 val correctBarHeight = session.correctAnswers * yScale
                 val incorrectBarHeight = session.incorrectAnswers * yScale
 
-                // Correct answers bar (green)
+                // Barra de aciertos (verde)
                 drawRect(
                     color = Color.Green,
                     topLeft = Offset(currentX, size.height - correctBarHeight),
                     size = Size(barWidth, correctBarHeight),
                 )
 
-                // Incorrect answers bar (red)
+                // Barra de errores (roja)
                 val rightBarX = currentX + barWidth + smallGapPx
                 drawRect(
                     color = Color.Red,
@@ -261,25 +262,42 @@ fun PerformanceCharts(gameSessions: List<GameSession>) {
                     size = Size(barWidth, incorrectBarHeight)
                 )
 
-                // Update position for next session
+                // Calcular posición de la etiqueta del eje x
+                val labelX = currentX + barWidth + smallGapPx / 2 // Centro del par de barras
+                val labelY = size.height + 20.sp.toPx() // Debajo del eje x
+
+                // Dibujar etiqueta del eje x
+                drawIntoCanvas {
+                    it.nativeCanvas.drawText(
+                        "Sesión ${index + 1}", // Etiqueta como "Sesión 1", "Sesión 2", etc.
+                        labelX,
+                        labelY,
+                        Paint().apply {
+                            color = Color.Black.toArgb()
+                            textSize = 12.sp.toPx()
+                            textAlign = Paint.Align.CENTER // Centrar el texto en labelX
+                        }
+                    )
+                }
+
+                // Actualizar posición para la próxima sesión
                 currentX = rightBarX + barWidth + largeGapPx
             }
         }
 
-        // Legend below the chart
+        // Leyenda debajo del gráfico
         Row(
-            modifier = Modifier.padding(top = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(top = 23.dp),
         ) {
-            Box(modifier = Modifier.size(16.dp).background(Color.Green))
+            Box(modifier = Modifier.size(8.dp).background(Color.Green))
             Text("Aciertos", modifier = Modifier.padding(start = 4.dp))
-            Spacer(modifier = Modifier.width(16.dp))
-            Box(modifier = Modifier.size(16.dp).background(Color.Red))
+            Spacer(modifier = Modifier.width(8.dp))
+            Box(modifier = Modifier.size(8.dp).background(Color.Red))
             Text("Errores", modifier = Modifier.padding(start = 4.dp))
         }
     }
 }
-
 
 // Historial de partidas
 @Composable
