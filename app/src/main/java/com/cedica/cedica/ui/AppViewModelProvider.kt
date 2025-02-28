@@ -24,8 +24,8 @@ object AppViewModelProvider {
             ProfileListScreenViewModel(
                 session = Session,
                 users = DB.userDao().getAllUsers(),
-                patients = DB.patientDao().getAllPatients(),
-                therapists = DB.therapistDao().getAllTherapists(),
+                patients = DB.patientDao().getAll(),
+                therapists = DB.therapistDao().getAll(),
             )
         }
     }

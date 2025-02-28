@@ -1,12 +1,14 @@
-package com.cedica.cedica.data.user;
+package com.cedica.cedica.data.user
 
 import androidx.room.Dao
 import androidx.room.Delete
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
+import androidx.room.Relation
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import java.util.Date
@@ -36,6 +38,15 @@ data class Patient(
     val birthDate: Date,
 )
 
+data class UserPatient(
+    @Embedded val user: User,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "userID"
+    )
+    val patient: Patient
+)
+
 @Dao
 interface PatientDao {
     @Insert
@@ -47,8 +58,11 @@ interface PatientDao {
     @Delete
     suspend fun delete(patient: Patient): Unit
 
+    @Query("SELECT * FROM User")
+    suspend fun getAllUserPatient(): UserPatient
+
     @Query("SELECT * FROM Patient")
-    fun getAllPatients(): Flow<List<Patient>>
+    fun getAll(): Flow<List<Patient>>
 
     @Query("SELECT * FROM Patient WHERE userID = :userID")
     suspend fun getPK(userID: Int): Patient
