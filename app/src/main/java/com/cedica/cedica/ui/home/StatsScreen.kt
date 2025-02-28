@@ -1,14 +1,15 @@
 package com.cedica.cedica.ui.home
 
 import android.graphics.Paint
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -27,6 +28,7 @@ import com.cedica.cedica.core.utils.exportToCSV
 import com.cedica.cedica.core.utils.exportToPDF
 import com.cedica.cedica.ui.theme.CedicaTheme
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 // Modelo de datos
 data class GameSession(
@@ -59,7 +61,29 @@ val sampleGameSessions = listOf(
         correctAnswers = 5,
         incorrectAnswers = 5,
         timeSpent = 180
+    ),
+    GameSession(
+        date = "2023-10-01",
+        difficultyLevel = "Fácil",
+        correctAnswers = 8,
+        incorrectAnswers = 2,
+        timeSpent = 120
+    ),
+    GameSession(
+        date = "2023-10-02",
+        difficultyLevel = "Medio",
+        correctAnswers = 6,
+        incorrectAnswers = 4,
+        timeSpent = 150
+    ),
+    GameSession(
+        date = "2023-10-03",
+        difficultyLevel = "Difícil",
+        correctAnswers = 5,
+        incorrectAnswers = 5,
+        timeSpent = 180
     )
+
 )
 
 // Pantalla de estadísticas
@@ -87,7 +111,13 @@ fun StatisticsScreen(studentName: String, gameSessions: List<GameSession>) {
             )
 
             // Gráficos
-            PerformanceCharts(gameSessions)
+            Text("Partidas recientes")
+            Box(modifier = Modifier
+                .border(2.dp, Color.Black)
+                .padding(16.dp)
+            ) {
+                PerformanceCharts(gameSessions)
+            }
 
             // Historial de partidas
             Text(
@@ -133,39 +163,54 @@ fun StatisticsScreen(studentName: String, gameSessions: List<GameSession>) {
 @Composable
 fun PerformanceCharts(gameSessions: List<GameSession>) {
     Column {
-        // Canvas for the chart
         Canvas(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp)
         ) {
-            // Calculate maximum y-value for scaling
-            val maxCorrect = gameSessions.maxOfOrNull { it.correctAnswers } ?: 0
-            val maxIncorrect = gameSessions.maxOfOrNull { it.incorrectAnswers } ?: 0
+            var fGameSessions = gameSessions.toMutableList()
+            val len = fGameSessions.size
+            val cut = 5 // valor de corte
+            if (len > cut) {
+                fGameSessions = fGameSessions.slice(IntRange(len-cut,len-1)).toMutableList()
+                Log.d("longitud", "sesiones les ${fGameSessions.size}")
+            }
+
+            val maxCorrect = fGameSessions.maxOfOrNull { it.correctAnswers } ?: 0
+            val maxIncorrect = fGameSessions.maxOfOrNull { it.incorrectAnswers } ?: 0
             val maxY = maxOf(maxCorrect, maxIncorrect)
             val yScale = if (maxY > 0) size.height / maxY else 0f
 
-            // Define spacing and padding in dp, converted to pixels
-            val smallGapDp = 4.dp    // Gap between correct and incorrect bars
-            val largeGapDp = 16.dp   // Gap between sessions
-            val leftPaddingDp = 32.dp // Space for y-axis
-            val smallGapPx = with(density) { smallGapDp.toPx() }
-            val largeGapPx = with(density) { largeGapDp.toPx() }
-            val leftPaddingPx = with(density) { leftPaddingDp.toPx() }
+            val smallGapDp = 4.dp    // Espacio entre correctas e incorrectas
+            val largeGapDp = 16.dp   // Espacio entre sesiones
+            val leftPaddingDp = 8.dp // Espacio para el eje y
 
-            // Calculate bar width based on available space
-            val n = gameSessions.size
+            val smallGapPx = smallGapDp.toPx()
+            val largeGapPx = largeGapDp.toPx()
+            val leftPaddingPx = leftPaddingDp.toPx()
+            val moveBarsFromLeft = 10
+
+            // Calcular el ancho de la barra en base al espacio disponible
+            val n = fGameSessions.size
             val totalGapsWidth = if (n > 0) n * smallGapPx + (n - 1) * largeGapPx else 0f
             val availableWidth = size.width - leftPaddingPx
             val totalBarsWidth = availableWidth - totalGapsWidth
             val barWidth = if (n > 0 && totalBarsWidth > 0) totalBarsWidth / (2 * n) else 10f
 
-            // Draw y-axis line
+            // Linea del eje x
+            drawLine(
+                start = Offset(leftPaddingPx-2, size.height+2),
+                end = Offset(size.width+12, size.height+2),
+                color = Color.Gray,
+                strokeWidth = 4f
+            )
+
+            // Linea del eje y
             drawLine(
                 start = Offset(leftPaddingPx, 0f),
                 end = Offset(leftPaddingPx, size.height),
                 color = Color.Gray,
-                strokeWidth = 2f
+                strokeWidth = 4f
             )
 
             // Draw y-axis ticks and labels
@@ -183,12 +228,12 @@ fun PerformanceCharts(gameSessions: List<GameSession>) {
                 // Tick label
                 drawIntoCanvas {
                     it.nativeCanvas.drawText(
-                        String.format("%.1f", fraction * maxY),
+                        String.format(Locale.getDefault(),"%.0f", fraction * maxY),
                         leftPaddingPx - 12f,
                         y + 4f,
                         Paint().apply {
                             color = Color.Black.toArgb()
-                            textSize = with(density) { 12.sp.toPx() }
+                            textSize = 12.sp.toPx()
                             textAlign = Paint.Align.RIGHT
                         }
                     )
@@ -196,8 +241,8 @@ fun PerformanceCharts(gameSessions: List<GameSession>) {
             }
 
             // Draw bars
-            var currentX = leftPaddingPx
-            gameSessions.forEach { session ->
+            var currentX = leftPaddingPx + moveBarsFromLeft
+            fGameSessions.forEach { session ->
                 val correctBarHeight = session.correctAnswers * yScale
                 val incorrectBarHeight = session.incorrectAnswers * yScale
 
@@ -205,7 +250,7 @@ fun PerformanceCharts(gameSessions: List<GameSession>) {
                 drawRect(
                     color = Color.Green,
                     topLeft = Offset(currentX, size.height - correctBarHeight),
-                    size = Size(barWidth, correctBarHeight)
+                    size = Size(barWidth, correctBarHeight),
                 )
 
                 // Incorrect answers bar (red)
