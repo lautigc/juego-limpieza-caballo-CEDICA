@@ -1,15 +1,13 @@
 package com.cedica.cedica.data.user
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
-import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Relation
-import androidx.room.Update
+import com.cedica.cedica.data.generic.BaseDao
 import kotlinx.coroutines.flow.Flow
 import java.util.Date
 
@@ -48,15 +46,7 @@ data class UserPatient(
 )
 
 @Dao
-interface PatientDao {
-    @Insert
-    suspend fun insert(patient: Patient): Long
-
-    @Update
-    suspend fun update(patient: Patient): Unit
-
-    @Delete
-    suspend fun delete(patient: Patient): Unit
+interface PatientDao: BaseDao<Patient> {
 
     @Query("SELECT * FROM User")
     suspend fun getAllUserPatient(): UserPatient
