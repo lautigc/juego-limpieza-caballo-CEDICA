@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.os.Build
 import androidx.annotation.RequiresApi
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -35,6 +34,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
@@ -45,7 +45,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.sp
 import com.cedica.cedica.core.utils.HorsePart
 import com.cedica.cedica.R
@@ -67,22 +66,6 @@ val tools = listOf(
     Tool(R.drawable.rasqueta_dura, "Rasqueta dura")
 )
 
-fun isOverZoomedImage(
-    toolX: Float,
-    toolY: Float,
-    imagePosition: IntOffset,
-    imageSize: IntSize
-): Boolean {
-
-    val imageLeft = imagePosition.x.toFloat()
-    val imageTop = imagePosition.y.toFloat()
-    val imageRight = imageLeft + imageSize.width.toFloat()
-    val imageBottom = imageTop + imageSize.height.toFloat()
-
-    return toolX in imageLeft..imageRight && toolY in imageTop..imageBottom
-}
-
-
 @RequiresApi(Build.VERSION_CODES.S)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -100,8 +83,8 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     var parts by remember { mutableStateOf(emptyArray<HorsePart>()) }
     var showZoomedView by remember { mutableStateOf(false) }
     var isAdvanceStageEnabled by remember { mutableStateOf(false) }
-    var zoomedImageSize by remember { mutableStateOf(IntSize.Zero) }
-    var zoomedImagePosition by remember { mutableStateOf(IntOffset.Zero) }
+    var absoluteX by remember { mutableFloatStateOf(0f) }
+    var absoluteY by remember { mutableFloatStateOf(0f) }
     var showCompletionDialog by remember { mutableStateOf(false) }
     var showWelcomeDialog by remember { mutableStateOf(true) }
 
@@ -141,6 +124,8 @@ fun GameScreen(navigateToMenu: () -> Unit) {
             onDismiss = { navigateToMenu() }
         )
     }
+
+
 
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
@@ -281,12 +266,30 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                             }
                         })
                 } else {
-                    ZoomedHorsePart(
+                    DirtyHorsePart(
                         part = stageInfo.correctHorsePart,
-                        onImagePositioned = { size, position ->
-                            zoomedImageSize = size
-                            zoomedImagePosition = position
-
+                        toolPosition = Offset(absoluteX,absoluteY),
+                        onPartCleaned = { isClean ->
+                            if (isClean) {
+                                gameState.value.addScore(20)
+                                isAdvanceStageEnabled = gameState.value.advanceStage(cantStages)
+                                if (isAdvanceStageEnabled) {
+                                    offsetX = 0f
+                                    offsetY = 0f
+                                    stageInfo = checkNotNull(getStageInfo(gameState.value.getCurrentStage()))
+                                    parts = stageInfo.incorrectRandomHorseParts + stageInfo.correctHorsePart
+                                } else {
+                                    showCompletionDialog = true
+                                }
+                                coroutineScope.launch {
+                                    showZoomedView = false
+                                    gameState.value.setCustomMessage("¡La parte está limpia! Avanzando a la siguiente etapa.")
+                                    gameState.value.setMessageType("success")
+                                    delay(3000)
+                                    gameState.value.setMessageType("selection")
+                                    gameState.value.setCustomMessage("¿Qué parte del caballo debemos seleccionar ahora?")
+                                }
+                            }
                         }
                     )
                 }
@@ -311,9 +314,6 @@ fun GameScreen(navigateToMenu: () -> Unit) {
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                var absoluteX by remember { mutableStateOf(0f) }
-                var absoluteY by remember { mutableStateOf(0f) }
-
                 Box(
                     modifier = Modifier
                         .height(60.dp)
@@ -327,12 +327,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                                 .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
                                 .background(Color.Transparent)
                                 .onGloballyPositioned { coordinates ->
-                                    val positionInRoot =
-                                        coordinates.positionInRoot() // Obtienes la posición global de la herramienta
-                                    Log.d(
-                                        "GameDebug",
-                                        "Tool Absolute Position: x=${positionInRoot.x}, y=${positionInRoot.y}"
-                                    )
+                                    val positionInRoot = coordinates.positionInRoot()
                                     absoluteX = positionInRoot.x
                                     absoluteY = positionInRoot.y
                                 }
@@ -341,55 +336,6 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                                         change.consume()
                                         offsetX += dragAmount.x
                                         offsetY += dragAmount.y
-
-                                        Log.d(
-                                            "GameDebug",
-                                            "Fun = ${
-                                                isOverZoomedImage(
-                                                    absoluteX,
-                                                    absoluteY,
-                                                    zoomedImagePosition,
-                                                    zoomedImageSize
-                                                )
-                                            }"
-                                        )
-                                        if (isOverZoomedImage(
-                                                absoluteX,
-                                                absoluteY,
-                                                zoomedImagePosition,
-                                                zoomedImageSize
-                                            )
-                                        ) {
-                                            gameState.value.reduceDirtLevel(2)
-                                            Log.d(
-                                                "GameDebug",
-                                                "Cant suciedad = ${gameState.value.getAmountDirtyPart()}"
-                                            )
-
-                                            if (gameState.value.getAmountDirtyPart() <= 0) {
-                                                gameState.value.addScore(20)
-                                                isAdvanceStageEnabled =
-                                                    gameState.value.advanceStage(cantStages)
-                                                if (isAdvanceStageEnabled) {
-                                                    offsetX = 0f
-                                                    offsetY = 0f
-                                                    stageInfo =
-                                                        checkNotNull(getStageInfo(gameState.value.getCurrentStage()))
-                                                    parts =
-                                                        stageInfo.incorrectRandomHorseParts + stageInfo.correctHorsePart
-                                                } else {
-                                                    showCompletionDialog = true
-                                                }
-                                                coroutineScope.launch {
-                                                    showZoomedView = false
-                                                    gameState.value.setCustomMessage("¡La parte está limpia! Avanzando a la siguiente etapa.")
-                                                    gameState.value.setMessageType("success")
-                                                    delay(3000)
-                                                    gameState.value.setMessageType("selection")
-                                                    gameState.value.setCustomMessage("¿Qué parte del caballo debemos seleccionar ahora?")
-                                                }
-                                            }
-                                        }
                                     }
                                 }
                         ) {

@@ -1,6 +1,8 @@
 package com.cedica.cedica.ui.game
 
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Log
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -16,6 +18,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -23,6 +26,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -30,6 +35,7 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
@@ -193,6 +199,8 @@ fun HorsePartSelectionRandom(parts: Array<HorsePart>, onPartSelected: (String) -
                 .aspectRatio(originalImageWidth / originalImageHeight)
                 .onGloballyPositioned { coordinates ->
                     imageSize = coordinates.size
+                    Log.d("GameDebug", "Ancho:${imageSize.width}, alto:${imageSize.height}")
+
                 }
         )
 
@@ -258,7 +266,8 @@ fun HorsePartSelectionRandom(parts: Array<HorsePart>, onPartSelected: (String) -
 
 
 @Composable
-fun ZoomedHorsePart(part: HorsePart, onImagePositioned: (IntSize, IntOffset) -> Unit) {
+fun ZoomedHorsePart(part: HorsePart) {
+
     Box(
         modifier = Modifier
             .size(350.dp)
@@ -274,35 +283,40 @@ fun ZoomedHorsePart(part: HorsePart, onImagePositioned: (IntSize, IntOffset) -> 
                 .aspectRatio(originalImageWidth / originalImageHeight)
                 .onGloballyPositioned { coordinates ->
                     val size = coordinates.size
-                    val position = IntOffset(
-                        coordinates.positionInRoot().x.toInt(),
-                        coordinates.positionInRoot().y.toInt()
-                    )
-                    onImagePositioned(size, position)
+                    Log.d("PreviewDebug", "Image Size: ${size.width} x ${size.height}")
                 }
         )
     }
 }
 
 @Composable
-fun DirtyHorsePart(part: HorsePart = horseParts[0]) {
+fun DirtyHorsePart(part: HorsePart = horseParts[0], toolPosition: Offset, onPartCleaned: (Boolean) -> Unit) {
     val context = LocalContext.current
 
-    // Cargar imagen de la parte del caballo
     val horseBitmap = remember {
         BitmapFactory.decodeResource(context.resources, part.drawableRes)
     }
     val horseImage = remember { horseBitmap.asImageBitmap() }
 
-    // Cargar imagen de suciedad
     val dirtBitmap = remember {
-        BitmapFactory.decodeResource(context.resources, R.drawable.suciedad) // Reemplaza con tu drawable
+        BitmapFactory.decodeResource(context.resources, R.drawable.suciedad)
     }
-    val dirtImage = remember { dirtBitmap.asImageBitmap() }
 
-    // Generar posiciones aleatorias para las manchas
+    val dirtImage = remember { dirtBitmap.asImageBitmap() }
+    val dirtAlpha = remember { mutableFloatStateOf(1f) }
+
+    LaunchedEffect(toolPosition) {
+        if (isToolOverHorse(toolPosition, horseBitmap)) {
+            dirtAlpha.floatValue = (dirtAlpha.floatValue - 0.005f).coerceAtLeast(0f)
+        }
+    }
+
+    LaunchedEffect(dirtAlpha.floatValue) {
+         onPartCleaned(dirtAlpha.floatValue == 0f)
+    }
+
     val dirtPositions = remember {
-        List(5) { // Número de manchas
+        List(5) {
             val maxX = (horseBitmap.width - dirtBitmap.width).coerceAtLeast(1)
             val maxY = (horseBitmap.height - dirtBitmap.height).coerceAtLeast(1)
 
@@ -314,25 +328,57 @@ fun DirtyHorsePart(part: HorsePart = horseParts[0]) {
     }
 
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .size(350.dp)
+            .background(Color(0xFFFFE4B5)),
+        contentAlignment = Alignment.Center
+    ) {
         Canvas(
-            modifier = Modifier.aspectRatio(originalImageWidth / originalImageHeight)
+            modifier = Modifier
+                .fillMaxSize()
+                .aspectRatio(originalImageWidth / originalImageHeight)
         ) {
-            // Dibujar la imagen del caballo
-            drawImage(horseImage, Offset.Zero)
+            val canvasWidth = size.width
+            val canvasHeight = size.height
+            val imageWidth = horseImage.width.toFloat()
+            val imageHeight = horseImage.height.toFloat()
 
-            // Dibujar manchas en posiciones aleatorias
-            dirtPositions.forEach { position ->
-                drawImage(
-                    dirtImage,
-                    topLeft = position,
-                    blendMode = BlendMode.SrcAtop // Puedes probar Overlay o Multiply
-                )
+            val offsetX = (canvasWidth - imageWidth) / 2
+            val offsetY = (canvasHeight - imageHeight) / 2
+
+            drawImage(
+                image = horseImage,
+                topLeft = Offset(offsetX, offsetY)
+            )
+
+            val clipPath = Path().apply {
+                part.zoomedPolygon.forEachIndexed { index, (x, y) ->
+                    val scaledX = x * imageWidth + offsetX
+                    val scaledY = y * imageHeight + offsetY
+                    if (index == 0) moveTo(scaledX, scaledY) else lineTo(scaledX, scaledY)
+                }
+                close()
+            }
+
+            clipPath(clipPath) {
+                dirtPositions.forEach { position ->
+                    drawImage(
+                        dirtImage,
+                        topLeft = Offset(position.x + offsetX, position.y + offsetY),
+                        blendMode = BlendMode.SrcAtop
+                    )
+                }
             }
         }
     }
 }
 
+fun isToolOverHorse(toolPosition: Offset, horseBitmap: Bitmap): Boolean {
+    Log.d("GameDebug", "X:${toolPosition.x} Y:${toolPosition.y} Ancho imagen:${horseBitmap.width.toFloat()} Altura:${horseBitmap.height.toFloat()}")
+    return toolPosition.x in 0f..horseBitmap.width.toFloat() &&
+            toolPosition.y in 0f..horseBitmap.height.toFloat()
+}
 
 @Preview
 @Composable
@@ -355,11 +401,11 @@ fun PreviewRandomPartsHorse() {
 @Preview
 @Composable
 fun PreviewZoomedHorsePart() {
-    //ZoomedHorsePart(horseParts[0])
+    ZoomedHorsePart(horseParts[3])
 }
 
 @Preview
 @Composable
 fun PreviewDirtyHorsePart() {
-    DirtyHorsePart()
+    DirtyHorsePart(horseParts[5], Offset.Zero, onPartCleaned = {})
 }
