@@ -96,4 +96,7 @@ dependencies {
 
     // ViewModel
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+    // Pdf
+    implementation(libs.itext7.core)
 }

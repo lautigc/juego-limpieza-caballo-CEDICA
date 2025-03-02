@@ -19,3 +19,6 @@ object UserListScreen
 
 @Serializable
 object UserSetting
+
+@Serializable
+object Stats

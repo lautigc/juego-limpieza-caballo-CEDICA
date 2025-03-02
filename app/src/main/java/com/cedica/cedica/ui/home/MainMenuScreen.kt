@@ -41,15 +41,17 @@ import androidx.navigation.compose.rememberNavController
 import com.cedica.cedica.R
 import com.cedica.cedica.core.navigation.About
 import com.cedica.cedica.core.navigation.Game
+import com.cedica.cedica.core.navigation.Stats
 import com.cedica.cedica.core.navigation.UserListScreen
 import com.cedica.cedica.ui.AppViewModelProvider
 import com.cedica.cedica.ui.theme.CedicaTheme
+import com.cedica.cedica.ui.utils.UserViewModel
 
 data class MenuItem(val text: String, val destination: Any)
 
 val menuItems = listOf(
     MenuItem("Jugar", Game),
-    MenuItem("Progreso", About),
+    MenuItem("Progreso", Stats),
     MenuItem("Acerca de", About)
 )
 
@@ -149,7 +151,7 @@ fun VerticalLayout(navController: NavController) {
 @Composable
 fun MainMenuScreen(
     navController: NavController,
-    viewModel: MainMenuViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: UserViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
