@@ -39,16 +39,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.alpha
 import com.cedica.cedica.R
 import com.cedica.cedica.core.utils.HorsePart
-import com.cedica.cedica.core.utils.generateStains
 import com.cedica.cedica.core.utils.horseParts
 import com.cedica.cedica.core.utils.isPointInPolygon
 import com.cedica.cedica.core.utils.selectRandomParts
 import com.cedica.cedica.core.utils.smoothedHorseParts
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.random.Random
 
 const val originalImageWidth = 560f
 const val originalImageHeight = 445f
@@ -286,36 +285,54 @@ fun ZoomedHorsePart(part: HorsePart, onImagePositioned: (IntSize, IntOffset) -> 
 }
 
 @Composable
-fun DirtyHorsePart(part: HorsePart = horseParts[4]) {
+fun DirtyHorsePart(part: HorsePart = horseParts[0]) {
     val context = LocalContext.current
-    val bitmap = remember {
+
+    // Cargar imagen de la parte del caballo
+    val horseBitmap = remember {
         BitmapFactory.decodeResource(context.resources, part.drawableRes)
     }
-    val imageBitmap = remember { bitmap.asImageBitmap() }
+    val horseImage = remember { horseBitmap.asImageBitmap() }
 
-    val stains = remember { generateStains(20, bitmap.width, bitmap.height) }
+    // Cargar imagen de suciedad
+    val dirtBitmap = remember {
+        BitmapFactory.decodeResource(context.resources, R.drawable.suciedad) // Reemplaza con tu drawable
+    }
+    val dirtImage = remember { dirtBitmap.asImageBitmap() }
+
+    // Generar posiciones aleatorias para las manchas
+    val dirtPositions = remember {
+        List(5) { // Número de manchas
+            val maxX = (horseBitmap.width - dirtBitmap.width).coerceAtLeast(1)
+            val maxY = (horseBitmap.height - dirtBitmap.height).coerceAtLeast(1)
+
+            Offset(
+                x = Random.nextInt(0, maxX).toFloat(),
+                y = Random.nextInt(0, maxY).toFloat()
+            )
+        }
+    }
+
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Canvas(modifier = Modifier
-            .aspectRatio(originalImageWidth / originalImageHeight)
+        Canvas(
+            modifier = Modifier.aspectRatio(originalImageWidth / originalImageHeight)
         ) {
-            drawImage(imageBitmap, Offset.Zero)
+            // Dibujar la imagen del caballo
+            drawImage(horseImage, Offset.Zero)
 
-            stains.forEach { (position, radius) ->
-                    val pixel = bitmap.getPixel(position.x.toInt(), position.y.toInt())
-                    val alpha = pixel.alpha
-                    if (alpha != 0) {
-                        drawCircle(
-                            color = Color(0xFFFFE4B5).copy(alpha = 0.7f),
-                            radius = radius,
-                            center = position,
-                            blendMode = BlendMode.SrcIn,
-                        )
-                    }
+            // Dibujar manchas en posiciones aleatorias
+            dirtPositions.forEach { position ->
+                drawImage(
+                    dirtImage,
+                    topLeft = position,
+                    blendMode = BlendMode.SrcAtop // Puedes probar Overlay o Multiply
+                )
             }
         }
     }
 }
+
 
 @Preview
 @Composable
