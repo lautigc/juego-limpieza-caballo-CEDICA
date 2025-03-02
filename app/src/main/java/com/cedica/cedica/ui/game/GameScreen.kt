@@ -31,7 +31,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -47,6 +49,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.cedica.cedica.core.utils.HorsePart
 import com.cedica.cedica.R
 import com.cedica.cedica.core.utils.isInPreview
@@ -130,17 +134,36 @@ fun GameScreen(navigateToMenu: () -> Unit) {
         soundPlayer?.loadSound("snort", R.raw.snort_cut)
         soundPlayer?.loadSound("wrong", R.raw.wrong)
         soundPlayer?.loadSound("notification", R.raw.new_notification)
-        speech?.initialize()
     }
 
+    val isTtsReady = remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        val success = speech?.initialize()
+        if(success == true) {
+            speech.speak("Después de correr por todos lados y ensuciarse, tenemos como desafío limpiar a Coquito, vamos!. Hacé click en el botón para empezar")
+        }
+        isTtsReady.value = true
+    }
+
+    var isLoading = true
     if(showWelcomeDialog) {
-        WelcomeDialog() { showWelcomeDialog = false }
+        if(isTtsReady.value) {
+            isLoading = false
+            WelcomeDialog() {
+                showWelcomeDialog = false
+                speech?.speak("Selecciona la parte del caballo que hay que limpiar en esta etapa")
+            }
+        }
+        LoadingDialog(isLoading)
         gameState.value = gameState.value.copy(
             elapsedTime = 0
         )
     }
 
     if (showCompletionDialog) {
+        LaunchedEffect(Unit) {
+            speech?.speak("Completaste el juego, felicitaciones!!. Hacé click en el botón para volver al menú.")
+        }
         CompletionDialog(
             score = gameState.value.getScore(),
             time = gameState.value.getFormattedElapsedTime(),
@@ -160,6 +183,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                     if (showZoomedView && gameState.value.getSelectedTool() == null) {
                         if (tool.name == stageInfo.tool) {
                             // Si la herramienta seleccionada es la correcta
+                            speech?.speak("¡Excelente! Seleccionaste la herramienta correcta para la limpieza.")
                             gameState.value.setSelectedTool(tool.imageRes)
                             gameState.value.setCustomMessage("¡Excelente! Seleccionaste la herramienta correcta para la limpieza.")
                             gameState.value.setMessageType("success")
@@ -168,6 +192,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                         } else {
                             // Si la herramienta seleccionada es incorrecta
                             gameState.value.setCustomMessage("Ups... Seleccionaste la herramienta incorrecta. Intenta de nuevo.")
+                            speech?.speak("Ups... Seleccionaste la herramienta incorrecta. Intentá de nuevo.")
                             gameState.value.setMessageType("error")
                             soundPlayer?.playSound("wrong")
                         }
@@ -191,10 +216,6 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
-
-                Button(onClick = { speech?.speak("hola") }) {
-                    Text("Hablá")
-                }
 
                 Button(onClick = { navigateToMenu() }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFADD8E6))) {
                     Text("Volver al menú", color = Color.Black)
@@ -279,14 +300,17 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                                 showZoomedView = true
                                 coroutineScope.launch {
                                     gameState.value.setCustomMessage("¡Excelente! Seleccionaste la parte correcta del caballo")
+                                    speech?.speak("¡Excelente!")
                                     gameState.value.setMessageType("success")
                                     soundPlayer?.playSound("success")
                                     delay(2000)
                                     gameState.value.setCustomMessage("¿Qué herramienta debemos utilizar para limpiarla?")
+                                    speech?.speak("¿Qué herramienta debemos utilizar para limpiarla?")
                                     gameState.value.setMessageType("selection")
                                 }
                             } else {
                                 gameState.value.setCustomMessage("Ups... Seleccionaste la parte incorrecta. Intenta de nuevo.")
+                                speech?.speak("Ups... Seleccionaste la parte incorrecta. Intenta de nuevo.")
                                 gameState.value.setMessageType("error")
                                 soundPlayer?.playSound("wrong")
                             }
@@ -394,10 +418,12 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                                                 coroutineScope.launch {
                                                     showZoomedView = false
                                                     gameState.value.setCustomMessage("¡La parte está limpia! Avanzando a la siguiente etapa.")
+                                                    speech?.speak("Excelente")
                                                     gameState.value.setMessageType("success")
                                                     delay(3000)
                                                     gameState.value.setMessageType("selection")
                                                     gameState.value.setCustomMessage("¿Qué parte del caballo debemos seleccionar ahora?")
+                                                    speech?.speak("¿Qué parte del caballo debemos seleccionar ahora?")
                                                 }
                                             }
                                         }
@@ -632,7 +658,7 @@ fun WelcomeDialog(onDismiss: () -> Unit) {
                     )
                 )
                 Text(
-                    text = "Después de correr por todos lados y ensuciarse, tenemos como desafío limpiar a Coquito",
+                    text = "Después de correr por todos lados y ensuciarse, tenemos como desafío limpiar a Coquito.",
                     color = Color.Black
                 )
             }
@@ -655,6 +681,42 @@ fun WelcomeDialog(onDismiss: () -> Unit) {
     )
 }
 
+@Composable
+fun LoadingDialog(
+    isLoading: Boolean,
+    onDismissRequest: () -> Unit = {} // Opcional, por si necesitas manejar el cierre
+) {
+    if (isLoading) {
+        Dialog(
+            onDismissRequest = onDismissRequest, // Esto se ejecuta si el usuario intenta cerrar el diálogo (puede estar vacío si no querés permitir cerrar)
+            properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false) // Evita que se cierre accidentalmente
+        ) {
+            // Contenido del diálogo
+            Box(
+                modifier = Modifier
+                    .background(Color.White, shape = RoundedCornerShape(8.dp))
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(32.dp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = "Cargando...",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+        }
+    }
+}
 @RequiresApi(Build.VERSION_CODES.S)
 @Preview(showBackground = true, widthDp = 720, heightDp = 360)
 @Composable
