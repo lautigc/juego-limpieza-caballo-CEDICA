@@ -1,11 +1,11 @@
 package com.cedica.cedica.ui.home
 
+import android.content.pm.ActivityInfo
 import android.graphics.Paint
 import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -23,9 +23,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cedica.cedica.core.utils.exportToCSV
 import com.cedica.cedica.core.utils.exportToPDF
+import com.cedica.cedica.ui.AppViewModelProvider
+import com.cedica.cedica.ui.game.LockScreenOrientation
 import com.cedica.cedica.ui.theme.CedicaTheme
+import com.cedica.cedica.ui.utils.UserViewModel
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -86,7 +90,22 @@ val sampleGameSessions = listOf(
 )
 
 @Composable
-fun StatisticsScreen(studentName: String, gameSessions: List<GameSession>) {
+fun StatisticsScreen(
+    gameSessions: List<GameSession>,
+    viewModel: UserViewModel = viewModel(factory = AppViewModelProvider.Factory)
+) {
+    val uiState by viewModel.uiState.collectAsState()
+    StaticStatisticScreen(uiState.user.firstName, gameSessions)
+}
+
+@Composable
+private fun StaticStatisticScreen(
+    username: String,
+    gameSessions: List<GameSession>
+) {
+    // Esto es para orientar la pantalla en sentido vertical
+    LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
+
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     var showChart by remember { mutableStateOf(true) } // Estado para controlar la visibilidad del gráfico
@@ -101,16 +120,19 @@ fun StatisticsScreen(studentName: String, gameSessions: List<GameSession>) {
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
+
+
             // Título
             Text(
-                text = "Progreso de $studentName",
+                text = "Progreso de $username",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
             // Botón para alternar la visibilidad del gráfico
-            Button(onClick = { showChart = !showChart },
+            Button(
+                onClick = { showChart = !showChart },
                 modifier = Modifier
                     .padding(bottom = 8.dp)
             )
@@ -171,81 +193,6 @@ fun StatisticsScreen(studentName: String, gameSessions: List<GameSession>) {
         }
     }
 }
-
-// Pantalla de estadísticas
-//@Composable
-//fun StatisticsScreen(studentName: String, gameSessions: List<GameSession>) {
-//    val snackbarHostState = remember { SnackbarHostState() }
-//    val coroutineScope = rememberCoroutineScope()
-//
-//    Scaffold(
-//        snackbarHost = { SnackbarHost(snackbarHostState) }
-//    ) { paddingValues ->
-//        Column(
-//            modifier = Modifier
-//                .background(Color(0xFFADD8E6))
-//                .fillMaxSize()
-//                .padding(paddingValues)
-//                .padding(16.dp)
-//        ) {
-//            // Título
-//            Text(
-//                text = "Progreso de $studentName",
-//                fontSize = 24.sp,
-//                fontWeight = FontWeight.Bold,
-//                modifier = Modifier.padding(bottom = 16.dp)
-//            )
-//
-//            // Gráficos
-//            Text("Partidas recientes")
-//            Box(modifier = Modifier
-//                .background(Color.LightGray)
-//                .border(2.dp, Color.Black)
-//                .padding(16.dp)
-//            ) {
-//                PerformanceCharts(gameSessions)
-//            }
-//
-//            // Historial de partidas
-//            Text(
-//                text = "Historial de Partidas",
-//                fontSize = 20.sp,
-//                fontWeight = FontWeight.Bold,
-//                modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
-//            )
-//
-//            Box(
-//                modifier = Modifier
-//                    .weight(1f)
-//                    .fillMaxWidth()
-//            ) {
-//                GameHistoryList(gameSessions)
-//            }
-//
-//            Row(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(top = 16.dp),
-//                horizontalArrangement = Arrangement.SpaceEvenly,
-//            ) {
-//                Button(onClick = {
-//                    exportToPDF(gameSessions)
-//                    coroutineScope.launch {
-//                        snackbarHostState.showSnackbar("El pdf se guardó en descargas")
-//                    }
-//                })
-//                { Text("Exportar PDF") }
-//                Button(onClick = {
-//                    exportToCSV(gameSessions)
-//                    coroutineScope.launch {
-//                        snackbarHostState.showSnackbar("El csv se guardó en descargas")
-//                    }
-//                })
-//                { Text("Exportar CSV") }
-//            }
-//        }
-//    }
-//}
 
 @Composable
 fun PerformanceCharts(gameSessions: List<GameSession>) {
@@ -422,8 +369,8 @@ fun GameSessionItem(session: GameSession) {
 @Composable
 fun StatisticsScreenPreview() {
     CedicaTheme {
-        StatisticsScreen(
-            studentName = "Juan Pérez",
+        StaticStatisticScreen(
+            username = "Juan Pérez",
             gameSessions = sampleGameSessions
         )
     }

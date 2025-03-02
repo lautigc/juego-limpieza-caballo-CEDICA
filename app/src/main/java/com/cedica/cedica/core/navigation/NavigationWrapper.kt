@@ -58,7 +58,6 @@ fun NavigationWrapper() {
         composable<Stats> {
             // TODO: quitar parametros cuando se tomen los datos
             StatisticsScreen(
-                studentName = "Juan",
                 gameSessions = sampleGameSessions
             )
         }

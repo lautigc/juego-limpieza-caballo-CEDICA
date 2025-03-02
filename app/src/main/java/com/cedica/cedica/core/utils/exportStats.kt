@@ -11,9 +11,7 @@ import com.itextpdf.layout.Document
 import com.itextpdf.layout.element.Paragraph
 import com.itextpdf.layout.properties.TextAlignment
 import java.io.File
-import java.io.FileWriter
 import java.io.OutputStreamWriter
-import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import java.util.Date
 import java.util.Locale

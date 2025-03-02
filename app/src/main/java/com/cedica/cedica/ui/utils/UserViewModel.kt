@@ -1,4 +1,4 @@
-package com.cedica.cedica.ui.home
+package com.cedica.cedica.ui.utils
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,21 +10,21 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
-data class MainMenuUiState(
+data class UserUiState(
     val user: User,
 )
 
-class MainMenuViewModel(
+class UserViewModel(
     private val userID: Flow<Int>,
     private val db : DB
 ): ViewModel() {
 
     val uiState = userID.map {
-        if (it == GuestUser.id) MainMenuUiState(GuestUser) else MainMenuUiState(db.userDao().getByID(it))
+        if (it == GuestUser.id) UserUiState(GuestUser) else UserUiState(db.userDao().getByID(it))
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-        initialValue = MainMenuUiState(GuestUser)
+        initialValue = UserUiState(GuestUser)
     )
 
     companion object {
