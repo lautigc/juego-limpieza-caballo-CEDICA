@@ -1,4 +1,4 @@
-package com.cedica.cedica.data.repository.api
+package com.cedica.cedica.data.repository.interfaces
 
 import com.cedica.cedica.data.user.Patient
 import com.cedica.cedica.data.user.UserPatient

@@ -3,11 +3,13 @@ package com.cedica.cedica.ui.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cedica.cedica.core.session.Session
+import com.cedica.cedica.data.repository.interfaces.PatientRepository
+import com.cedica.cedica.data.repository.interfaces.TherapistRepository
+import com.cedica.cedica.data.repository.interfaces.UserRepository
 import com.cedica.cedica.data.user.GuestUser
 import com.cedica.cedica.data.user.Patient
 import com.cedica.cedica.data.user.Therapist
 import com.cedica.cedica.data.user.User
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -23,16 +25,16 @@ data class ProfileListScreenUiState(
 
 class ProfileListScreenViewModel(
     private val session: Session,
-    private val users: Flow<List<User>>,
-    private val patients: Flow<List<Patient>>,
-    private val therapists: Flow<List<Therapist>>,
+    private val userRepository: UserRepository,
+    private val patientRepository: PatientRepository,
+    private val therapistRepository: TherapistRepository,
 ): ViewModel() {
 
     val uiState: StateFlow<ProfileListScreenUiState> =
         combine(
-            this.users,
-            this.therapists,
-            this.patients,
+            this.userRepository.getAll(),
+            this.therapistRepository.getAll(),
+            this.patientRepository.getAll(),
             this.session.getUserID(),
         ) { userFlow, therapistFlow, patientFlow, userID ->
             ProfileListScreenUiState(

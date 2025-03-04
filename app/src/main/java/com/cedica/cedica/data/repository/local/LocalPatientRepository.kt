@@ -1,6 +1,6 @@
 package com.cedica.cedica.data.repository.local
 
-import com.cedica.cedica.data.repository.api.PatientRepository
+import com.cedica.cedica.data.repository.interfaces.PatientRepository
 import com.cedica.cedica.data.user.Patient
 import com.cedica.cedica.data.user.PatientDao
 import com.cedica.cedica.data.user.UserPatient

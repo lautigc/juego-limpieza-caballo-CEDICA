@@ -1,4 +1,4 @@
-package com.cedica.cedica.data.repository.api
+package com.cedica.cedica.data.repository.interfaces
 
 import kotlinx.coroutines.flow.Flow
 

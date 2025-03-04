@@ -24,9 +24,9 @@ object AppViewModelProvider {
         initializer {
             ProfileListScreenViewModel(
                 session = Session,
-                users = DB.userDao().getAllUsers(),
-                patients = DB.patientDao().getAll(),
-                therapists = DB.therapistDao().getAll(),
+                userRepository = RepositoryProvider.userRepository,
+                patientRepository = RepositoryProvider.patientRepository,
+                therapistRepository = RepositoryProvider.therapistRepository,
             )
         }
     }

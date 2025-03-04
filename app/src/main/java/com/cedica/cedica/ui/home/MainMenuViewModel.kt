@@ -2,7 +2,7 @@ package com.cedica.cedica.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cedica.cedica.data.repository.api.UserRepository
+import com.cedica.cedica.data.repository.interfaces.UserRepository
 import com.cedica.cedica.data.user.GuestUser
 import com.cedica.cedica.data.user.User
 import kotlinx.coroutines.flow.Flow

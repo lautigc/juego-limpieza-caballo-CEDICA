@@ -1,6 +1,6 @@
 package com.cedica.cedica.data.repository.local
 
-import com.cedica.cedica.data.repository.api.TherapistRepository
+import com.cedica.cedica.data.repository.interfaces.TherapistRepository
 import com.cedica.cedica.data.user.Therapist
 import com.cedica.cedica.data.user.TherapistDao
 import com.cedica.cedica.data.user.UserTherapist
