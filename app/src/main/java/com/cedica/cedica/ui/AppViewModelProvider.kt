@@ -16,7 +16,7 @@ object AppViewModelProvider {
 
         initializer {
             MainMenuViewModel(
-                userID = Session.getUserID(),
+                session = Session,
                 userRepository = RepositoryProvider.userRepository
             )
         }

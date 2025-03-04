@@ -2,6 +2,7 @@ package com.cedica.cedica.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cedica.cedica.core.session.Session
 import com.cedica.cedica.data.repository.interfaces.UserRepository
 import com.cedica.cedica.data.user.GuestUser
 import com.cedica.cedica.data.user.User
@@ -15,12 +16,11 @@ data class MainMenuUiState(
 )
 
 class MainMenuViewModel(
-    private val userID: Flow<Long>,
+    private val session: Session,
     private val userRepository: UserRepository,
-
     ): ViewModel() {
 
-    val uiState = userID.map {
+    val uiState = session.getUserID().map {
         if (it == GuestUser.id) MainMenuUiState(GuestUser) else MainMenuUiState(userRepository.getByID(it))
     }.stateIn(
         scope = viewModelScope,
