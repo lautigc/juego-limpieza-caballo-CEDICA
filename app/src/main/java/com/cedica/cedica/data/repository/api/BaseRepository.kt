@@ -1,27 +1,23 @@
-package com.cedica.cedica.data.generic
+package com.cedica.cedica.data.repository.api
 
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 
-interface BaseDao<T> {
 
-    @Insert
+interface BaseRepository<T> {
+
     suspend fun insert(entity: T)
 
-    @Insert
     suspend fun insert(entities: List<T>)
 
-    @Update
     suspend fun update(entity: T)
 
-    @Update
     suspend fun update(entities: List<T>)
 
-    @Delete
     suspend fun delete(entity: T)
 
-    @Delete
     suspend fun delete(entities: List<T>)
-}
 
+    fun getAll(): Flow<List<T>>
+
+    suspend fun getByID(id: Long): T
+}

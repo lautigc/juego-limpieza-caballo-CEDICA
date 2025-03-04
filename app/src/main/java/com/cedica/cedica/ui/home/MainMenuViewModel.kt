@@ -15,7 +15,7 @@ data class MainMenuUiState(
 )
 
 class MainMenuViewModel(
-    private val userID: Flow<Int>,
+    private val userID: Flow<Long>,
     private val db : DB
 ): ViewModel() {
 

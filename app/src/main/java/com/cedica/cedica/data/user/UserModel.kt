@@ -25,7 +25,7 @@ val GuestUser = User(
     ]
 )
 data class User(
-    @PrimaryKey(autoGenerate = true)  val id: Int = 0,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val role: Role,
     @ColumnInfo(collate = ColumnInfo.NOCASE) val firstName: String,
     @ColumnInfo(collate = ColumnInfo.NOCASE) val lastName: String,
@@ -41,5 +41,5 @@ interface UserDao: BaseDao<User> {
     fun getAllUsers(): Flow<List<User>>
 
     @Query("SELECT * FROM User WHERE id = :id")
-    suspend fun getByID(id: Int): User
+    suspend fun getByID(id: Long): User
 }

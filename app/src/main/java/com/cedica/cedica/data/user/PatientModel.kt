@@ -30,7 +30,7 @@ enum class Gender(val code: Int) {
         )]
 )
 data class Patient(
-    @PrimaryKey val userID: Int,
+    @PrimaryKey val userID: Long,
     val gender: Gender,
     val observations: String,
     val birthDate: Date,
@@ -49,11 +49,11 @@ data class UserPatient(
 interface PatientDao: BaseDao<Patient> {
 
     @Query("SELECT * FROM User")
-    suspend fun getAllUserPatient(): UserPatient
+    fun getAllUserPatient(): Flow<List<UserPatient>>
 
     @Query("SELECT * FROM Patient")
     fun getAll(): Flow<List<Patient>>
 
     @Query("SELECT * FROM Patient WHERE userID = :userID")
-    suspend fun getPK(userID: Int): Patient
+    suspend fun getByID(userID: Long): Patient
 }

@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.Flow
         )]
 )
 data class Therapist(
-    @PrimaryKey val userID: Int,
+    @PrimaryKey val userID: Long,
 )
 
 data class UserTherapist(
@@ -41,4 +41,7 @@ interface TherapistDao: BaseDao<Therapist> {
 
     @Query("SELECT * FROM User")
     fun getAllUserTherapist(): Flow<List<UserTherapist>>
+
+    @Query("SELECT * FROM Therapist WHERE userID = :userID")
+    suspend fun getByID(userID: Long): Therapist
 }
