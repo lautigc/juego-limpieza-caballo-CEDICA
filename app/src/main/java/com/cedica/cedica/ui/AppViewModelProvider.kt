@@ -4,6 +4,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.cedica.cedica.core.session.Session
 import com.cedica.cedica.data.DB
+import com.cedica.cedica.data.repository.RepositoryProvider
 import com.cedica.cedica.ui.home.MainMenuViewModel
 import com.cedica.cedica.ui.profile.ProfileListScreenViewModel
 
@@ -16,7 +17,7 @@ object AppViewModelProvider {
         initializer {
             MainMenuViewModel(
                 userID = Session.getUserID(),
-                db = DB,
+                userRepository = RepositoryProvider.userRepository
             )
         }
 
