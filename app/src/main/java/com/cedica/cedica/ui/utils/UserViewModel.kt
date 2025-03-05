@@ -5,13 +5,14 @@ import androidx.lifecycle.viewModelScope
 import com.cedica.cedica.core.session.Session
 import com.cedica.cedica.data.repository.interfaces.UserRepository
 import com.cedica.cedica.data.user.GuestUser
+import com.cedica.cedica.data.user.LoadingUser
 import com.cedica.cedica.data.user.User
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 data class UserUiState(
-    val user: User,
+    val user: User = LoadingUser,
 )
 
 class UserViewModel(
@@ -24,7 +25,7 @@ class UserViewModel(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-        initialValue = UserUiState(GuestUser)
+        initialValue = UserUiState()
     )
 
     companion object {

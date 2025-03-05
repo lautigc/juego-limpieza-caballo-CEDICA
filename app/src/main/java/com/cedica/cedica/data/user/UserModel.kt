@@ -18,6 +18,13 @@ val GuestUser = User(
     lastName = "",
 )
 
+val LoadingUser = User(
+    id = -1,
+    role = Role.GUEST,
+    firstName = "Cargando",
+    lastName = "",
+)
+
 @Entity(
     tableName = "User",
     indices = [
