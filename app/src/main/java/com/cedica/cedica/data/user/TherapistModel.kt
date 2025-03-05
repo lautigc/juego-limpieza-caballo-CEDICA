@@ -25,12 +25,12 @@ data class Therapist(
 )
 
 data class UserTherapist(
-    @Embedded val user: User,
+    @Embedded val therapist: Therapist,
     @Relation(
-        parentColumn = "id",
-        entityColumn = "userID"
+        parentColumn = "userID",
+        entityColumn = "id"
     )
-    val therapist: Therapist
+    val user: User
 )
 
 @Dao
@@ -39,7 +39,7 @@ interface TherapistDao: BaseDao<Therapist> {
     @Query("SELECT * FROM Therapist")
     fun getAll(): Flow<List<Therapist>>
 
-    @Query("SELECT * FROM User")
+    @Query("SELECT * FROM Therapist")
     fun getAllUserTherapist(): Flow<List<UserTherapist>>
 
     @Query("SELECT * FROM Therapist WHERE userID = :userID")

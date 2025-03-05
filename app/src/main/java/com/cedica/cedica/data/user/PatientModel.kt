@@ -37,18 +37,18 @@ data class Patient(
 )
 
 data class UserPatient(
-    @Embedded val user: User,
+    @Embedded val patient: Patient,
     @Relation(
-        parentColumn = "id",
-        entityColumn = "userID"
+        parentColumn = "userID",
+        entityColumn = "id"
     )
-    val patient: Patient
+    val user: User
 )
 
 @Dao
 interface PatientDao: BaseDao<Patient> {
 
-    @Query("SELECT * FROM User")
+    @Query("SELECT * FROM Patient")
     fun getAllUserPatient(): Flow<List<UserPatient>>
 
     @Query("SELECT * FROM Patient")
