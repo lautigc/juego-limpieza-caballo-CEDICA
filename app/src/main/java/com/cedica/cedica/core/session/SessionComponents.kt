@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.cedica.cedica.data.user.GuestUser
 import kotlinx.coroutines.flow.Flow
@@ -29,15 +30,15 @@ object Session {
     }
 
     // Key-values for datastore
-    private val USER_ID = intPreferencesKey("USER_ID")
+    private val USER_ID = longPreferencesKey("USER_ID")
 
-    suspend fun setUserID(userID: Int) {
+    suspend fun setUserID(userID: Long) {
         this.dataStore.edit { preferences ->
             preferences[USER_ID] = userID
         }
     }
 
-    fun getUserID(): Flow<Int> {
+    fun getUserID(): Flow<Long> {
         return this.dataStore.data.map { preferences ->
             preferences[USER_ID] ?: GuestUser.id
         }

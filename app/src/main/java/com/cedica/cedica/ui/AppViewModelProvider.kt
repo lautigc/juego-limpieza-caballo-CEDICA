@@ -3,9 +3,9 @@ package com.cedica.cedica.ui
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.cedica.cedica.core.session.Session
-import com.cedica.cedica.data.DB
-import com.cedica.cedica.ui.utils.UserViewModel
+import com.cedica.cedica.data.repository.RepositoryProvider
 import com.cedica.cedica.ui.profile.ProfileListScreenViewModel
+import com.cedica.cedica.ui.utils.UserViewModel
 
 /**
  * Provides Factory to create instance of ViewModel for the entire Inventory app
@@ -15,17 +15,17 @@ object AppViewModelProvider {
 
         initializer {
             UserViewModel(
-                userID = Session.getUserID(),
-                db = DB,
+                session = Session,
+                userRepository = RepositoryProvider.userRepository
             )
         }
 
         initializer {
             ProfileListScreenViewModel(
                 session = Session,
-                users = DB.userDao().getAllUsers(),
-                patients = DB.patientDao().getAllPatients(),
-                therapists = DB.therapistDao().getAllTherapists(),
+                userRepository = RepositoryProvider.userRepository,
+                patientRepository = RepositoryProvider.patientRepository,
+                therapistRepository = RepositoryProvider.therapistRepository,
             )
         }
     }
