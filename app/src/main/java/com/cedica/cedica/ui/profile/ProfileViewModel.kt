@@ -7,9 +7,9 @@ import com.cedica.cedica.data.repository.interfaces.PatientRepository
 import com.cedica.cedica.data.repository.interfaces.TherapistRepository
 import com.cedica.cedica.data.repository.interfaces.UserRepository
 import com.cedica.cedica.data.user.GuestUser
-import com.cedica.cedica.data.user.Patient
-import com.cedica.cedica.data.user.Therapist
 import com.cedica.cedica.data.user.User
+import com.cedica.cedica.data.user.UserPatient
+import com.cedica.cedica.data.user.UserTherapist
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -18,8 +18,8 @@ import kotlinx.coroutines.launch
 
 data class ProfileListScreenUiState(
     val users: List<User> = emptyList(),
-    val therapists: List<Therapist> = emptyList(),
-    val patients: List<Patient> = emptyList(),
+    val therapists: List<UserTherapist> = emptyList(),
+    val patients: List<UserPatient> = emptyList(),
     val currentUser: User = GuestUser,
 )
 
@@ -33,8 +33,8 @@ class ProfileListScreenViewModel(
     val uiState: StateFlow<ProfileListScreenUiState> =
         combine(
             this.userRepository.getAll(),
-            this.therapistRepository.getAll(),
-            this.patientRepository.getAll(),
+            this.therapistRepository.getAllUserTherapist(),
+            this.patientRepository.getAllUserPatient(),
             this.session.getUserID(),
         ) { userFlow, therapistFlow, patientFlow, userID ->
             ProfileListScreenUiState(
