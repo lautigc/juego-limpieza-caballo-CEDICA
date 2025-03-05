@@ -56,10 +56,16 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -83,6 +89,94 @@ import com.cedica.cedica.data.user.User
 import com.cedica.cedica.ui.theme.CedicaTheme
 import kotlinx.coroutines.launch
 
+/**
+ * A custom Composable for creating a tabbed interface.
+ *
+ * @param tabs List of tab titles.
+ * @param contentScreens List of Composable functions representing content screens for each tab.
+ * @param modifier Modifier for the parent layout.
+ * @param containerColor Background color for the tab row container.
+ * @param contentColor Color for the text content of the tabs.
+ * @param indicatorColor Color for the indicator line.
+ */
+@Composable
+fun TabRowComponent(
+    tabs: List<String>,
+    contentScreens: List<@Composable () -> Unit>,
+    modifier: Modifier = Modifier,
+    containerColor: Color = MaterialTheme.colorScheme.primaryContainer,
+    contentColor: Color = MaterialTheme.colorScheme.onPrimaryContainer,
+    indicatorColor: Color = MaterialTheme.colorScheme.inversePrimary
+) {
+    // State to keep track of the selected tab index
+    var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
+
+    // Column layout to arrange tabs vertically and display content screens
+    Column(modifier = modifier.fillMaxSize()) {
+        // TabRow composable to display tabs
+        TabRow(
+            selectedTabIndex = selectedTabIndex,
+            containerColor = containerColor,
+            contentColor = contentColor,
+            indicator = { tabPositions ->
+                // Indicator for the selected tab
+                SecondaryIndicator(
+                    modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
+                    color = indicatorColor
+                )
+            }
+        ) {
+            // Iterate through each tab title and create a tab
+            tabs.forEachIndexed { index, tabTitle ->
+                Tab(
+                    modifier = Modifier.padding(all = dimensionResource(R.dimen.padding_medium)),
+                    selected = selectedTabIndex == index,
+                    onClick = { selectedTabIndex = index }
+                ) {
+                    // Text displayed on the tab
+                    Text(text = tabTitle)
+                }
+            }
+        }
+
+        // Display the content screen corresponding to the selected tab
+        contentScreens[selectedTabIndex].invoke()
+    }
+}
+
+@Composable
+fun UserScreen(
+    patients: List<User>,
+    therapists: List<User>,
+    currentUser: User,
+    onLogin: (User) -> Unit = {},
+    onUserSetting: () -> Unit = {},
+) {
+    TabRowComponent(
+        tabs = listOf("Alumnos", "Maestros"),
+        contentScreens = listOf(
+            {
+                UserList(
+                    users = patients,
+                    currentUser = currentUser,
+                    onLogin = onLogin,
+                    onUserSetting = onUserSetting,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            {
+                UserList(
+                    users = therapists,
+                    currentUser = currentUser,
+                    onLogin = onLogin,
+                    onUserSetting = onUserSetting,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        )
+    )
+}
+
 @Composable
 fun UserList(
     users: List<User>,
@@ -103,7 +197,9 @@ fun UserList(
             ),
         contentPadding = PaddingValues(dimensionResource(R.dimen.padding_small)),
     ) {
-        CurrentUserItem(currentUser, userItemModifier, users, onLogin, onUserSetting)
+        if (currentUser in users) {
+            CurrentUserItem(currentUser, userItemModifier, users, onLogin, onUserSetting)
+        }
 
         itemsIndexed(users) { _, user ->
             if (user.id != currentUser.id) {
@@ -575,5 +671,34 @@ fun DropdownMenuWithDetails() {
                 onClick = { /* Do something... */ }
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun TabRowComponentPreview() {
+    CedicaTheme {
+        TabRowComponent(
+            tabs = listOf("Tab 1", "Tab 2", "Tab 3"),
+            contentScreens = listOf(
+                { Text("Contenido de Tab 1") },
+                { Text("Contenido de Tab 2") },
+                { Text("Contenido de Tab 3") }
+            )
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun UserScreenPreview() {
+    CedicaTheme {
+        UserScreen(
+            patients = users_seed,
+            therapists = users_seed.slice(3..6),
+            currentUser = users_seed.first(),
+            onLogin = {},
+            onUserSetting = {}
+        )
     }
 }
