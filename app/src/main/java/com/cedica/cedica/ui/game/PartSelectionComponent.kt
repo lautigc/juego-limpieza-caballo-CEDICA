@@ -2,6 +2,7 @@ package com.cedica.cedica.ui.game
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Region
 import android.util.Log
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.core.tween
@@ -17,6 +18,9 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableFloatState
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -32,6 +36,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -292,7 +297,8 @@ fun ZoomedHorsePart(part: HorsePart) {
 @Composable
 fun DirtyHorsePart(part: HorsePart = horseParts[0], toolPosition: Offset, onPartCleaned: (Boolean) -> Unit) {
     val context = LocalContext.current
-
+    val offsetX = remember { mutableFloatStateOf(0f) }
+    val offsetY = remember { mutableFloatStateOf(0f) }
     val horseBitmap = remember {
         BitmapFactory.decodeResource(context.resources, part.drawableRes)
     }
@@ -305,8 +311,37 @@ fun DirtyHorsePart(part: HorsePart = horseParts[0], toolPosition: Offset, onPart
     val dirtImage = remember { dirtBitmap.asImageBitmap() }
     val dirtAlpha = remember { mutableFloatStateOf(1f) }
 
+    val clipPath by remember {
+        derivedStateOf {
+            Path().apply {
+                part.zoomedPolygon.forEachIndexed { index, (x, y) ->
+                    val scaledX = x * horseImage.width + offsetX.floatValue
+                    val scaledY = y * horseImage.height + offsetY.floatValue
+                    if (index == 0) moveTo(scaledX, scaledY) else lineTo(scaledX, scaledY)
+                }
+                close()
+            }
+        }
+    }
+
+    var imageSize by remember { mutableStateOf(IntSize.Zero) }
+    var imagePosition by remember { mutableStateOf(IntOffset.Zero) }
+
+    // Detectar si la herramienta está dentro de la imagen
+    val isToolOverImage = remember(toolPosition, imageSize, imagePosition) {
+        val margin = 200
+        val withinX = toolPosition.x in (imagePosition.x + margin).toFloat()..(imagePosition.x + imageSize.width - margin).toFloat()
+        val withinY = toolPosition.y in (imagePosition.y + margin).toFloat()..(imagePosition.y + imageSize.height - margin).toFloat()
+
+        Log.d("GameDebug", "🔵 Imagen (x: ${imagePosition.x}, y: ${imagePosition.y}), Tamaño (w: ${imageSize.width}, h: ${imageSize.height})")
+        Log.d("GameDebug", "🔴 Herramienta (x: ${toolPosition.x}, y: ${toolPosition.y})")
+        Log.d("GameDebug", "🟢 Dentro de imagen: $withinX && $withinY → ${withinX && withinY}")
+
+        withinX && withinY
+    }
+
     LaunchedEffect(toolPosition) {
-        if (isToolOverHorse(toolPosition, horseBitmap)) {
+        if (isToolOverImage) {
             dirtAlpha.floatValue = (dirtAlpha.floatValue - 0.005f).coerceAtLeast(0f)
         }
     }
@@ -331,7 +366,14 @@ fun DirtyHorsePart(part: HorsePart = horseParts[0], toolPosition: Offset, onPart
     Box(
         modifier = Modifier
             .size(350.dp)
-            .background(Color(0xFFFFE4B5)),
+            .background(Color(0xFFFFE4B5))
+            .onGloballyPositioned { coordinates ->
+                imageSize = coordinates.size
+                imagePosition = IntOffset(
+                    coordinates.positionInRoot().x.toInt(),
+                    coordinates.positionInRoot().y.toInt()
+                )
+            },
         contentAlignment = Alignment.Center
     ) {
         Canvas(
@@ -344,40 +386,32 @@ fun DirtyHorsePart(part: HorsePart = horseParts[0], toolPosition: Offset, onPart
             val imageWidth = horseImage.width.toFloat()
             val imageHeight = horseImage.height.toFloat()
 
-            val offsetX = (canvasWidth - imageWidth) / 2
-            val offsetY = (canvasHeight - imageHeight) / 2
+            offsetX.floatValue = (canvasWidth - imageWidth) / 2
+            offsetY.floatValue = (canvasHeight - imageHeight) / 2
 
             drawImage(
                 image = horseImage,
-                topLeft = Offset(offsetX, offsetY)
+                topLeft = Offset(offsetX.floatValue, offsetY.floatValue)
             )
 
-            val clipPath = Path().apply {
-                part.zoomedPolygon.forEachIndexed { index, (x, y) ->
-                    val scaledX = x * imageWidth + offsetX
-                    val scaledY = y * imageHeight + offsetY
-                    if (index == 0) moveTo(scaledX, scaledY) else lineTo(scaledX, scaledY)
-                }
-                close()
-            }
+            drawPath(
+                path = clipPath,
+                color = Color.Red,
+                style = Stroke(width = 4f)
+            )
 
             clipPath(clipPath) {
                 dirtPositions.forEach { position ->
                     drawImage(
                         dirtImage,
-                        topLeft = Offset(position.x + offsetX, position.y + offsetY),
+                        topLeft = Offset(position.x + offsetX.floatValue, position.y + offsetY.floatValue),
+                        alpha = dirtAlpha.floatValue,
                         blendMode = BlendMode.SrcAtop
                     )
                 }
             }
         }
     }
-}
-
-fun isToolOverHorse(toolPosition: Offset, horseBitmap: Bitmap): Boolean {
-    Log.d("GameDebug", "X:${toolPosition.x} Y:${toolPosition.y} Ancho imagen:${horseBitmap.width.toFloat()} Altura:${horseBitmap.height.toFloat()}")
-    return toolPosition.x in 0f..horseBitmap.width.toFloat() &&
-            toolPosition.y in 0f..horseBitmap.height.toFloat()
 }
 
 @Preview
