@@ -150,6 +150,7 @@ fun UserScreen(
     therapists: List<User>,
     currentUser: User,
     onLogin: (User) -> Unit = {},
+    onDelete: (User) -> Unit = {},
     onUserSetting: () -> Unit = {},
 ) {
     TabRowComponent(
@@ -160,6 +161,7 @@ fun UserScreen(
                     users = patients,
                     currentUser = currentUser,
                     onLogin = onLogin,
+                    onDelete = onDelete,
                     onUserSetting = onUserSetting,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -169,6 +171,7 @@ fun UserScreen(
                     users = therapists,
                     currentUser = currentUser,
                     onLogin = onLogin,
+                    onDelete = onDelete,
                     onUserSetting = onUserSetting,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -182,6 +185,7 @@ fun UserList(
     users: List<User>,
     currentUser: User,
     onLogin: (User) -> Unit = {},
+    onDelete: (User) -> Unit = {},
     onUserSetting: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -198,7 +202,14 @@ fun UserList(
         contentPadding = PaddingValues(dimensionResource(R.dimen.padding_small)),
     ) {
         if (currentUser in users) {
-            CurrentUserItem(currentUser, userItemModifier, users, onLogin, onUserSetting)
+            CurrentUserItem(
+                currentUser = currentUser,
+                userItemModifier = userItemModifier,
+                users = users,
+                onLogin = onLogin,
+                onDelete = onDelete,
+                onUserSetting = onUserSetting
+            )
         }
 
         itemsIndexed(users) { _, user ->
@@ -207,6 +218,7 @@ fun UserList(
                     userItem = user,
                     modifier = userItemModifier,
                     onLogin = { onLogin(user) },
+                    onDelete = { onDelete(user) },
                     onUserSetting = onUserSetting,
                     currentUser = currentUser,
                 )
@@ -222,6 +234,7 @@ public fun LazyListScope.CurrentUserItem(
     userItemModifier: Modifier,
     users: List<User>,
     onLogin: (User) -> Unit,
+    onDelete: (User) -> Unit,
     onUserSetting: () -> Unit
 ) {
 
@@ -256,6 +269,7 @@ public fun LazyListScope.CurrentUserItem(
                         userItem = currentUser,
                         currentUser = currentUser,
                         onLogin = { onLogin(currentUser) },
+                        onDelete = { onDelete(currentUser) },
                         onUserSetting = onUserSetting,
                     )
                 }
@@ -270,15 +284,22 @@ fun UserItem(
     userItem: User,
     currentUser: User,
     cardColors: CardColors = CardDefaults.cardColors(),
-    onLogin: () -> Unit,
-    onUserSetting: () -> Unit,
+    onLogin: () -> Unit = {},
+    onDelete: () -> Unit = {},
+    onUserSetting: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Card(
         modifier = modifier,
         colors = cardColors,
     ) {
-        ContentItem(userItem, currentUser, onLogin, onUserSetting)
+        ContentItem(
+            userItem = userItem,
+            currentUser = currentUser,
+            onLogin = onLogin,
+            onDelete = onDelete,
+            onUserSetting = onUserSetting,
+        )
     }
 }
 
@@ -287,6 +308,7 @@ private fun ContentItem(
     userItem: User,
     currentUser: User,
     onLogin: () -> Unit,
+    onDelete: () -> Unit,
     onUserSetting: () -> Unit
 ) {
     Column {
@@ -311,6 +333,7 @@ private fun ContentItem(
             ItemUserActions(
                 isCurrent = userItem.id == currentUser.id,
                 onLogin = onLogin,
+                onDelete = onDelete,
                 onUserSetting = onUserSetting,
                 userItem = userItem
             )
@@ -385,6 +408,7 @@ fun UserInformation(
 fun ItemUserActions(
     isCurrent: Boolean = false,
     onLogin: () -> Unit = {},
+    onDelete: () -> Unit = {},
     onUserSetting: () -> Unit = {},
     userItem: User,
     modifier: Modifier = Modifier,
@@ -469,7 +493,7 @@ fun ItemUserActions(
                     contentDescription = null,
                 )
             },
-            onClick = {},
+            onClick = onDelete,
             modifier = itemModifier
         )
     }
@@ -582,7 +606,8 @@ fun UserItemPreview() {
             users_seed.first(),
             currentUser = users_seed[2],
             onLogin = {},
-            onUserSetting = {  })
+            onUserSetting = {  }
+        )
     }
 }
 

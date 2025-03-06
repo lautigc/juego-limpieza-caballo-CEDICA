@@ -62,6 +62,12 @@ class ProfileListScreenViewModel(
         }
     }
 
+    fun deleteUser(user: User) {
+        viewModelScope.launch {
+            this@ProfileListScreenViewModel.userRepository.delete(user)
+        }
+    }
+
     companion object {
         private const val TIMEOUT_MILLIS = 5_000L
     }

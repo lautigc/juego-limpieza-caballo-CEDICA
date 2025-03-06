@@ -1,7 +1,6 @@
 package com.cedica.cedica.ui.profile
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -36,6 +35,9 @@ fun ProfileListScreen(
             viewModel.guestLogin()
             onNavigateGuestLogin()
         },
+        onDeleteUser = { user: User ->
+            viewModel.deleteUser(user)
+        },
         onUserSetting = onNavigateUserSetting,
         modifier = modifier,
         currentUser = profileUiState.currentUser
@@ -48,10 +50,11 @@ private fun Screen(
     patients: List<User> = emptyList(),
     therapists: List<User> = emptyList(),
     onLogin: (User) -> Unit = {},
+    onDeleteUser: (User) -> Unit,
     onGuestLogin: () -> Unit = {},
     onUserSetting: () -> Unit,
-    modifier: Modifier = Modifier,
     currentUser: User = GuestUser,
+    modifier: Modifier = Modifier,
 ) {
     Scaffold(
         floatingActionButton = {
@@ -63,6 +66,7 @@ private fun Screen(
             therapists = therapists,
             currentUser = currentUser,
             onLogin = onLogin,
+            onDelete = onDeleteUser,
             onUserSetting = onUserSetting
         )
     }
@@ -77,7 +81,8 @@ fun ProfileScreenPreview() {
             patients = users_seed,
             onUserSetting = { },
             modifier = Modifier,
-            currentUser = users_seed.first()
+            currentUser = users_seed.first(),
+            onDeleteUser = {}
         )
     }
 }
@@ -90,7 +95,8 @@ fun EmptyProfileScreenPreview() {
             patients = emptyList(),
             onUserSetting = { },
             modifier = Modifier,
-            currentUser = users_seed.first()
+            currentUser = users_seed.first(),
+            onDeleteUser = {}
         )
     }
 }
@@ -104,7 +110,8 @@ fun ProfileScreenDarkPreview() {
             therapists = users_seed.slice(0..users_seed.size / 2),
             onUserSetting = { },
             modifier = Modifier,
-            currentUser = users_seed.first()
+            currentUser = users_seed.first(),
+            onDeleteUser = {}
         )
     }
 }
