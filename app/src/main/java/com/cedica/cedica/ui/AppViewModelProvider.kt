@@ -5,7 +5,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.cedica.cedica.core.session.Session
 import com.cedica.cedica.data.repository.RepositoryProvider
 import com.cedica.cedica.ui.profile.ProfileListScreenViewModel
-import com.cedica.cedica.ui.utils.UserViewModel
+import com.cedica.cedica.ui.utils.view_models.UserViewModel
 
 /**
  * Provides Factory to create instance of ViewModel for the entire Inventory app
