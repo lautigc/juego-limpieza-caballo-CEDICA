@@ -1,4 +1,4 @@
-package com.cedica.cedica.ui.utils
+package com.cedica.cedica.ui.utils.view_models
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
