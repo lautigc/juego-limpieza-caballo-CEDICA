@@ -62,6 +62,7 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -424,7 +425,7 @@ fun ItemUserActions(
             end  = dimensionResource(R.dimen.padding_large),
         ),
         modifier = modifier,
-    ) {
+    ) { showBottomSheet ->
         BottomSheetMenuItem(
             label = userItem.fullName,
             leadingIcon = {
@@ -503,6 +504,7 @@ fun ItemUserActions(
                     onConfirmation = {
                         onDeleteOpenDialog = false
                         onDelete()
+                        showBottomSheet.value = false
                     },
                     dialogTitle = "Eliminar",
                     dialogText = "¿Estás seguro de que deseas eliminar este usuario?",
@@ -513,24 +515,34 @@ fun ItemUserActions(
 
 }
 
+/**
+ * The BottomSheetMenu composable is a custom implementation of a BottomSheet that displays a menu
+ * This composable manages the state of the BottomSheet and the content that will be displayed
+ *
+ * @param expandElement The composable that will be displayed to expand the BottomSheet
+ * @param contentPaddingValues The padding values for the content of the BottomSheet
+ * @param modifier The modifier for the BottomSheet
+ * @param content The content of the BottomSheet. It receives:
+ *  - showBottomSheet: The internal MutableState that is used to manage the visibility of the BottomSheet
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomSheetMenu(
     expandElement: @Composable (onExpandedMenu: () -> Unit) -> Unit = {},
     contentPaddingValues: PaddingValues = PaddingValues(0.dp),
     modifier: Modifier = Modifier,
-    content: @Composable ColumnScope.() -> Unit = {},
+    content: @Composable ColumnScope.(showBottomSheet: MutableState<Boolean>) -> Unit = {},
 ) {
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true,
     )
     val scope = rememberCoroutineScope()
-    var showBottomSheet by rememberSaveable { mutableStateOf(false) }
+    var showBottomSheet = rememberSaveable { mutableStateOf(false) }
     val expandButton = {
         scope.launch {
             sheetState.expand()
         }.invokeOnCompletion {
-            showBottomSheet = true
+            showBottomSheet.value = true
         }
     }
 
@@ -542,12 +554,12 @@ fun BottomSheetMenu(
         expandElement({ expandButton() })
     }
 
-    if (showBottomSheet) {
+    if (showBottomSheet.value) {
         ModalBottomSheet(
             onDismissRequest = {
                 scope.launch { sheetState.hide() }.invokeOnCompletion {
                     if (!sheetState.isVisible) {
-                        showBottomSheet = false
+                        showBottomSheet.value = false
                     }
                 }
             },
@@ -559,12 +571,21 @@ fun BottomSheetMenu(
                 .padding(contentPaddingValues)
                 .verticalScroll(rememberScrollState())
             ) {
-                content()
+                content(showBottomSheet)
             }
         }
     }
 }
 
+/**
+ * Composable that displays a item in the BottomSheetMenu
+ *
+ * @param label The text that will be displayed in the item
+ * @param leadingIcon The icon that will be displayed at the start of the item
+ * @param horizontalArrangement The horizontal arrangement of the item
+ * @param modifier The modifier for the item
+ * @param onClick The lambda that will be called when the item is clicked
+ */
 @Composable
 fun BottomSheetMenuItem(
     label: String,
