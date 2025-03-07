@@ -14,6 +14,7 @@ import com.cedica.cedica.data.user.UserTherapist
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -64,6 +65,9 @@ class ProfileListScreenViewModel(
 
     fun deleteUser(user: User) {
         viewModelScope.launch {
+            if (this@ProfileListScreenViewModel.session.getUserID().first() == user.id) {
+                this@ProfileListScreenViewModel.session.setUserID(GuestUser.id)
+            }
             this@ProfileListScreenViewModel.userRepository.delete(user)
         }
     }
