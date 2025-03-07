@@ -44,7 +44,7 @@ fun SimpleAlertDialog(
                     onConfirmation()
                 }
             ) {
-                Text("Confirm")
+                Text("Confirmar")
             }
         },
         dismissButton = {
@@ -53,7 +53,7 @@ fun SimpleAlertDialog(
                     onDismissRequest()
                 }
             ) {
-                Text("Dismiss")
+                Text("Cancelar")
             }
         }
     )

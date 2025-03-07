@@ -31,7 +31,7 @@ import androidx.compose.material.icons.automirrored.outlined.Help
 import androidx.compose.material.icons.automirrored.outlined.Login
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.automirrored.outlined.Send
-import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
@@ -46,7 +46,6 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -58,7 +57,6 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
-import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
@@ -87,6 +85,7 @@ import com.cedica.cedica.data.seed.users_seed
 import com.cedica.cedica.data.user.GuestUser
 import com.cedica.cedica.data.user.User
 import com.cedica.cedica.ui.theme.CedicaTheme
+import com.cedica.cedica.ui.utils.composables.SimpleAlertDialog
 import kotlinx.coroutines.launch
 
 /**
@@ -202,7 +201,7 @@ fun UserList(
         contentPadding = PaddingValues(dimensionResource(R.dimen.padding_small)),
     ) {
         if (currentUser in users) {
-            CurrentUserItem(
+            currentUserItem(
                 currentUser = currentUser,
                 userItemModifier = userItemModifier,
                 users = users,
@@ -229,7 +228,7 @@ fun UserList(
 }
 
 
-public fun LazyListScope.CurrentUserItem(
+fun LazyListScope.currentUserItem(
     currentUser: User,
     userItemModifier: Modifier,
     users: List<User>,
@@ -485,6 +484,8 @@ fun ItemUserActions(
             onClick = onUserSetting,
             modifier = itemModifier
         )
+
+        var onDeleteOpenDialog by rememberSaveable { mutableStateOf(false) }
         BottomSheetMenuItem(
             label = "Eliminar",
             leadingIcon = {
@@ -493,10 +494,23 @@ fun ItemUserActions(
                     contentDescription = null,
                 )
             },
-            onClick = onDelete,
+            onClick = { onDeleteOpenDialog = true },
             modifier = itemModifier
         )
+            onDeleteOpenDialog.takeIf { it }?.let {
+                SimpleAlertDialog(
+                    onDismissRequest = { onDeleteOpenDialog = false },
+                    onConfirmation = {
+                        onDeleteOpenDialog = false
+                        onDelete()
+                    },
+                    dialogTitle = "Eliminar",
+                    dialogText = "¿Estás seguro de que deseas eliminar este usuario?",
+                    icon = Icons.Default.Delete
+                )
+            }
     }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
