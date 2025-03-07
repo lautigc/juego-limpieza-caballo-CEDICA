@@ -45,7 +45,7 @@ import com.cedica.cedica.core.navigation.Stats
 import com.cedica.cedica.core.navigation.UserListScreen
 import com.cedica.cedica.ui.AppViewModelProvider
 import com.cedica.cedica.ui.theme.CedicaTheme
-import com.cedica.cedica.ui.utils.UserViewModel
+import com.cedica.cedica.ui.utils.view_models.UserViewModel
 
 data class MenuItem(val text: String, val destination: Any)
 
