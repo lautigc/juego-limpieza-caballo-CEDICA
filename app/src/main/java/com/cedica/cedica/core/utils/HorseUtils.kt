@@ -4,7 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.ui.geometry.Offset
 import com.cedica.cedica.R
 
-data class HorsePart(val name: String, val polygon: List<Pair<Float, Float>>, val zoomedPolygon: List<Pair<Float, Float>>, @DrawableRes val drawableRes: Int)
+data class HorsePart(val name: String, val polygon: List<Pair<Float, Float>>, val zoomedPolygon: List<Pair<Float, Float>>, val margin: Pair<Float, Float>, @DrawableRes val drawableRes: Int)
 
 val horseParts = arrayOf(
     HorsePart("Cabeza", listOf(
@@ -24,7 +24,8 @@ val horseParts = arrayOf(
         0.43f to 0.08f,
         0.45f to 0.33f,
         0.24f to 0.56f
-    ), R.drawable.caballo_cabeza),
+    ), 50f to 50f,
+        R.drawable.caballo_cabeza),
     HorsePart(name = "Cuerpo", listOf(
         0.6714286f to 0.258427f,
         0.6928571f to 0.6044944f,
@@ -38,7 +39,8 @@ val horseParts = arrayOf(
         0.67f to 0.62f,
         0.71f to 0.09f,
         0.48f to 0.15f
-    ), R.drawable.caballo_cuerpo),
+    ), 70f to 100f,
+        R.drawable.caballo_cuerpo),
     HorsePart("Cola", listOf(
         0.9767857f to 0.2831461f,
         0.9946429f to 0.4426966f,
@@ -58,7 +60,8 @@ val horseParts = arrayOf(
         0.72f to 0.51f,
         0.67f to 0.31f,
         0.56f to 0.20f
-    ), R.drawable.caballo_cola),
+    ), 60f to 50f,
+        R.drawable.caballo_cola),
     HorsePart("Pierna izquierda", listOf(
         0.4553571f to 0.5955056f,
         0.4928571f to 0.7820225f,
@@ -74,7 +77,8 @@ val horseParts = arrayOf(
         0.58f to 0.46f,
         0.69f to 0.23f,
         0.66f to 0.13f
-    ), R.drawable.caballo_pierna_izquierda),
+    ), 100f to 50f,
+        R.drawable.caballo_pierna_izquierda),
     HorsePart("Pierna derecha", listOf(
         0.8285714f to 0.3842697f,
         0.8785714f to 0.6898876f,
@@ -96,7 +100,8 @@ val horseParts = arrayOf(
         0.67f to 0.27f,
         0.68f to 0.18f,
         0.63f to 0.11f
-    ), R.drawable.caballo_pierna_derecha),
+    ), 100f to 50f,
+        R.drawable.caballo_pierna_derecha),
     HorsePart("Cuello", listOf(
         0.3303571f to 0.5011236f,
         0.2017857f to 0.2921348f,
@@ -110,7 +115,8 @@ val horseParts = arrayOf(
         0.80f to 0.54f,
         0.64f to 0.53f,
         0.29f to 0.30f
-    ),R.drawable.caballo_cuello)
+    ), 70f to 50f,
+        R.drawable.caballo_cuello)
 
 )
 

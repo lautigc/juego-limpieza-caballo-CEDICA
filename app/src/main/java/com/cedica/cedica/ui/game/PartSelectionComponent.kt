@@ -9,6 +9,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
@@ -326,10 +327,10 @@ fun DirtyHorsePart(part: HorsePart = horseParts[0], toolPosition: Offset, onPart
 
     var imageSize by remember { mutableStateOf(IntSize.Zero) }
     var imagePosition by remember { mutableStateOf(IntOffset.Zero) }
+    val margin = 50f
 
     // Detectar si la herramienta está dentro de la imagen
     val isToolOverImage = remember(toolPosition, imageSize, imagePosition) {
-        val margin = 200
         val withinX = toolPosition.x in (imagePosition.x + margin).toFloat()..(imagePosition.x + imageSize.width - margin).toFloat()
         val withinY = toolPosition.y in (imagePosition.y + margin).toFloat()..(imagePosition.y + imageSize.height - margin).toFloat()
 
@@ -394,11 +395,34 @@ fun DirtyHorsePart(part: HorsePart = horseParts[0], toolPosition: Offset, onPart
                 topLeft = Offset(offsetX.floatValue, offsetY.floatValue)
             )
 
-            drawPath(
-                path = clipPath,
-                color = Color.Red,
-                style = Stroke(width = 4f)
+            // Calcular el centro del cuadrado
+            val squareCenterX = offsetX.floatValue + (imageWidth / 2)
+            val squareCenterY = offsetY.floatValue + (imageHeight / 2)
+
+            // Dibujar un punto en el centro del cuadrado
+            drawCircle(
+                color = Color.Blue, // Color del punto
+                radius = 5f, // Tamaño del punto
+                center = Offset(squareCenterX, squareCenterY)
             )
+
+
+            // Dibujar el rectángulo de límites con margen
+            drawRect(
+                color = Color.Red,
+                topLeft = Offset(
+                    offsetX.floatValue + part.margin.first,
+                    offsetY.floatValue + part.margin.second
+                ),
+                size = Size(
+                    imageWidth - part.margin.first * 2,
+                    imageHeight - part.margin.second * 2
+                ),
+                style = Stroke(width = 4f) // Borde del rectángulo
+            )
+
+
+
 
             clipPath(clipPath) {
                 dirtPositions.forEach { position ->
