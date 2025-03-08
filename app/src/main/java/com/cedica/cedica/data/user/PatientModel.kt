@@ -1,13 +1,13 @@
-package com.cedica.cedica.data.user;
+package com.cedica.cedica.data.user
 
 import androidx.room.Dao
-import androidx.room.Delete
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
-import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
-import androidx.room.Update
+import androidx.room.Relation
+import com.cedica.cedica.data.generic.BaseDao
 import kotlinx.coroutines.flow.Flow
 import java.util.Date
 
@@ -30,26 +30,30 @@ enum class Gender(val code: Int) {
         )]
 )
 data class Patient(
-    @PrimaryKey val userID: Int,
+    @PrimaryKey val userID: Long,
     val gender: Gender,
     val observations: String,
     val birthDate: Date,
 )
 
+data class UserPatient(
+    @Embedded val patient: Patient,
+    @Relation(
+        parentColumn = "userID",
+        entityColumn = "id"
+    )
+    val user: User
+)
+
 @Dao
-interface PatientDao {
-    @Insert
-    suspend fun insert(patient: Patient): Long
-
-    @Update
-    suspend fun update(patient: Patient): Unit
-
-    @Delete
-    suspend fun delete(patient: Patient): Unit
+interface PatientDao: BaseDao<Patient> {
 
     @Query("SELECT * FROM Patient")
-    fun getAllPatients(): Flow<List<Patient>>
+    fun getAllUserPatient(): Flow<List<UserPatient>>
+
+    @Query("SELECT * FROM Patient")
+    fun getAll(): Flow<List<Patient>>
 
     @Query("SELECT * FROM Patient WHERE userID = :userID")
-    suspend fun getPK(userID: Int): Patient
+    suspend fun getByID(userID: Long): Patient
 }

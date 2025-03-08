@@ -10,6 +10,8 @@ import com.cedica.cedica.ui.home.AboutScreen
 import com.cedica.cedica.ui.home.ConfigurationScreen
 import com.cedica.cedica.ui.game.GameScreen
 import com.cedica.cedica.ui.home.MainMenuScreen
+import com.cedica.cedica.ui.home.StatisticsScreen
+import com.cedica.cedica.ui.home.sampleGameSessions
 import com.cedica.cedica.ui.profile.ProfileListScreen
 import com.cedica.cedica.ui.profile.UserSettingScreen
 
@@ -51,6 +53,13 @@ fun NavigationWrapper() {
 
         composable<UserSetting> {
             UserSettingScreen()
+        }
+
+        composable<Stats> {
+            // TODO: quitar parametros cuando se tomen los datos
+            StatisticsScreen(
+                gameSessions = sampleGameSessions
+            )
         }
     }
 }

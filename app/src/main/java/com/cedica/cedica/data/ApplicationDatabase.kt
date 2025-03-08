@@ -6,6 +6,8 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.cedica.cedica.data.seed.patients_seed
+import com.cedica.cedica.data.seed.therapists_seed
 import com.cedica.cedica.data.seed.users_seed
 import com.cedica.cedica.data.user.Patient
 import com.cedica.cedica.data.user.PatientDao
@@ -55,6 +57,8 @@ abstract class AppDatabase : RoomDatabase(), RepositoryDao {
                                 super.onCreate(db)
                                 CoroutineScope(Dispatchers.IO).launch {
                                     Instance?.userDao()?.insert(users_seed)
+                                    Instance?.therapistDao()?.insert(therapists_seed)
+                                    Instance?.patientDao()?.insert(patients_seed)
                                 }
                             }
                         }

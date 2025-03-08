@@ -3,36 +3,40 @@ package com.cedica.cedica.ui.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cedica.cedica.core.session.Session
+import com.cedica.cedica.data.repository.interfaces.PatientRepository
+import com.cedica.cedica.data.repository.interfaces.TherapistRepository
+import com.cedica.cedica.data.repository.interfaces.UserRepository
 import com.cedica.cedica.data.user.GuestUser
-import com.cedica.cedica.data.user.Patient
-import com.cedica.cedica.data.user.Therapist
+import com.cedica.cedica.data.user.LoadingUser
 import com.cedica.cedica.data.user.User
-import kotlinx.coroutines.flow.Flow
+import com.cedica.cedica.data.user.UserPatient
+import com.cedica.cedica.data.user.UserTherapist
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class ProfileListScreenUiState(
     val users: List<User> = emptyList(),
-    val therapists: List<Therapist> = emptyList(),
-    val patients: List<Patient> = emptyList(),
-    val currentUser: User = GuestUser,
+    val therapists: List<UserTherapist> = emptyList(),
+    val patients: List<UserPatient> = emptyList(),
+    val currentUser: User = LoadingUser,
 )
 
 class ProfileListScreenViewModel(
     private val session: Session,
-    private val users: Flow<List<User>>,
-    private val patients: Flow<List<Patient>>,
-    private val therapists: Flow<List<Therapist>>,
+    private val userRepository: UserRepository,
+    private val patientRepository: PatientRepository,
+    private val therapistRepository: TherapistRepository,
 ): ViewModel() {
 
     val uiState: StateFlow<ProfileListScreenUiState> =
         combine(
-            this.users,
-            this.therapists,
-            this.patients,
+            this.userRepository.getAll(),
+            this.therapistRepository.getAllUserTherapist(),
+            this.patientRepository.getAllUserPatient(),
             this.session.getUserID(),
         ) { userFlow, therapistFlow, patientFlow, userID ->
             ProfileListScreenUiState(
@@ -56,6 +60,15 @@ class ProfileListScreenViewModel(
     fun guestLogin() {
         viewModelScope.launch {
             this@ProfileListScreenViewModel.session.setUserID(GuestUser.id)
+        }
+    }
+
+    fun deleteUser(user: User) {
+        viewModelScope.launch {
+            if (this@ProfileListScreenViewModel.session.getUserID().first() == user.id) {
+                this@ProfileListScreenViewModel.session.setUserID(GuestUser.id)
+            }
+            this@ProfileListScreenViewModel.userRepository.delete(user)
         }
     }
 

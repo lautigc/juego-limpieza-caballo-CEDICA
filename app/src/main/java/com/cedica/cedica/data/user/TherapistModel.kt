@@ -1,13 +1,13 @@
 package com.cedica.cedica.data.user
 
 import androidx.room.Dao
-import androidx.room.Delete
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
-import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
-import androidx.room.Update
+import androidx.room.Relation
+import com.cedica.cedica.data.generic.BaseDao
 import kotlinx.coroutines.flow.Flow
 
 @Entity(
@@ -21,21 +21,27 @@ import kotlinx.coroutines.flow.Flow
         )]
 )
 data class Therapist(
-    @PrimaryKey val userID: Int,
+    @PrimaryKey val userID: Long,
 )
 
+data class UserTherapist(
+    @Embedded val therapist: Therapist,
+    @Relation(
+        parentColumn = "userID",
+        entityColumn = "id"
+    )
+    val user: User
+)
 
 @Dao
-interface TherapistDao {
-    @Insert
-    suspend fun insert(therapist: Therapist): Long
-
-    @Update
-    suspend fun update(therapist: Therapist)
-
-    @Delete
-    suspend fun delete(therapist: Therapist)
+interface TherapistDao: BaseDao<Therapist> {
 
     @Query("SELECT * FROM Therapist")
-    fun getAllTherapists(): Flow<List<Therapist>>
+    fun getAll(): Flow<List<Therapist>>
+
+    @Query("SELECT * FROM Therapist")
+    fun getAllUserTherapist(): Flow<List<UserTherapist>>
+
+    @Query("SELECT * FROM Therapist WHERE userID = :userID")
+    suspend fun getByID(userID: Long): Therapist
 }
