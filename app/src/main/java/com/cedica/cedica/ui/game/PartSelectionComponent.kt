@@ -6,6 +6,7 @@ import android.graphics.Region
 import android.util.Log
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -15,6 +16,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -59,6 +62,9 @@ import com.cedica.cedica.core.utils.selectRandomParts
 import com.cedica.cedica.core.utils.smoothedHorseParts
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.abs
+import kotlin.math.floor
+import kotlin.math.max
 import kotlin.random.Random
 
 const val originalImageWidth = 560f
@@ -205,8 +211,6 @@ fun HorsePartSelectionRandom(parts: Array<HorsePart>, onPartSelected: (String) -
                 .aspectRatio(originalImageWidth / originalImageHeight)
                 .onGloballyPositioned { coordinates ->
                     imageSize = coordinates.size
-                    Log.d("GameDebug", "Ancho:${imageSize.width}, alto:${imageSize.height}")
-
                 }
         )
 
@@ -304,6 +308,8 @@ fun DirtyHorsePart(part: HorsePart = horseParts[0], toolPosition: Offset, onPart
         BitmapFactory.decodeResource(context.resources, part.drawableRes)
     }
     val horseImage = remember { horseBitmap.asImageBitmap() }
+    val imageWidth = horseImage.width
+    val imageHeight = horseImage.height
 
     val dirtBitmap = remember {
         BitmapFactory.decodeResource(context.resources, R.drawable.suciedad)
@@ -311,6 +317,14 @@ fun DirtyHorsePart(part: HorsePart = horseParts[0], toolPosition: Offset, onPart
 
     val dirtImage = remember { dirtBitmap.asImageBitmap() }
     val dirtAlpha = remember { mutableFloatStateOf(1f) }
+    val imagePosition = remember { mutableStateOf(Offset.Zero) }
+    val imageSize = remember { mutableStateOf(IntSize.Zero) }
+
+    val desnormalizedPolygon = remember { part.zoomedPolygon.map { (x, y) ->
+        val absoluteX = x * horseImage.width + offsetX.floatValue
+        val absoluteY = y * horseImage.height + offsetY.floatValue
+        absoluteX to absoluteY
+    }}
 
     val clipPath by remember {
         derivedStateOf {
@@ -325,24 +339,14 @@ fun DirtyHorsePart(part: HorsePart = horseParts[0], toolPosition: Offset, onPart
         }
     }
 
-    var imageSize by remember { mutableStateOf(IntSize.Zero) }
-    var imagePosition by remember { mutableStateOf(IntOffset.Zero) }
-    val margin = 50f
-
-    // Detectar si la herramienta está dentro de la imagen
-    val isToolOverImage = remember(toolPosition, imageSize, imagePosition) {
-        val withinX = toolPosition.x in (imagePosition.x + margin).toFloat()..(imagePosition.x + imageSize.width - margin).toFloat()
-        val withinY = toolPosition.y in (imagePosition.y + margin).toFloat()..(imagePosition.y + imageSize.height - margin).toFloat()
-
-        Log.d("GameDebug", "🔵 Imagen (x: ${imagePosition.x}, y: ${imagePosition.y}), Tamaño (w: ${imageSize.width}, h: ${imageSize.height})")
-        Log.d("GameDebug", "🔴 Herramienta (x: ${toolPosition.x}, y: ${toolPosition.y})")
-        Log.d("GameDebug", "🟢 Dentro de imagen: $withinX && $withinY → ${withinX && withinY}")
-
-        withinX && withinY
-    }
-
     LaunchedEffect(toolPosition) {
-        if (isToolOverImage) {
+
+        val isOverCleanZone = isPointInPolygon((toolPosition.x - imagePosition.value.x) / imageSize.value.width, (toolPosition.y - imagePosition.value.y) / imageSize.value.height, part.zoomedPolygon)
+
+        Log.d("GameDebug", "X: ${(toolPosition.x - imagePosition.value.x) / imageSize.value.width}, Y: ${(toolPosition.y - imagePosition.value.y) / imageSize.value.height}")
+        Log.d("GameDebug", "🟢 Herramienta dentro del área centrada: $isOverCleanZone")
+
+        if (isOverCleanZone) {
             dirtAlpha.floatValue = (dirtAlpha.floatValue - 0.005f).coerceAtLeast(0f)
         }
     }
@@ -367,25 +371,22 @@ fun DirtyHorsePart(part: HorsePart = horseParts[0], toolPosition: Offset, onPart
     Box(
         modifier = Modifier
             .size(350.dp)
-            .background(Color(0xFFFFE4B5))
-            .onGloballyPositioned { coordinates ->
-                imageSize = coordinates.size
-                imagePosition = IntOffset(
-                    coordinates.positionInRoot().x.toInt(),
-                    coordinates.positionInRoot().y.toInt()
-                )
-            },
+            .background(Color(0xFFFFE4B5)),
         contentAlignment = Alignment.Center
     ) {
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
                 .aspectRatio(originalImageWidth / originalImageHeight)
+                .border(border = BorderStroke(2.dp, Color. Blue), shape = CutCornerShape(1.dp))
+                .onGloballyPositioned { coordinates ->
+                    imagePosition.value =
+                        Offset(coordinates.positionInRoot().x, coordinates.positionInRoot().y)
+                    imageSize.value = coordinates.size
+                }
         ) {
             val canvasWidth = size.width
             val canvasHeight = size.height
-            val imageWidth = horseImage.width.toFloat()
-            val imageHeight = horseImage.height.toFloat()
 
             offsetX.floatValue = (canvasWidth - imageWidth) / 2
             offsetY.floatValue = (canvasHeight - imageHeight) / 2
@@ -395,34 +396,7 @@ fun DirtyHorsePart(part: HorsePart = horseParts[0], toolPosition: Offset, onPart
                 topLeft = Offset(offsetX.floatValue, offsetY.floatValue)
             )
 
-            // Calcular el centro del cuadrado
-            val squareCenterX = offsetX.floatValue + (imageWidth / 2)
-            val squareCenterY = offsetY.floatValue + (imageHeight / 2)
-
-            // Dibujar un punto en el centro del cuadrado
-            drawCircle(
-                color = Color.Blue, // Color del punto
-                radius = 5f, // Tamaño del punto
-                center = Offset(squareCenterX, squareCenterY)
-            )
-
-
-            // Dibujar el rectángulo de límites con margen
-            drawRect(
-                color = Color.Red,
-                topLeft = Offset(
-                    offsetX.floatValue + part.margin.first,
-                    offsetY.floatValue + part.margin.second
-                ),
-                size = Size(
-                    imageWidth - part.margin.first * 2,
-                    imageHeight - part.margin.second * 2
-                ),
-                style = Stroke(width = 4f) // Borde del rectángulo
-            )
-
-
-
+            drawPath(path = clipPath, color = Color.Red, style = Stroke(5f))
 
             clipPath(clipPath) {
                 dirtPositions.forEach { position ->
@@ -465,5 +439,5 @@ fun PreviewZoomedHorsePart() {
 @Preview
 @Composable
 fun PreviewDirtyHorsePart() {
-    DirtyHorsePart(horseParts[5], Offset.Zero, onPartCleaned = {})
+    DirtyHorsePart(horseParts[0], Offset.Zero, onPartCleaned = {})
 }

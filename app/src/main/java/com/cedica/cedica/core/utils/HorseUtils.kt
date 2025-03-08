@@ -4,7 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.ui.geometry.Offset
 import com.cedica.cedica.R
 
-data class HorsePart(val name: String, val polygon: List<Pair<Float, Float>>, val zoomedPolygon: List<Pair<Float, Float>>, val margin: Pair<Float, Float>, @DrawableRes val drawableRes: Int)
+data class HorsePart(val name: String, val polygon: List<Pair<Float, Float>>, val zoomedPolygon: List<Pair<Float, Float>>, @DrawableRes val drawableRes: Int)
 
 val horseParts = arrayOf(
     HorsePart("Cabeza", listOf(
@@ -15,17 +15,12 @@ val horseParts = arrayOf(
         0.0857143f to 0.0179775f,
         0.2053571f to 0.0179775f
     ), listOf(
-        0.06f to 0.71f,
-        0.18f to 0.91f,
-        0.39f to 0.76f,
-        0.66f to 0.71f,
-        0.95f to 0.99f,
-        0.97f to 0.45f,
-        0.43f to 0.08f,
-        0.45f to 0.33f,
-        0.24f to 0.56f
-    ), 50f to 50f,
-        R.drawable.caballo_cabeza),
+        0.5238095f to 0.254902f,
+        0.1768707f to 0.6535948f,
+        0.3401361f to 0.7712418f,
+        0.7414966f to 0.6666667f,
+        0.7346939f to 0.4313725f
+    ), R.drawable.caballo_cabeza),
     HorsePart(name = "Cuerpo", listOf(
         0.6714286f to 0.258427f,
         0.6928571f to 0.6044944f,
@@ -34,13 +29,11 @@ val horseParts = arrayOf(
         0.4821429f to 0.4719101f,
         0.4f to 0.2674157f
     ), listOf(
-        0.22f to 0.12f,
-        0.33f to 0.67f,
-        0.67f to 0.62f,
-        0.71f to 0.09f,
-        0.48f to 0.15f
-    ), 70f to 100f,
-        R.drawable.caballo_cuerpo),
+        0.6838906f to 0.1515152f,
+        0.668693f to 0.6818182f,
+        0.325228f to 0.7272727f,
+        0.2674772f to 0.1666667f
+    ), R.drawable.caballo_cuerpo),
     HorsePart("Cola", listOf(
         0.9767857f to 0.2831461f,
         0.9946429f to 0.4426966f,
@@ -48,20 +41,15 @@ val horseParts = arrayOf(
         0.9178571f to 0.8044944f,
         0.8303571f to 0.3011236f
     ), listOf(
-        0.35f to 0.13f,
-        0.52f to 0.27f,
-        0.49f to 0.38f,
-        0.55f to 0.62f,
-        0.63f to 0.74f,
-        0.76f to 0.81f,
-        0.78f to 0.95f,
-        0.93f to 0.80f,
-        0.90f to 0.67f,
-        0.72f to 0.51f,
-        0.67f to 0.31f,
-        0.56f to 0.20f
-    ), 60f to 50f,
-        R.drawable.caballo_cola),
+        0.6384615f to 0.2698413f,
+        0.7076923f to 0.4285714f,
+        0.7769231f to 0.5634921f,
+        0.9384615f to 0.7261905f,
+        0.7923077f to 0.8253968f,
+        0.5538462f to 0.6865079f,
+        0.5230769f to 0.4007937f,
+        0.5076923f to 0.1825397f
+    ),  R.drawable.caballo_cola),
     HorsePart("Pierna izquierda", listOf(
         0.4553571f to 0.5955056f,
         0.4928571f to 0.7820225f,
@@ -69,16 +57,15 @@ val horseParts = arrayOf(
         0.3410714f to 0.9842697f,
         0.3785714f to 0.4359551f
     ), listOf(
-        0.48f to 0.08f,
-        0.37f to 0.19f,
-        0.48f to 0.57f,
-        0.52f to 0.79f,
-        0.58f to 0.62f,
-        0.58f to 0.46f,
-        0.69f to 0.23f,
-        0.66f to 0.13f
-    ), 100f to 50f,
-        R.drawable.caballo_pierna_izquierda),
+        0.4969325f to 0.0877193f,
+        0.398773f to 0.1157895f,
+        0.3680982f to 0.1859649f,
+        0.4785276f to 0.5649123f,
+        0.5521472f to 0.5578947f,
+        0.6441718f to 0.3368421f,
+        0.6932515f to 0.2315789f,
+        0.6441718f to 0.1192982f
+    ),  R.drawable.caballo_pierna_izquierda),
     HorsePart("Pierna derecha", listOf(
         0.8285714f to 0.3842697f,
         0.8785714f to 0.6898876f,
@@ -88,35 +75,30 @@ val horseParts = arrayOf(
         0.7017857f to 0.4292135f,
         0.7482143f to 0.3280899f
     ), listOf(
-        0.43f to 0.06f,
-        0.28f to 0.10f,
-        0.21f to 0.21f,
-        0.25f to 0.36f,
-        0.59f to 0.58f,
-        0.67f to 0.66f,
-        0.62f to 0.80f,
-        0.74f to 0.65f,
-        0.69f to 0.56f,
-        0.67f to 0.27f,
-        0.68f to 0.18f,
-        0.63f to 0.11f
-    ), 100f to 50f,
-        R.drawable.caballo_pierna_derecha),
+        0.6555556f to 0.1293375f,
+        0.6888889f to 0.2397476f,
+        0.6555556f to 0.3312303f,
+        0.6833333f to 0.5646688f,
+        0.6055556f to 0.5930599f,
+        0.3333333f to 0.4164038f,
+        0.2166667f to 0.3028391f,
+        0.2111111f to 0.1735016f,
+        0.2944444f to 0.0946372f,
+        0.4277778f to 0.0694006f
+    ),  R.drawable.caballo_pierna_derecha),
     HorsePart("Cuello", listOf(
         0.3303571f to 0.5011236f,
         0.2017857f to 0.2921348f,
         0.2732143f to 0.1820225f,
         0.3803571f to 0.2921348f
     ), listOf(
-        0.19f to 0.39f,
-        0.43f to 0.59f,
-        0.73f to 0.92f,
-        0.83f to 0.67f,
-        0.80f to 0.54f,
-        0.64f to 0.53f,
-        0.29f to 0.30f
-    ), 70f to 50f,
-        R.drawable.caballo_cuello)
+        0.5481928f to 0.4780702f,
+        0.813253f to 0.5833333f,
+        0.7650602f to 0.7412281f,
+        0.7650602f to 0.9254386f,
+        0.1987952f to 0.377193f,
+        0.2710843f to 0.245614f
+    ),  R.drawable.caballo_cuello)
 
 )
 
