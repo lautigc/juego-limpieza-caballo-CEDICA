@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cedica.cedica.core.utils.HorsePart
 import com.cedica.cedica.R
 import com.cedica.cedica.core.utils.isInPreview
@@ -58,6 +59,9 @@ import com.cedica.cedica.core.utils.sound.SoundPlayer
 import com.cedica.cedica.core.utils.getStageInfo
 import com.cedica.cedica.core.utils.sound.TextToSpeechWrapper
 import com.cedica.cedica.core.utils.stages
+import com.cedica.cedica.data.user.PlaySession
+import com.cedica.cedica.ui.AppViewModelProvider
+import com.cedica.cedica.ui.utils.UserViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -160,9 +164,18 @@ fun GameScreen(navigateToMenu: () -> Unit) {
         )
     }
 
+    val viewModel: PlaySessionViewModel = viewModel(factory = AppViewModelProvider.Factory)
     if (showCompletionDialog) {
         LaunchedEffect(Unit) {
             speech?.speak("Completaste el juego, felicitaciones!!. Hacé click en el botón para volver al menú.")
+            PlaySession(
+                date = gameState.value.getStartDate(),
+                difficultyLevel = gameState.value.getDifficulty(),
+                correctAnswers = gameState.value.get,
+                incorrectAnswers: Int,
+                timeSpent: Int,
+            )
+            viewModel.insert()
         }
         CompletionDialog(
             score = gameState.value.getScore(),
