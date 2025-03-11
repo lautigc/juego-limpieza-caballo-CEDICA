@@ -5,7 +5,41 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.vector.ImageVector
+
+/**
+ * AlertNotification is a class that can be used to display alerts to the user. The use expected is
+ * in a ViewModel, where the ViewModel can display an alert to the user and the screen can observe the
+ * alert and display it to the user.
+ *
+ * For Example:
+ *
+ * @Composable
+ * fun screen(viewModel: MyViewModel) {
+ *      val alert = viewModel.alert
+ *      alert.value?.let {
+ *          SimpleAlertDialog(
+ *              ...
+ *              onConfirmation = {alert.hiddenAlert()}
+ *              ....
+ *          )
+ *       }
+ * {
+ */
+class AlertNotification() {
+    private val _alert = mutableStateOf<String?>(null)
+    val alert: State<String?> get() = _alert
+
+    fun displayAlert(alert: String) {
+        this._alert.value = alert
+    }
+
+    fun hiddenAlert() {
+        this._alert.value = null
+    }
+}
 
 /**
  * Simple Alert Dialog that can be used to display information to the user. This component don't
@@ -19,8 +53,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
  */
 @Composable
 fun SimpleAlertDialog(
-    onDismissRequest: () -> Unit,
-    onConfirmation: () -> Unit,
+    displayDismissButton: Boolean = true,
+    onDismissRequest: () -> Unit = {},
+    onConfirmation: () -> Unit = {},
     dialogTitle: String,
     dialogText: String,
     icon: ImageVector,
@@ -47,14 +82,12 @@ fun SimpleAlertDialog(
                 Text("Confirmar")
             }
         },
-        dismissButton = {
-            TextButton(
-                onClick = {
-                    onDismissRequest()
+        dismissButton = if (displayDismissButton) {
+            {
+                TextButton(onClick = { onDismissRequest() }) {
+                    Text("Cancelar")
                 }
-            ) {
-                Text("Cancelar")
             }
-        }
+        } else null
     )
 }

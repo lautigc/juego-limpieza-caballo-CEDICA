@@ -7,6 +7,8 @@ import com.cedica.cedica.data.repository.RepositoryProvider
 import com.cedica.cedica.data.DB
 import com.cedica.cedica.ui.game.PlaySessionViewModel
 import com.cedica.cedica.ui.profile.ProfileListScreenViewModel
+import com.cedica.cedica.ui.profile.create.CreateTherapistFormViewModel
+import com.cedica.cedica.ui.profile.create.CreateUserFormViewModel
 import com.cedica.cedica.ui.utils.view_models.UserViewModel
 
 /**
@@ -34,6 +36,19 @@ object AppViewModelProvider {
         initializer {
             PlaySessionViewModel(
                 playSessionDao = DB.playSessionDao()
+            )
+        }
+
+        initializer {
+            CreateUserFormViewModel(
+                userRepository = RepositoryProvider.userRepository
+            )
+        }
+
+        initializer {
+            CreateTherapistFormViewModel(
+                therapistRepository = RepositoryProvider.therapistRepository,
+                userRepository = RepositoryProvider.userRepository
             )
         }
     }

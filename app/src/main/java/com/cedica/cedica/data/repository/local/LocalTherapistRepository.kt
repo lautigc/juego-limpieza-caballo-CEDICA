@@ -7,8 +7,8 @@ import com.cedica.cedica.data.user.UserTherapist
 import kotlinx.coroutines.flow.Flow
 
 class LocalTherapistRepository(private val dao: TherapistDao): TherapistRepository {
-    override suspend fun insert(entity: Therapist) {
-        dao.insert(entity)
+    override suspend fun insert(entity: Therapist): Long {
+        return dao.insert(entity)
     }
 
     override suspend fun insert(entities: List<Therapist>) {
