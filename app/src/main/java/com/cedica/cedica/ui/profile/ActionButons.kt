@@ -33,7 +33,10 @@ data class FABItem(
 )
 
 @Composable
-fun ExpandableFAB(onGuestLogin: () -> Unit = {}) {
+fun ExpandableFAB(
+    onGuestLogin: () -> Unit = {},
+    onCreate: () -> Unit = {}
+) {
     val itemModifier = Modifier.padding(
         top = dimensionResource(R.dimen.padding_small),
         bottom = dimensionResource(R.dimen.padding_small)
@@ -76,7 +79,7 @@ fun ExpandableFAB(onGuestLogin: () -> Unit = {}) {
         BottomSheetMenuItem(
             label = "Registrar usuario",
             leadingIcon = { Icon(imageVector = Icons.Filled.Add, contentDescription = null) },
-            onClick = { },
+            onClick = onCreate,
             modifier = Modifier.padding(
                 bottom = dimensionResource(R.dimen.padding_medium),
             ),

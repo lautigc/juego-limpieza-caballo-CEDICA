@@ -22,3 +22,6 @@ object UserSetting
 
 @Serializable
 object Stats
+
+@Serializable
+object CreateTherapistScreen

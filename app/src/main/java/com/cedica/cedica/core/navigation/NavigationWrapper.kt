@@ -14,6 +14,7 @@ import com.cedica.cedica.ui.home.StatisticsScreen
 import com.cedica.cedica.ui.home.sampleGameSessions
 import com.cedica.cedica.ui.profile.ProfileListScreen
 import com.cedica.cedica.ui.profile.UserSettingScreen
+import com.cedica.cedica.ui.profile.create.CreateTherapistForm
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
@@ -47,7 +48,8 @@ fun NavigationWrapper() {
             ProfileListScreen(
                 onNavigateGuestLogin = { navController.navigate(Menu) },
                 onNavigateUserSetting = { navController.navigate(UserSetting) },
-                onNavigateUserLogin = { navController.navigate(Menu) }
+                onNavigateUserLogin = { navController.navigate(Menu) },
+                onNavigateCreateUser = { navController.navigate(CreateTherapistScreen) }
             )
         }
 
@@ -60,6 +62,10 @@ fun NavigationWrapper() {
             StatisticsScreen(
                 gameSessions = sampleGameSessions
             )
+        }
+
+        composable<CreateTherapistScreen> {
+            CreateTherapistForm()
         }
     }
 }

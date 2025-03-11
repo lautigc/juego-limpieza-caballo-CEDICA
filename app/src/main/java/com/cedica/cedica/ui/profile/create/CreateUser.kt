@@ -18,8 +18,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.Man
 import androidx.compose.material.icons.outlined.Woman
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,7 +32,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -50,129 +51,113 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cedica.cedica.R
+import com.cedica.cedica.core.utils.input_field.InputField
+import com.cedica.cedica.core.utils.input_field.NameField
+import com.cedica.cedica.ui.AppViewModelProvider
 import com.cedica.cedica.ui.theme.CedicaTheme
+import com.cedica.cedica.ui.utils.composables.AlertNotification
+import com.cedica.cedica.ui.utils.composables.SimpleAlertDialog
 
-fun String.isOnlyLetters(): Boolean {
-    return this.all { it.isLetter() }
-}
-
-class CreateUserFormViewModel: ViewModel() {
-    var name by mutableStateOf("")
-        private set
-    var nameErrorText = ""
-        private set
-    val nameHasError by derivedStateOf { validateName() }
-
-
-    var lastName by mutableStateOf("")
-        private set
-    var lastNameErrorText = ""
-        private set
-    val lastNameHasError by derivedStateOf { validateLastName() }
-
-    var observations by mutableStateOf("Sin observaciones")
-        private set
-    var observationsErrorText = ""
-        private set
-    val observationsHasError by derivedStateOf { validateObservations() }
-
-    fun onObservationsChange(newObservations: String) {
-        observations = newObservations
-    }
-
-    private fun validateObservations(): Boolean {
-        return true
-    }
-
-    fun onNameChange(newName: String) {
-        name = newName
-    }
-
-    fun onLastNameChange(newLastName: String) {
-        lastName = newLastName
-    }
-
-    private fun validateName(): Boolean {
-        if (name.isEmpty()) {
-            this.nameErrorText = "El nombre no puede estar vacío"
-            return true
-        }
-        if (!name.isOnlyLetters()) {
-            this.nameErrorText = "El nombre solo puede contener letras"
-            return true
-        }
-        return false
-    }
-
-    private fun validateLastName(): Boolean {
-        if (lastName.isEmpty()) {
-            this.lastNameErrorText = "El Apellido no puede estar vacío"
-            return true
-        }
-        if (!lastName.isOnlyLetters()) {
-            this.lastNameErrorText = "El Apellido solo puede contener letras"
-            return true
-        }
-        return false
-    }
+@Composable
+fun CreateTherapistForm(
+    viewModel: CreateTherapistFormViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    onNavigateToCreateUser: () -> Unit = {},
+) {
+    CreateTherapistFormContent(
+        firstName = viewModel.firstName,
+        lastName = viewModel.lastName,
+        dataError = viewModel.dataError,
+        onClick = { viewModel.createUser(redirectTo = onNavigateToCreateUser) }
+    )
 }
 
 @Composable
-fun CreatePatientForm(
+private fun CreateTherapistFormContent(
+    firstName: InputField<String>,
+    lastName: InputField<String>,
+    dataError: AlertNotification,
+    onClick: () -> Unit = {},
 ) {
     Column(
-        Modifier.fillMaxSize().padding(dimensionResource(R.dimen.padding_extra_large)).verticalScroll(rememberScrollState()),
+        Modifier
+            .fillMaxSize()
+            .padding(dimensionResource(R.dimen.padding_extra_large))
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Center,
     ) {
         val spacerModifier = Modifier.height(dimensionResource(R.dimen.padding_extra_large) * 1.5f)
 
-        CreateUserForm(spacerModifier = spacerModifier)
-
-        Spacer(modifier = spacerModifier)
-
-        GenderInputField()
-
-        Spacer(modifier = spacerModifier)
-
-        FormInputField(
-            title = "Observaciones",
-            text = viewModel.observations,
-            hasError = viewModel.observationsHasError,
-            supportText = viewModel.observationsErrorText,
-            onValueChange = viewModel::onObservationsChange,
-            textFieldStyle = MaterialTheme.typography.bodyLarge,
+        CreateUserFormContent(
+            firstName = firstName,
+            lastName = lastName,
+            spacerModifier = spacerModifier
         )
+
+        Spacer(modifier = spacerModifier)
+
+        Button(
+            onClick = onClick,
+        ) {
+            Text("Registras usuario")
+        }
+
+        dataError.alert.value?.let {
+            SimpleAlertDialog(
+                displayDismissButton = false,
+                onConfirmation = { dataError.hiddenAlert() },
+                dialogTitle = "Error",
+                dialogText = it,
+                icon = Icons.Outlined.ErrorOutline
+            )
+        }
+
+//        Spacer(modifier = spacerModifier)
+//
+//        GenderInputField()
+//
+//        Spacer(modifier = spacerModifier)
+//
+//        FormInputField(
+//            title = "Observaciones",
+//            text = viewModel.observations,
+//            hasError = viewModel.observationsHasError,
+//            supportText = viewModel.observationsErrorText,
+//            onValueChange = viewModel::onObservationsChange,
+//            textFieldStyle = MaterialTheme.typography.bodyLarge,
+//        )
     }
 }
 
 @Composable
-private fun CreateUserForm(
-    viewModel: CreateUserFormViewModel = viewModel(),
-    spacerModifier: Modifier
+private fun CreateUserFormContent(
+    firstName: InputField<String>,
+    lastName: InputField<String>,
+    spacerModifier: Modifier,
 ) {
-    FormInputField(
-        title = "Nombre",
-        text = viewModel.name,
-        hasError = viewModel.nameHasError,
-        supportText = viewModel.nameErrorText,
-        onValueChange = viewModel::onNameChange,
-        textFieldStyle = MaterialTheme.typography.headlineLarge,
-    )
+    Column {
+        FormInputField(
+            title = "Nombre",
+            text = firstName.input,
+            hasError = firstName.hasError,
+            supportText = firstName.errorText,
+            onValueChange = firstName::onChange,
+            textFieldStyle = MaterialTheme.typography.headlineLarge,
+        )
 
-    Spacer(modifier = spacerModifier)
+        Spacer(modifier = spacerModifier)
 
-    FormInputField(
-        title = "Apellido",
-        text = viewModel.lastName,
-        hasError = viewModel.lastNameHasError,
-        supportText = viewModel.lastNameErrorText,
-        onValueChange = viewModel::onLastNameChange,
-        textFieldStyle = MaterialTheme.typography.headlineLarge,
-    )
+        FormInputField(
+            title = "Apellido",
+            text = lastName.input,
+            hasError = lastName.hasError,
+            supportText = lastName.errorText,
+            onValueChange = lastName::onChange,
+            textFieldStyle = MaterialTheme.typography.headlineLarge,
+        )
+    }
 }
 
 
@@ -334,6 +319,37 @@ fun SelectGenderPreview() {
 @Preview(showBackground = true)
 fun CreateUserFormPreview() {
     CedicaTheme {
-        CreatePatientForm()
+        CreateUserFormContent(
+            firstName = NameField("..."),
+            lastName = NameField("..."),
+            spacerModifier = Modifier.height(8.dp),
+        )
     }
 }
+
+@Composable
+@Preview(showBackground = true)
+fun CreatePatientFormPreview() {
+    CedicaTheme {
+        CreateTherapistFormContent(
+            firstName = NameField("..."),
+            lastName = NameField("..."),
+            dataError = AlertNotification(),
+        )
+    }
+}
+
+@Composable
+@Preview(showBackground = true)
+fun CreatePatientFormDataErrorPreview() {
+    CedicaTheme {
+        val alert = AlertNotification()
+        alert.displayAlert("Error en el formulario de creación de paciente")
+        CreateTherapistFormContent(
+            firstName = NameField("..."),
+            lastName = NameField("..."),
+            dataError = alert,
+        )
+    }
+}
+

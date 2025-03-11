@@ -20,6 +20,7 @@ fun ProfileListScreen(
     onNavigateGuestLogin: () -> Unit = {},
     onNavigateUserSetting: () -> Unit = {},
     onNavigateUserLogin: () -> Unit = {},
+    onNavigateCreateUser: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val profileUiState by viewModel.uiState.collectAsState()
@@ -38,6 +39,7 @@ fun ProfileListScreen(
         onDeleteUser = { user: User ->
             viewModel.deleteUser(user)
         },
+        onCreate = onNavigateCreateUser,
         onUserSetting = onNavigateUserSetting,
         modifier = modifier,
         currentUser = profileUiState.currentUser
@@ -52,13 +54,17 @@ private fun Screen(
     onLogin: (User) -> Unit = {},
     onDeleteUser: (User) -> Unit,
     onGuestLogin: () -> Unit = {},
+    onCreate: () -> Unit = {},
     onUserSetting: () -> Unit,
     currentUser: User = GuestUser,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
         floatingActionButton = {
-            ExpandableFAB(onGuestLogin = onGuestLogin)
+            ExpandableFAB(
+                onGuestLogin = onGuestLogin,
+                onCreate = onCreate,
+            )
         }
     ) { _ ->
         UserScreen(
