@@ -1,30 +1,31 @@
-package com.cedica.cedica.ui.utils
+package com.cedica.cedica.ui.utils.view_models
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cedica.cedica.data.DB
+import com.cedica.cedica.core.session.Session
+import com.cedica.cedica.data.repository.interfaces.UserRepository
 import com.cedica.cedica.data.user.GuestUser
+import com.cedica.cedica.data.user.LoadingUser
 import com.cedica.cedica.data.user.User
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 data class UserUiState(
-    val user: User,
+    val user: User = LoadingUser,
 )
 
 class UserViewModel(
-    private val userID: Flow<Int>,
-    private val db : DB
-): ViewModel() {
+    private val session: Session,
+    private val userRepository: UserRepository,
+    ): ViewModel() {
 
-    val uiState = userID.map {
-        if (it == GuestUser.id) UserUiState(GuestUser) else UserUiState(db.userDao().getByID(it))
+    val uiState = session.getUserID().map {
+        if (it == GuestUser.id) UserUiState(GuestUser) else UserUiState(userRepository.getByID(it))
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-        initialValue = UserUiState(GuestUser)
+        initialValue = UserUiState()
     )
 
     companion object {

@@ -1,7 +1,6 @@
 package com.cedica.cedica.ui.profile
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -10,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cedica.cedica.data.seed.users_seed
+import com.cedica.cedica.data.user.GuestUser
 import com.cedica.cedica.data.user.User
 import com.cedica.cedica.ui.AppViewModelProvider
 import com.cedica.cedica.ui.theme.CedicaTheme
@@ -25,9 +25,8 @@ fun ProfileListScreen(
     val profileUiState by viewModel.uiState.collectAsState()
 
     Screen(
-        users = profileUiState.users,
-        currentUser = profileUiState.currentUser,
-        modifier = modifier,
+        patients = profileUiState.patients.map { it.user },
+        therapists = profileUiState.therapists.map { it.user },
         onLogin = { user: User ->
             viewModel.login(user)
             onNavigateUserLogin()
@@ -36,18 +35,25 @@ fun ProfileListScreen(
             viewModel.guestLogin()
             onNavigateGuestLogin()
         },
-        onUserSetting = onNavigateUserSetting
+        onDeleteUser = { user: User ->
+            viewModel.deleteUser(user)
+        },
+        onUserSetting = onNavigateUserSetting,
+        modifier = modifier,
+        currentUser = profileUiState.currentUser
     )
 }
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 private fun Screen(
-    users: List<User>,
-    currentUser: User,
+    patients: List<User> = emptyList(),
+    therapists: List<User> = emptyList(),
     onLogin: (User) -> Unit = {},
+    onDeleteUser: (User) -> Unit,
     onGuestLogin: () -> Unit = {},
     onUserSetting: () -> Unit,
+    currentUser: User = GuestUser,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -55,12 +61,13 @@ private fun Screen(
             ExpandableFAB(onGuestLogin = onGuestLogin)
         }
     ) { _ ->
-        UserList(
-            users = users,
+        UserScreen(
+            patients = patients,
+            therapists = therapists,
             currentUser = currentUser,
             onLogin = onLogin,
-            onUserSetting = onUserSetting,
-            modifier = Modifier.fillMaxWidth()
+            onDelete = onDeleteUser,
+            onUserSetting = onUserSetting
         )
     }
 }
@@ -71,10 +78,11 @@ private fun Screen(
 fun ProfileScreenPreview() {
     CedicaTheme {
         Screen(
-            users = users_seed,
-            currentUser = users_seed.first(),
+            patients = users_seed,
             onUserSetting = { },
-            modifier = Modifier
+            modifier = Modifier,
+            currentUser = users_seed.first(),
+            onDeleteUser = {}
         )
     }
 }
@@ -84,10 +92,11 @@ fun ProfileScreenPreview() {
 fun EmptyProfileScreenPreview() {
     CedicaTheme {
         Screen(
-            users = emptyList(),
-            currentUser = users_seed.first(),
+            patients = emptyList(),
             onUserSetting = { },
-            modifier = Modifier
+            modifier = Modifier,
+            currentUser = users_seed.first(),
+            onDeleteUser = {}
         )
     }
 }
@@ -97,10 +106,12 @@ fun EmptyProfileScreenPreview() {
 fun ProfileScreenDarkPreview() {
     CedicaTheme(darkTheme = true) {
         Screen(
-            users = users_seed,
-            currentUser = users_seed.first(),
+            patients = users_seed,
+            therapists = users_seed.slice(0..users_seed.size / 2),
             onUserSetting = { },
-            modifier = Modifier
+            modifier = Modifier,
+            currentUser = users_seed.first(),
+            onDeleteUser = {}
         )
     }
 }

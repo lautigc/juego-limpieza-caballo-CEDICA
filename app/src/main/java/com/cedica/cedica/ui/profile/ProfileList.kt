@@ -6,32 +6,25 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Help
 import androidx.compose.material.icons.automirrored.outlined.Login
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.automirrored.outlined.Send
-import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
@@ -46,23 +39,23 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -81,13 +74,107 @@ import com.cedica.cedica.data.seed.users_seed
 import com.cedica.cedica.data.user.GuestUser
 import com.cedica.cedica.data.user.User
 import com.cedica.cedica.ui.theme.CedicaTheme
-import kotlinx.coroutines.launch
+import com.cedica.cedica.ui.utils.composables.BottomSheetMenu
+import com.cedica.cedica.ui.utils.composables.BottomSheetMenuItem
+import com.cedica.cedica.ui.utils.composables.SimpleAlertDialog
+
+/**
+ * A custom Composable for creating a tabbed interface.
+ *
+ * @param tabs List of tab titles.
+ * @param contentScreens List of Composable functions representing content screens for each tab.
+ * @param modifier Modifier for the parent layout.
+ * @param containerColor Background color for the tab row container.
+ * @param contentColor Color for the text content of the tabs.
+ * @param indicatorColor Color for the indicator line.
+ */
+@Composable
+fun TabRowComponent(
+    tabs: List<String>,
+    contentScreens: List<@Composable () -> Unit>,
+    modifier: Modifier = Modifier,
+    containerColor: Color = MaterialTheme.colorScheme.primaryContainer,
+    contentColor: Color = MaterialTheme.colorScheme.onPrimaryContainer,
+    indicatorColor: Color = MaterialTheme.colorScheme.inversePrimary
+) {
+    // State to keep track of the selected tab index
+    var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
+
+    // Column layout to arrange tabs vertically and display content screens
+    Column(modifier = modifier.fillMaxSize()) {
+        // TabRow composable to display tabs
+        TabRow(
+            selectedTabIndex = selectedTabIndex,
+            containerColor = containerColor,
+            contentColor = contentColor,
+            indicator = { tabPositions ->
+                // Indicator for the selected tab
+                SecondaryIndicator(
+                    modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
+                    color = indicatorColor
+                )
+            }
+        ) {
+            // Iterate through each tab title and create a tab
+            tabs.forEachIndexed { index, tabTitle ->
+                Tab(
+                    modifier = Modifier.padding(all = dimensionResource(R.dimen.padding_medium)),
+                    selected = selectedTabIndex == index,
+                    onClick = { selectedTabIndex = index }
+                ) {
+                    // Text displayed on the tab
+                    Text(text = tabTitle)
+                }
+            }
+        }
+
+        // Display the content screen corresponding to the selected tab
+        contentScreens[selectedTabIndex].invoke()
+    }
+}
+
+@Composable
+fun UserScreen(
+    patients: List<User>,
+    therapists: List<User>,
+    currentUser: User,
+    onLogin: (User) -> Unit = {},
+    onDelete: (User) -> Unit = {},
+    onUserSetting: () -> Unit = {},
+) {
+    TabRowComponent(
+        tabs = listOf("Alumnos", "Maestros"),
+        contentScreens = listOf(
+            {
+                UserList(
+                    users = patients,
+                    currentUser = currentUser,
+                    onLogin = onLogin,
+                    onDelete = onDelete,
+                    onUserSetting = onUserSetting,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            {
+                UserList(
+                    users = therapists,
+                    currentUser = currentUser,
+                    onLogin = onLogin,
+                    onDelete = onDelete,
+                    onUserSetting = onUserSetting,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        )
+    )
+}
 
 @Composable
 fun UserList(
     users: List<User>,
     currentUser: User,
     onLogin: (User) -> Unit = {},
+    onDelete: (User) -> Unit = {},
     onUserSetting: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -103,7 +190,16 @@ fun UserList(
             ),
         contentPadding = PaddingValues(dimensionResource(R.dimen.padding_small)),
     ) {
-        CurrentUserItem(currentUser, userItemModifier, users, onLogin, onUserSetting)
+        if (currentUser in users) {
+            currentUserItem(
+                currentUser = currentUser,
+                userItemModifier = userItemModifier,
+                users = users,
+                onLogin = onLogin,
+                onDelete = onDelete,
+                onUserSetting = onUserSetting
+            )
+        }
 
         itemsIndexed(users) { _, user ->
             if (user.id != currentUser.id) {
@@ -111,6 +207,7 @@ fun UserList(
                     userItem = user,
                     modifier = userItemModifier,
                     onLogin = { onLogin(user) },
+                    onDelete = { onDelete(user) },
                     onUserSetting = onUserSetting,
                     currentUser = currentUser,
                 )
@@ -121,11 +218,12 @@ fun UserList(
 }
 
 
-public fun LazyListScope.CurrentUserItem(
+fun LazyListScope.currentUserItem(
     currentUser: User,
     userItemModifier: Modifier,
     users: List<User>,
     onLogin: (User) -> Unit,
+    onDelete: (User) -> Unit,
     onUserSetting: () -> Unit
 ) {
 
@@ -160,6 +258,7 @@ public fun LazyListScope.CurrentUserItem(
                         userItem = currentUser,
                         currentUser = currentUser,
                         onLogin = { onLogin(currentUser) },
+                        onDelete = { onDelete(currentUser) },
                         onUserSetting = onUserSetting,
                     )
                 }
@@ -174,15 +273,22 @@ fun UserItem(
     userItem: User,
     currentUser: User,
     cardColors: CardColors = CardDefaults.cardColors(),
-    onLogin: () -> Unit,
-    onUserSetting: () -> Unit,
+    onLogin: () -> Unit = {},
+    onDelete: () -> Unit = {},
+    onUserSetting: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Card(
         modifier = modifier,
         colors = cardColors,
     ) {
-        ContentItem(userItem, currentUser, onLogin, onUserSetting)
+        ContentItem(
+            userItem = userItem,
+            currentUser = currentUser,
+            onLogin = onLogin,
+            onDelete = onDelete,
+            onUserSetting = onUserSetting,
+        )
     }
 }
 
@@ -191,6 +297,7 @@ private fun ContentItem(
     userItem: User,
     currentUser: User,
     onLogin: () -> Unit,
+    onDelete: () -> Unit,
     onUserSetting: () -> Unit
 ) {
     Column {
@@ -215,6 +322,7 @@ private fun ContentItem(
             ItemUserActions(
                 isCurrent = userItem.id == currentUser.id,
                 onLogin = onLogin,
+                onDelete = onDelete,
                 onUserSetting = onUserSetting,
                 userItem = userItem
             )
@@ -289,6 +397,7 @@ fun UserInformation(
 fun ItemUserActions(
     isCurrent: Boolean = false,
     onLogin: () -> Unit = {},
+    onDelete: () -> Unit = {},
     onUserSetting: () -> Unit = {},
     userItem: User,
     modifier: Modifier = Modifier,
@@ -305,7 +414,7 @@ fun ItemUserActions(
             end  = dimensionResource(R.dimen.padding_large),
         ),
         modifier = modifier,
-    ) {
+    ) { showBottomSheet ->
         BottomSheetMenuItem(
             label = userItem.fullName,
             leadingIcon = {
@@ -365,6 +474,8 @@ fun ItemUserActions(
             onClick = onUserSetting,
             modifier = itemModifier
         )
+
+        var onDeleteOpenDialog by rememberSaveable { mutableStateOf(false) }
         BottomSheetMenuItem(
             label = "Eliminar",
             leadingIcon = {
@@ -373,86 +484,24 @@ fun ItemUserActions(
                     contentDescription = null,
                 )
             },
-            onClick = {},
+            onClick = { onDeleteOpenDialog = true },
             modifier = itemModifier
         )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun BottomSheetMenu(
-    expandElement: @Composable (onExpandedMenu: () -> Unit) -> Unit = {},
-    contentPaddingValues: PaddingValues = PaddingValues(0.dp),
-    modifier: Modifier = Modifier,
-    content: @Composable ColumnScope.() -> Unit = {},
-) {
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true,
-    )
-    val scope = rememberCoroutineScope()
-    var showBottomSheet by rememberSaveable { mutableStateOf(false) }
-    val expandButton = {
-        scope.launch {
-            sheetState.expand()
-        }.invokeOnCompletion {
-            showBottomSheet = true
-        }
-    }
-
-    Box(
-        modifier.clickable(
-            onClick = { expandButton() },
-        )
-    ) {
-        expandElement({ expandButton() })
-    }
-
-    if (showBottomSheet) {
-        ModalBottomSheet(
-            onDismissRequest = {
-                scope.launch { sheetState.hide() }.invokeOnCompletion {
-                    if (!sheetState.isVisible) {
-                        showBottomSheet = false
-                    }
-                }
-            },
-            sheetState = sheetState,
-            modifier = modifier,
-        ) {
-            Column(modifier = Modifier
-                .navigationBarsPadding()
-                .padding(contentPaddingValues)
-                .verticalScroll(rememberScrollState())
-            ) {
-                content()
+            onDeleteOpenDialog.takeIf { it }?.let {
+                SimpleAlertDialog(
+                    onDismissRequest = { onDeleteOpenDialog = false },
+                    onConfirmation = {
+                        onDeleteOpenDialog = false
+                        onDelete()
+                        showBottomSheet.value = false
+                    },
+                    dialogTitle = "Eliminar",
+                    dialogText = "¿Estás seguro de que deseas eliminar este usuario?",
+                    icon = Icons.Default.Delete
+                )
             }
-        }
     }
-}
 
-@Composable
-fun BottomSheetMenuItem(
-    label: String,
-    leadingIcon: @Composable (() -> Unit)? = null,
-    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit = {},
-) {
-    Row(
-        modifier = modifier
-            .clickable { onClick() }
-            .fillMaxWidth(),
-        horizontalArrangement = horizontalArrangement,
-    ) {
-        leadingIcon?.invoke()
-        Spacer(Modifier.width(dimensionResource(R.dimen.padding_medium)))
-        Text(
-            text = label,
-            style = MaterialTheme.typography.titleLarge,
-        )
-    }
-    Spacer(Modifier.height(dimensionResource(R.dimen.padding_medium)))
 }
 
 
@@ -486,7 +535,8 @@ fun UserItemPreview() {
             users_seed.first(),
             currentUser = users_seed[2],
             onLogin = {},
-            onUserSetting = {  })
+            onUserSetting = {  }
+        )
     }
 }
 
@@ -575,5 +625,34 @@ fun DropdownMenuWithDetails() {
                 onClick = { /* Do something... */ }
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun TabRowComponentPreview() {
+    CedicaTheme {
+        TabRowComponent(
+            tabs = listOf("Tab 1", "Tab 2", "Tab 3"),
+            contentScreens = listOf(
+                { Text("Contenido de Tab 1") },
+                { Text("Contenido de Tab 2") },
+                { Text("Contenido de Tab 3") }
+            )
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun UserScreenPreview() {
+    CedicaTheme {
+        UserScreen(
+            patients = users_seed,
+            therapists = users_seed.slice(3..6),
+            currentUser = users_seed.first(),
+            onLogin = {},
+            onUserSetting = {}
+        )
     }
 }

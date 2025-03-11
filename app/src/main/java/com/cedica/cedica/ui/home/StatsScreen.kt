@@ -29,7 +29,7 @@ import com.cedica.cedica.core.utils.exportToPDF
 import com.cedica.cedica.ui.AppViewModelProvider
 import com.cedica.cedica.ui.game.LockScreenOrientation
 import com.cedica.cedica.ui.theme.CedicaTheme
-import com.cedica.cedica.ui.utils.UserViewModel
+import com.cedica.cedica.ui.utils.view_models.UserViewModel
 import kotlinx.coroutines.launch
 import java.util.Locale
 
