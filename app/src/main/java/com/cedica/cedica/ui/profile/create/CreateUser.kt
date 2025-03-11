@@ -1,4 +1,4 @@
-package com.cedica.cedica.ui.profile
+package com.cedica.cedica.ui.profile.create
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
@@ -121,8 +121,7 @@ class CreateUserFormViewModel: ViewModel() {
 }
 
 @Composable
-fun CreateUserForm(
-    viewModel: CreateUserFormViewModel = viewModel()
+fun CreatePatientForm(
 ) {
     Column(
         Modifier.fillMaxSize().padding(dimensionResource(R.dimen.padding_extra_large)).verticalScroll(rememberScrollState()),
@@ -131,25 +130,7 @@ fun CreateUserForm(
     ) {
         val spacerModifier = Modifier.height(dimensionResource(R.dimen.padding_extra_large) * 1.5f)
 
-        FormInputField(
-            title = "Nombre",
-            text = viewModel.name,
-            hasError = viewModel.nameHasError,
-            supportText = viewModel.nameErrorText,
-            onValueChange = viewModel::onNameChange,
-            textFieldStyle = MaterialTheme.typography.headlineLarge,
-        )
-
-        Spacer(modifier = spacerModifier)
-
-        FormInputField(
-            title = "Apellido",
-            text = viewModel.lastName,
-            hasError = viewModel.lastNameHasError,
-            supportText = viewModel.lastNameErrorText,
-            onValueChange = viewModel::onLastNameChange,
-            textFieldStyle = MaterialTheme.typography.headlineLarge,
-        )
+        CreateUserForm(spacerModifier = spacerModifier)
 
         Spacer(modifier = spacerModifier)
 
@@ -167,6 +148,33 @@ fun CreateUserForm(
         )
     }
 }
+
+@Composable
+private fun CreateUserForm(
+    viewModel: CreateUserFormViewModel = viewModel(),
+    spacerModifier: Modifier
+) {
+    FormInputField(
+        title = "Nombre",
+        text = viewModel.name,
+        hasError = viewModel.nameHasError,
+        supportText = viewModel.nameErrorText,
+        onValueChange = viewModel::onNameChange,
+        textFieldStyle = MaterialTheme.typography.headlineLarge,
+    )
+
+    Spacer(modifier = spacerModifier)
+
+    FormInputField(
+        title = "Apellido",
+        text = viewModel.lastName,
+        hasError = viewModel.lastNameHasError,
+        supportText = viewModel.lastNameErrorText,
+        onValueChange = viewModel::onLastNameChange,
+        textFieldStyle = MaterialTheme.typography.headlineLarge,
+    )
+}
+
 
 @Composable
 private fun GenderInputField() {
@@ -326,6 +334,6 @@ fun SelectGenderPreview() {
 @Preview(showBackground = true)
 fun CreateUserFormPreview() {
     CedicaTheme {
-        CreateUserForm()
+        CreatePatientForm()
     }
 }
