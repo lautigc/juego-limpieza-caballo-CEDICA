@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface BaseRepository<T> {
 
-    suspend fun insert(entity: T)
+    suspend fun insert(entity: T): Long
 
     suspend fun insert(entities: List<T>)
 
