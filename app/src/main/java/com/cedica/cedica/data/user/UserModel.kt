@@ -42,11 +42,21 @@ data class User(
 }
 
 @Dao
-interface UserDao: BaseDao<User> {
+abstract class UserDao: BaseDao<User> {
 
     @Query("SELECT * FROM User")
-    fun getAllUsers(): Flow<List<User>>
+    abstract fun getAllUsers(): Flow<List<User>>
 
     @Query("SELECT * FROM User WHERE id = :id")
-    suspend fun getByID(id: Long): User
+    abstract suspend fun getByID(id: Long): User
+
+    @Query(
+        "SELECT * FROM User " +
+        "WHERE firstname = :firstName AND lastname = :lastName"
+    )
+    abstract suspend fun getByFullName(firstName: String, lastName: String): User?
+
+    suspend fun existsByFullName(firstName: String, lastName: String): Boolean {
+        return getByFullName(firstName, lastName) != null
+    }
 }
