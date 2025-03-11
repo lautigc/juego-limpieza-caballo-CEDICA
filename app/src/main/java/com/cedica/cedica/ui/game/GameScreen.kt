@@ -61,7 +61,6 @@ import com.cedica.cedica.core.utils.sound.TextToSpeechWrapper
 import com.cedica.cedica.core.utils.stages
 import com.cedica.cedica.data.user.PlaySession
 import com.cedica.cedica.ui.AppViewModelProvider
-import com.cedica.cedica.ui.utils.UserViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -168,14 +167,16 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     if (showCompletionDialog) {
         LaunchedEffect(Unit) {
             speech?.speak("Completaste el juego, felicitaciones!!. Hacé click en el botón para volver al menú.")
-            PlaySession(
+            val playSession = PlaySession(
                 date = gameState.value.getStartDate(),
                 difficultyLevel = gameState.value.getDifficulty(),
-                correctAnswers = gameState.value.get,
-                incorrectAnswers: Int,
-                timeSpent: Int,
+                correctAnswers = 5,
+                incorrectAnswers = 4,
+                timeSpent = 20,
+                userID = 12,
             )
-            viewModel.insert()
+            // TODO: terminar de poner los parametros de inicializacion
+            viewModel.insert(playSession)
         }
         CompletionDialog(
             score = gameState.value.getScore(),

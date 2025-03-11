@@ -56,4 +56,7 @@ interface PatientDao: BaseDao<Patient> {
 
     @Query("SELECT * FROM Patient WHERE userID = :userID")
     suspend fun getByID(userID: Long): Patient
+
+    @Query("SELECT * FROM PlaySession WHERE userID = :userID")
+    fun getAllPlaySessions(userID: Long): Flow<List<PlaySession>>
 }

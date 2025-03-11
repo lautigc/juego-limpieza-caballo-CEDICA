@@ -26,12 +26,19 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cedica.cedica.core.utils.exportToCSV
 import com.cedica.cedica.core.utils.exportToPDF
+import com.cedica.cedica.data.user.PlaySession
 import com.cedica.cedica.ui.AppViewModelProvider
 import com.cedica.cedica.ui.game.LockScreenOrientation
+import com.cedica.cedica.ui.game.PlaySessionViewModel
 import com.cedica.cedica.ui.theme.CedicaTheme
+import com.cedica.cedica.ui.utils.view_models.UserUiState
 import com.cedica.cedica.ui.utils.view_models.UserViewModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import java.util.Locale
+import java.util.stream.Collectors
 
 // Modelo de datos
 data class GameSession(
@@ -41,6 +48,7 @@ data class GameSession(
     val incorrectAnswers: Int,
     val timeSpent: Int // Tiempo en segundos
 )
+
 
 // Datos de prueba
 val sampleGameSessions = listOf(
@@ -91,17 +99,19 @@ val sampleGameSessions = listOf(
 
 @Composable
 fun StatisticsScreen(
-    gameSessions: List<GameSession>,
-    viewModel: UserViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: UserViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    StaticStatisticScreen(uiState.user.firstName, gameSessions)
+    val patientViewModel: PatientViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    val patientUiState  by patientViewModel.playSessions.collectAsState()
+
+    StaticStatisticScreen(uiState.user.firstName, patientUiState.playSessions)
 }
 
 @Composable
 private fun StaticStatisticScreen(
     username: String,
-    gameSessions: List<GameSession>
+    gameSessions: List<PlaySession>
 ) {
     // Esto es para orientar la pantalla en sentido vertical
     LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
