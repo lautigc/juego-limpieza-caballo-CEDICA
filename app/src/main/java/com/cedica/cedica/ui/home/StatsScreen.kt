@@ -29,73 +29,49 @@ import com.cedica.cedica.core.utils.exportToPDF
 import com.cedica.cedica.data.user.PlaySession
 import com.cedica.cedica.ui.AppViewModelProvider
 import com.cedica.cedica.ui.game.LockScreenOrientation
-import com.cedica.cedica.ui.game.PlaySessionViewModel
 import com.cedica.cedica.ui.theme.CedicaTheme
-import com.cedica.cedica.ui.utils.view_models.UserUiState
 import com.cedica.cedica.ui.utils.view_models.UserViewModel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import java.util.Locale
-import java.util.stream.Collectors
-
-// Modelo de datos
-data class GameSession(
-    val date: String,
-    val difficultyLevel: String,
-    val correctAnswers: Int,
-    val incorrectAnswers: Int,
-    val timeSpent: Int // Tiempo en segundos
-)
 
 
 // Datos de prueba
 val sampleGameSessions = listOf(
-    GameSession(
+    PlaySession(
         date = "2023-10-01",
         difficultyLevel = "Fácil",
         correctAnswers = 8,
         incorrectAnswers = 2,
-        timeSpent = 120
+        timeSpent = 120,
+        userID = 1,
     ),
-    GameSession(
+    PlaySession(
         date = "2023-10-02",
         difficultyLevel = "Medio",
         correctAnswers = 6,
         incorrectAnswers = 4,
-        timeSpent = 150
+        timeSpent = 150,
+        userID = 1,
     ),
-    GameSession(
-        date = "2023-10-03",
-        difficultyLevel = "Difícil",
-        correctAnswers = 5,
-        incorrectAnswers = 5,
-        timeSpent = 180
-    ),
-    GameSession(
-        date = "2023-10-01",
-        difficultyLevel = "Fácil",
-        correctAnswers = 8,
-        incorrectAnswers = 2,
-        timeSpent = 120
-    ),
-    GameSession(
+    PlaySession(
         date = "2023-10-02",
         difficultyLevel = "Medio",
         correctAnswers = 6,
         incorrectAnswers = 4,
-        timeSpent = 150
+        timeSpent = 150,
+        userID = 1,
     ),
-    GameSession(
+    PlaySession(
         date = "2023-10-03",
         difficultyLevel = "Difícil",
         correctAnswers = 5,
         incorrectAnswers = 5,
-        timeSpent = 180
+        timeSpent = 180,
+        userID = 1,
     )
 
 )
+
 
 @Composable
 fun StatisticsScreen(
@@ -118,7 +94,7 @@ private fun StaticStatisticScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
-    var showChart by remember { mutableStateOf(true) } // Estado para controlar la visibilidad del gráfico
+    var showChart by remember { mutableStateOf(false) } // Estado para controlar la visibilidad del gráfico
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -205,7 +181,7 @@ private fun StaticStatisticScreen(
 }
 
 @Composable
-fun PerformanceCharts(gameSessions: List<GameSession>) {
+fun PerformanceCharts(gameSessions: List<PlaySession>) {
     Column {
         Canvas(
             modifier = Modifier
@@ -344,7 +320,7 @@ fun PerformanceCharts(gameSessions: List<GameSession>) {
 
 // Historial de partidas
 @Composable
-fun GameHistoryList(gameSessions: List<GameSession>) {
+fun GameHistoryList(gameSessions: List<PlaySession>) {
         LazyColumn {
             items(gameSessions) { session ->
                 GameSessionItem(session)
@@ -355,7 +331,7 @@ fun GameHistoryList(gameSessions: List<GameSession>) {
 
 // Item de sesión de juego
 @Composable
-fun GameSessionItem(session: GameSession) {
+fun GameSessionItem(session: PlaySession) {
     Card(
         modifier = Modifier
             .fillMaxWidth()

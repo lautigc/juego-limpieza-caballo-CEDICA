@@ -30,7 +30,7 @@ data class PlaySession(
     val difficultyLevel: String,
     val correctAnswers: Int,
     val incorrectAnswers: Int,
-    val timeSpent: Int,
+    val timeSpent: Long,
     val userID: Long,
 )
 

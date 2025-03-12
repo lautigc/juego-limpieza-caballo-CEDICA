@@ -61,6 +61,7 @@ import com.cedica.cedica.core.utils.sound.TextToSpeechWrapper
 import com.cedica.cedica.core.utils.stages
 import com.cedica.cedica.data.user.PlaySession
 import com.cedica.cedica.ui.AppViewModelProvider
+import com.cedica.cedica.ui.utils.view_models.UserViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -163,20 +164,25 @@ fun GameScreen(navigateToMenu: () -> Unit) {
         )
     }
 
-    val viewModel: PlaySessionViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    val psViewModel: PlaySessionViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    val sessionViewModel: UserViewModel = viewModel(factory = AppViewModelProvider.Factory)
     if (showCompletionDialog) {
         LaunchedEffect(Unit) {
             speech?.speak("Completaste el juego, felicitaciones!!. Hacé click en el botón para volver al menú.")
-            val playSession = PlaySession(
-                date = gameState.value.getStartDate(),
-                difficultyLevel = gameState.value.getDifficulty(),
-                correctAnswers = 5,
-                incorrectAnswers = 4,
-                timeSpent = 20,
-                userID = 12,
-            )
+            val playSession = gameState.value.getCompletionTime()?.seconds?.let {
+                PlaySession(
+                    date = gameState.value.getStartDate(),
+                    difficultyLevel = gameState.value.getDifficulty(),
+                    correctAnswers = 5,
+                    incorrectAnswers = 4,
+                    timeSpent = it,
+                    userID = sessionViewModel.uiState.value.user.id,
+                )
+            }
             // TODO: terminar de poner los parametros de inicializacion
-            viewModel.insert(playSession)
+            if (playSession != null) {
+                psViewModel.insert(playSession)
+            }
         }
         CompletionDialog(
             score = gameState.value.getScore(),

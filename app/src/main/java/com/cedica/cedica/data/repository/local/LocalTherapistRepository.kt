@@ -35,7 +35,7 @@ class LocalTherapistRepository(private val dao: TherapistDao): TherapistReposito
         return dao.getAll()
     }
 
-    override suspend fun getByID(id: Int): Therapist {
+    override suspend fun getByID(id: Long): Therapist {
         return dao.getByID(id)
     }
 
