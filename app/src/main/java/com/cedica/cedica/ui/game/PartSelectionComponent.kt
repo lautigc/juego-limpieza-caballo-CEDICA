@@ -60,6 +60,7 @@ import com.cedica.cedica.core.utils.horseParts
 import com.cedica.cedica.core.utils.isPointInPolygon
 import com.cedica.cedica.core.utils.selectRandomParts
 import com.cedica.cedica.core.utils.smoothedHorseParts
+import com.cedica.cedica.core.utils.sound.SoundPlayer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -300,7 +301,7 @@ fun ZoomedHorsePart(part: HorsePart) {
 }
 
 @Composable
-fun DirtyHorsePart(part: HorsePart = horseParts[0], toolPosition: Offset, onPartCleaned: (Boolean) -> Unit) {
+fun DirtyHorsePart(part: HorsePart = horseParts[0], toolPosition: Offset, soundManager: SoundPlayer?, onPartCleaned: (Boolean) -> Unit) {
     val context = LocalContext.current
     val offsetX = remember { mutableFloatStateOf(0f) }
     val offsetY = remember { mutableFloatStateOf(0f) }
@@ -320,12 +321,6 @@ fun DirtyHorsePart(part: HorsePart = horseParts[0], toolPosition: Offset, onPart
     val imagePosition = remember { mutableStateOf(Offset.Zero) }
     val imageSize = remember { mutableStateOf(IntSize.Zero) }
 
-    val desnormalizedPolygon = remember { part.zoomedPolygon.map { (x, y) ->
-        val absoluteX = x * horseImage.width + offsetX.floatValue
-        val absoluteY = y * horseImage.height + offsetY.floatValue
-        absoluteX to absoluteY
-    }}
-
     val clipPath by remember {
         derivedStateOf {
             Path().apply {
@@ -339,6 +334,21 @@ fun DirtyHorsePart(part: HorsePart = horseParts[0], toolPosition: Offset, onPart
         }
     }
 
+    val isCleaning = remember { mutableStateOf(false) }
+    val isPlayingSound = remember { mutableStateOf(false) }
+    var lastPosition by remember { mutableStateOf(toolPosition) }
+
+    LaunchedEffect(isCleaning.value) {
+        while (isCleaning.value) {
+            if (!isPlayingSound.value) {
+                isPlayingSound.value = true
+                soundManager?.playSound("cleaning")
+                delay(500) // Ajusta el tiempo para evitar solapamientos
+                isPlayingSound.value = false
+            }
+        }
+    }
+
     LaunchedEffect(toolPosition) {
 
         val isOverCleanZone = isPointInPolygon((toolPosition.x - imagePosition.value.x) / imageSize.value.width, (toolPosition.y - imagePosition.value.y) / imageSize.value.height, part.zoomedPolygon)
@@ -346,8 +356,15 @@ fun DirtyHorsePart(part: HorsePart = horseParts[0], toolPosition: Offset, onPart
         Log.d("GameDebug", "X: ${(toolPosition.x - imagePosition.value.x) / imageSize.value.width}, Y: ${(toolPosition.y - imagePosition.value.y) / imageSize.value.height}")
         Log.d("GameDebug", "🟢 Herramienta dentro del área centrada: $isOverCleanZone")
 
-        if (isOverCleanZone) {
+        val isMoving = toolPosition != lastPosition
+        lastPosition = toolPosition
+        isCleaning.value = isOverCleanZone && isMoving
+
+        if (isCleaning.value) {
             dirtAlpha.floatValue = (dirtAlpha.floatValue - 0.005f).coerceAtLeast(0f)
+            isCleaning.value = true
+        } else {
+            isCleaning.value = false
         }
     }
 
@@ -439,5 +456,5 @@ fun PreviewZoomedHorsePart() {
 @Preview
 @Composable
 fun PreviewDirtyHorsePart() {
-    DirtyHorsePart(horseParts[0], Offset.Zero, onPartCleaned = {})
+    //DirtyHorsePart(horseParts[0], Offset.Zero, SoundPlayer, onPartCleaned = {})
 }
