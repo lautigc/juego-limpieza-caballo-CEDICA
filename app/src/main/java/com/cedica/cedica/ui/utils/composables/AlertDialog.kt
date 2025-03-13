@@ -27,15 +27,29 @@ import androidx.compose.ui.graphics.vector.ImageVector
  *          )
  *       }
  * {
+ *
+ * @constructor
+ * @param displayAlert: The initial alert to display. If null, no alert will be displayed, otherwise
+ * the alert will be displayed immediately.
  */
-class AlertNotification() {
-    private val _alert = mutableStateOf<String?>(null)
+class AlertNotification(
+    displayAlert: String? = null
+) {
+    private val _alert = mutableStateOf<String?>(displayAlert)
     val alert: State<String?> get() = _alert
 
+    /**
+     * Display an alert.
+     *
+     * @param alert: The alert to display.
+     */
     fun displayAlert(alert: String) {
         this._alert.value = alert
     }
 
+    /**
+     * Hide the alert.
+     */
     fun hiddenAlert() {
         this._alert.value = null
     }
