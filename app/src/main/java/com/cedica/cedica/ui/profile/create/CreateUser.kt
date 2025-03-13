@@ -115,7 +115,8 @@ private fun CreateTherapistFormContent(
         CreateUserFormContent(
             firstName = firstName,
             lastName = lastName,
-            spacerModifier = spacerModifier
+            spacerModifier = spacerModifier,
+            headerStyle = MaterialTheme.typography.displayMedium,
         )
 
         Spacer(modifier = spacerModifier)
@@ -135,21 +136,6 @@ private fun CreateTherapistFormContent(
                 icon = Icons.Outlined.ErrorOutline
             )
         }
-
-//        Spacer(modifier = spacerModifier)
-//
-//        GenderInputField()
-//
-//        Spacer(modifier = spacerModifier)
-//
-//        FormInputField(
-//            title = "Observaciones",
-//            text = viewModel.observations,
-//            hasError = viewModel.observationsHasError,
-//            supportText = viewModel.observationsErrorText,
-//            onValueChange = viewModel::onObservationsChange,
-//            textFieldStyle = MaterialTheme.typography.bodyLarge,
-//        )
     }
 }
 
@@ -176,6 +162,7 @@ fun CreatePatientFormContent(
     gender: InputField<Gender>,
     date: InputField<Date>,
     alert: AlertNotification,
+    headerStyle: TextStyle = MaterialTheme.typography.displayMedium,
     onCreate: () -> Unit = {},
 ) {
     FormContainer {
@@ -184,17 +171,19 @@ fun CreatePatientFormContent(
         CreateUserFormContent(
             firstName = firstName,
             lastName = lastName,
+            headerStyle = headerStyle,
             spacerModifier = spacerModifier
         )
 
         Spacer(modifier = spacerModifier)
 
-        GenderInputField(gender)
+        GenderInputField(gender, headerStyle)
 
         Spacer(modifier = spacerModifier)
 
         FormInputField(
             title = "Observaciones",
+            titleStyle = headerStyle,
             text = observations.input,
             onValueChange = observations::onChange,
             textFieldStyle = MaterialTheme.typography.bodyLarge,
@@ -213,6 +202,8 @@ fun CreatePatientFormContent(
                 icon = Icons.Outlined.ErrorOutline
             )
         }
+
+        Spacer(modifier = spacerModifier)
 
         Button(
             onClick = onCreate,
@@ -251,9 +242,17 @@ fun Date.toFormattedString(): String {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DateInputField(date: InputField<Date>) {
+fun DateInputField(
+    date: InputField<Date>,
+    headerStyle: TextStyle = MaterialTheme.typography.displayMedium,
+) {
     var display by rememberSaveable { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(initialDisplayMode = DisplayMode.Input)
+
+    Text(
+        text = "Fecha de nacimiento",
+        style = headerStyle,
+    )
 
     TextField(
         value = date.input.toFormattedString(),
@@ -291,11 +290,13 @@ fun DateInputField(date: InputField<Date>) {
 private fun CreateUserFormContent(
     firstName: ValidationInputField<String>,
     lastName: ValidationInputField<String>,
+    headerStyle: TextStyle = MaterialTheme.typography.displayMedium,
     spacerModifier: Modifier,
 ) {
     Column {
         FormInputField(
             title = "Nombre",
+            titleStyle = headerStyle,
             text = firstName.input,
             hasError = firstName.hasError,
             supportText = firstName.errorText,
@@ -307,6 +308,7 @@ private fun CreateUserFormContent(
 
         FormInputField(
             title = "Apellido",
+            titleStyle = headerStyle,
             text = lastName.input,
             hasError = lastName.hasError,
             supportText = lastName.errorText,
@@ -318,11 +320,14 @@ private fun CreateUserFormContent(
 
 
 @Composable
-private fun GenderInputField(gender: InputField<Gender>) {
+private fun GenderInputField(
+    gender: InputField<Gender>,
+    headerStyle: TextStyle = MaterialTheme.typography.displayMedium,
+) {
     Column {
         Text(
             text = "Género",
-            style = MaterialTheme.typography.displayMedium,
+            style = headerStyle,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(
                 bottom = dimensionResource(R.dimen.padding_medium)
@@ -375,6 +380,7 @@ private fun GenderSelector(
 @OptIn(ExperimentalMaterial3Api::class)
 private fun FormInputField(
     title: String = "",
+    titleStyle: TextStyle = MaterialTheme.typography.displayMedium,
     text: String = "",
     hasError: Boolean = false,
     supportText: String = "",
@@ -385,7 +391,7 @@ private fun FormInputField(
     Column(modifier = modifier) {
         Text(
             text = title,
-            style = MaterialTheme.typography.displayMedium,
+            style = titleStyle,
             modifier = Modifier.padding(
                 bottom = dimensionResource(R.dimen.padding_medium)
             )
