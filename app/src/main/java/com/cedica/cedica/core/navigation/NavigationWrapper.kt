@@ -67,11 +67,15 @@ fun NavigationWrapper() {
         }
 
         composable<CreateTherapistScreen> {
-            CreateTherapistForm()
+            CreateTherapistForm(
+                onNavigateToCreateUser = { navController.navigate(UserListScreen) }
+            )
         }
 
         composable<CreatePatientScreen> {
-            CreatePatientForm()
+            CreatePatientForm(
+                onNavigateToCreateUser = { navController.navigate(UserListScreen) }
+            )
         }
     }
 }

@@ -82,7 +82,8 @@ fun CreateTherapistForm(
         firstName = viewModel.firstName,
         lastName = viewModel.lastName,
         dataError = viewModel.dataError,
-        onClick = { viewModel.createUser(redirectTo = onNavigateToCreateUser) }
+        onClick = {
+            viewModel.createUser(redirectTo = onNavigateToCreateUser) }
     )
 }
 
@@ -142,6 +143,7 @@ private fun CreateTherapistFormContent(
 @Composable
 fun CreatePatientForm(
     viewModel: CreatePatientFormViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    onNavigateToCreateUser: () -> Unit = {},
 ) {
     CreatePatientFormContent(
         firstName = viewModel.firstName,
@@ -150,7 +152,7 @@ fun CreatePatientForm(
         gender = viewModel.gender,
         date = viewModel.birthDate,
         alert = viewModel.alert,
-        onCreate = { viewModel.createUser() }
+        onCreate = { viewModel.createUser(redirectTo = onNavigateToCreateUser) }
     )
 }
 
