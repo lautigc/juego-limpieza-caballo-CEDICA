@@ -90,7 +90,7 @@ private fun Screen(
         alertNotification.alert.value?.let {
             SimpleAlertDialog(
                 displayDismissButton = false,
-                dialogTitle = "Alert",
+                dialogTitle = "Notificación",
                 dialogText = it,
                 onConfirmation = { alertNotification.hiddenAlert() },
                 icon = Icons.Default.Info
