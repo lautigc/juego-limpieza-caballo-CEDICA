@@ -107,6 +107,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
             soundPlayer.loadSound("snort", R.raw.snort_cut)
             soundPlayer.loadSound("wrong", R.raw.wrong)
             soundPlayer.loadSound("notification", R.raw.new_notification)
+            soundPlayer.loadSound("cleaning", R.raw.scrubbing_brush)
         }
     }
 
@@ -269,6 +270,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                     DirtyHorsePart(
                         part = stageInfo.correctHorsePart,
                         toolPosition = Offset(absoluteX,absoluteY),
+                        soundManager = soundPlayer,
                         onPartCleaned = { isClean ->
                             if (isClean) {
                                 gameState.value.addScore(20)
