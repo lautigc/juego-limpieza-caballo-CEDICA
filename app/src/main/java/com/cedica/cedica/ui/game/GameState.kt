@@ -12,6 +12,8 @@ data class GameState(
     private var currentStage: Int = 1,
     private var amountDirtyPart: Int = 100,
     private var attemptsLeft: Int = 3,
+    private var cantSuccess: Int = 0,
+    private var cantErrors: Int = 0,
     private val startDate: String = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
     private var startTime: LocalDateTime = LocalDateTime.now(),
     private var endTime: LocalDateTime? = null,
@@ -67,6 +69,14 @@ data class GameState(
         this.customMessage = customMessage
     }
 
+    fun increaseSuccess(){
+        this.cantSuccess++
+    }
+
+    fun increaseError(){
+        this.cantErrors++
+    }
+
     @RequiresApi(Build.VERSION_CODES.S)
     fun getFormattedCompletionTime(): String {
         val duration = completionTime ?: Duration.ofSeconds(0)
@@ -98,4 +108,6 @@ data class GameState(
     fun getSelectedTool(): Int? = selectedTool
     fun getMessageType(): String = messageType
     fun getCustomMessage(): String? = customMessage
+    fun getCantErrors(): Int = cantErrors
+    fun getCantSuccess(): Int = cantSuccess
 }
