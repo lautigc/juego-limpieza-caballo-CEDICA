@@ -20,7 +20,8 @@ fun ProfileListScreen(
     onNavigateGuestLogin: () -> Unit = {},
     onNavigateUserSetting: () -> Unit = {},
     onNavigateUserLogin: () -> Unit = {},
-    onNavigateCreateUser: () -> Unit = {},
+    onNavigateCreateTherapist: () -> Unit = {},
+    onNavigateCreatePatient: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val profileUiState by viewModel.uiState.collectAsState()
@@ -39,7 +40,8 @@ fun ProfileListScreen(
         onDeleteUser = { user: User ->
             viewModel.deleteUser(user)
         },
-        onCreate = onNavigateCreateUser,
+        onCreateTherapist = onNavigateCreateTherapist,
+        onCreatePatient = onNavigateCreatePatient,
         onUserSetting = onNavigateUserSetting,
         modifier = modifier,
         currentUser = profileUiState.currentUser
@@ -54,7 +56,8 @@ private fun Screen(
     onLogin: (User) -> Unit = {},
     onDeleteUser: (User) -> Unit,
     onGuestLogin: () -> Unit = {},
-    onCreate: () -> Unit = {},
+    onCreateTherapist: () -> Unit = {},
+    onCreatePatient: () -> Unit = {},
     onUserSetting: () -> Unit,
     currentUser: User = GuestUser,
     modifier: Modifier = Modifier,
@@ -63,7 +66,8 @@ private fun Screen(
         floatingActionButton = {
             ExpandableFAB(
                 onGuestLogin = onGuestLogin,
-                onCreate = onCreate,
+                onCreateTherapist = onCreateTherapist,
+                onCreatePatient = onCreatePatient,
             )
         }
     ) { _ ->

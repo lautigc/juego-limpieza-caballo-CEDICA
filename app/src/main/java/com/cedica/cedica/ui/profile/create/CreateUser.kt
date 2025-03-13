@@ -7,6 +7,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,6 +23,9 @@ import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.Man
 import androidx.compose.material.icons.outlined.Woman
 import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -29,8 +33,10 @@ import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -54,11 +60,18 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cedica.cedica.R
 import com.cedica.cedica.core.utils.input_field.InputField
+import com.cedica.cedica.core.utils.input_field.ValidationInputField
 import com.cedica.cedica.core.utils.input_field.NameField
+import com.cedica.cedica.data.user.Gender
 import com.cedica.cedica.ui.AppViewModelProvider
 import com.cedica.cedica.ui.theme.CedicaTheme
 import com.cedica.cedica.ui.utils.composables.AlertNotification
 import com.cedica.cedica.ui.utils.composables.SimpleAlertDialog
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 @Composable
 fun CreateTherapistForm(
@@ -74,20 +87,29 @@ fun CreateTherapistForm(
 }
 
 @Composable
-private fun CreateTherapistFormContent(
-    firstName: InputField<String>,
-    lastName: InputField<String>,
-    dataError: AlertNotification,
-    onClick: () -> Unit = {},
+private fun FormContainer(
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(
-        Modifier
+        modifier = Modifier
             .fillMaxSize()
             .padding(dimensionResource(R.dimen.padding_extra_large))
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Center,
     ) {
+        content()
+    }
+}
+
+@Composable
+private fun CreateTherapistFormContent(
+    firstName: ValidationInputField<String>,
+    lastName: ValidationInputField<String>,
+    dataError: AlertNotification,
+    onClick: () -> Unit = {},
+) {
+    FormContainer {
         val spacerModifier = Modifier.height(dimensionResource(R.dimen.padding_extra_large) * 1.5f)
 
         CreateUserFormContent(
@@ -132,9 +154,143 @@ private fun CreateTherapistFormContent(
 }
 
 @Composable
+fun CreatePatientForm(
+    viewModel: CreatePatientFormViewModel = viewModel(factory = AppViewModelProvider.Factory),
+) {
+    CreatePatientFormContent(
+        firstName = viewModel.firstName,
+        lastName = viewModel.lastName,
+        observations = viewModel.observations,
+        gender = viewModel.gender,
+        date = viewModel.birthDate,
+        alert = viewModel.alert,
+        onCreate = { viewModel.createUser() }
+    )
+}
+
+@Composable
+fun CreatePatientFormContent(
+    firstName: ValidationInputField<String>,
+    lastName: ValidationInputField<String>,
+    observations: InputField<String>,
+    gender: InputField<Gender>,
+    date: InputField<Date>,
+    alert: AlertNotification,
+    onCreate: () -> Unit = {},
+) {
+    FormContainer {
+        val spacerModifier = Modifier.height(dimensionResource(R.dimen.padding_extra_large) * 1.5f)
+
+        CreateUserFormContent(
+            firstName = firstName,
+            lastName = lastName,
+            spacerModifier = spacerModifier
+        )
+
+        Spacer(modifier = spacerModifier)
+
+        GenderInputField(gender)
+
+        Spacer(modifier = spacerModifier)
+
+        FormInputField(
+            title = "Observaciones",
+            text = observations.input,
+            onValueChange = observations::onChange,
+            textFieldStyle = MaterialTheme.typography.bodyLarge,
+        )
+
+        Spacer(modifier = spacerModifier)
+
+        DateInputField(date)
+
+        alert.alert.value?.let {
+            SimpleAlertDialog(
+                displayDismissButton = false,
+                onConfirmation = { alert.hiddenAlert() },
+                dialogTitle = "Error",
+                dialogText = it,
+                icon = Icons.Outlined.ErrorOutline
+            )
+        }
+
+        Button(
+            onClick = onCreate,
+        ) {
+            Text("Registras usuario")
+        }
+    }
+}
+
+/**
+ * Convert a Long to a Date
+ */
+fun Long.toDate(): Date {
+    return Date(this)
+}
+
+/**
+ * Convert a String to a Date, using the format "dd/MM/yyyy". The format of DateInput is UTC, then
+ * conversion takes into account the timezone.
+ */
+fun String.toDate(): Date {
+    val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    formatter.timeZone = TimeZone.getTimeZone("UTC")
+    return formatter.parse(this) ?: throw IllegalArgumentException("Invalid date format: $this")
+}
+
+/**
+ * Convert a Date to a formatted String, using the format "dd/MM/yyyy". The format of DateInput is UTC, then
+ * conversion takes into account the timezone.
+ */
+fun Date.toFormattedString(): String {
+    val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    formatter.timeZone = TimeZone.getTimeZone("UTC")
+    return formatter.format(this)
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DateInputField(date: InputField<Date>) {
+    var display by rememberSaveable { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState(initialDisplayMode = DisplayMode.Input)
+
+    TextField(
+        value = date.input.toFormattedString(),
+        onValueChange = { },
+        textStyle = MaterialTheme.typography.bodyLarge,
+        enabled = false,
+        modifier = Modifier
+            .width(300.dp) // Ancho fijo
+            .wrapContentHeight() // Se ajusta verticalmente al contenido
+            .clip(RoundedCornerShape(20.dp)) // Esquinas redondeadas
+            .clickable {
+                display = true
+            }
+    )
+
+    display.takeIf { it }?.let {
+        DatePickerDialog(
+            onDismissRequest = {},
+            confirmButton = {
+                TextButton(onClick = {
+                    date.onChange(datePickerState.selectedDateMillis?.toDate() ?: Date(LocalDate.now().toEpochDay()))
+                    display = false
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = null,
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+}
+
+@Composable
 private fun CreateUserFormContent(
-    firstName: InputField<String>,
-    lastName: InputField<String>,
+    firstName: ValidationInputField<String>,
+    lastName: ValidationInputField<String>,
     spacerModifier: Modifier,
 ) {
     Column {
@@ -162,7 +318,7 @@ private fun CreateUserFormContent(
 
 
 @Composable
-private fun GenderInputField() {
+private fun GenderInputField(gender: InputField<Gender>) {
     Column {
         Text(
             text = "Género",
@@ -172,18 +328,24 @@ private fun GenderInputField() {
                 bottom = dimensionResource(R.dimen.padding_medium)
             )
         )
-        GenderSelector()
+        GenderSelector(gender)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun GenderSelector(modifier: Modifier = Modifier) {
+private fun GenderSelector(
+    gender: InputField<Gender>,
+    modifier: Modifier = Modifier
+) {
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
     val options = listOf(
-        Pair(stringResource(R.string.man_voice_option_title), Icons.Outlined.Man),
-        Pair(stringResource(R.string.woman_voice_option_title), Icons.Outlined.Woman),
+        Triple(stringResource(R.string.man_voice_option_title), Icons.Outlined.Man, Gender.MALE),
+        Triple(stringResource(R.string.woman_voice_option_title), Icons.Outlined.Woman, Gender.FEMALE),
     )
+
+    // Set gender value with first option of selector
+    gender.onChange(options[selectedIndex].third)
 
     SingleChoiceSegmentedButtonRow(modifier = modifier) {
         options.forEachIndexed { index, pair ->
@@ -192,7 +354,10 @@ private fun GenderSelector(modifier: Modifier = Modifier) {
                     index = index,
                     count = options.size
                 ),
-                onClick = { selectedIndex = index },
+                onClick = {
+                    selectedIndex = index
+                    gender.onChange(options[index].third)
+            },
                 selected = index == selectedIndex,
                 label =
                 {
@@ -329,7 +494,7 @@ fun CreateUserFormPreview() {
 
 @Composable
 @Preview(showBackground = true)
-fun CreatePatientFormPreview() {
+fun CreateTherapistFormPreview() {
     CedicaTheme {
         CreateTherapistFormContent(
             firstName = NameField("..."),
@@ -341,7 +506,7 @@ fun CreatePatientFormPreview() {
 
 @Composable
 @Preview(showBackground = true)
-fun CreatePatientFormDataErrorPreview() {
+fun CreateTherapistFormDataErrorPreview() {
     CedicaTheme {
         val alert = AlertNotification()
         alert.displayAlert("Error en el formulario de creación de paciente")
@@ -349,6 +514,21 @@ fun CreatePatientFormDataErrorPreview() {
             firstName = NameField("..."),
             lastName = NameField("..."),
             dataError = alert,
+        )
+    }
+}
+
+@Composable
+@Preview(showBackground = true)
+fun CreatePatientFormPreview() {
+    CedicaTheme {
+        CreatePatientFormContent(
+            firstName = NameField("..."),
+            lastName = NameField("..."),
+            observations = NameField("..."),
+            gender = InputField(Gender.FEMALE),
+            date = InputField(Date()),
+            alert = AlertNotification(),
         )
     }
 }

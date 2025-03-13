@@ -25,3 +25,6 @@ object Stats
 
 @Serializable
 object CreateTherapistScreen
+
+@Serializable
+object CreatePatientScreen

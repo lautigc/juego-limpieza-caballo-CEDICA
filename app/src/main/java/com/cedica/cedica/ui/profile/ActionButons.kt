@@ -35,7 +35,8 @@ data class FABItem(
 @Composable
 fun ExpandableFAB(
     onGuestLogin: () -> Unit = {},
-    onCreate: () -> Unit = {}
+    onCreateTherapist: () -> Unit = {},
+    onCreatePatient: () -> Unit = {},
 ) {
     val itemModifier = Modifier.padding(
         top = dimensionResource(R.dimen.padding_small),
@@ -77,9 +78,18 @@ fun ExpandableFAB(
         )
 
         BottomSheetMenuItem(
-            label = "Registrar usuario",
+            label = "Registrar Maestro",
             leadingIcon = { Icon(imageVector = Icons.Filled.Add, contentDescription = null) },
-            onClick = onCreate,
+            onClick = onCreateTherapist,
+            modifier = Modifier.padding(
+                bottom = dimensionResource(R.dimen.padding_medium),
+            ),
+        )
+
+        BottomSheetMenuItem(
+            label = "Registrar Alumno",
+            leadingIcon = { Icon(imageVector = Icons.Filled.Add, contentDescription = null) },
+            onClick = onCreatePatient,
             modifier = Modifier.padding(
                 bottom = dimensionResource(R.dimen.padding_medium),
             ),
