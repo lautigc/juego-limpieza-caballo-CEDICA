@@ -1,6 +1,8 @@
 package com.cedica.cedica.ui.profile
 
 import android.annotation.SuppressLint
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -13,6 +15,8 @@ import com.cedica.cedica.data.user.GuestUser
 import com.cedica.cedica.data.user.User
 import com.cedica.cedica.ui.AppViewModelProvider
 import com.cedica.cedica.ui.theme.CedicaTheme
+import com.cedica.cedica.ui.utils.composables.AlertNotification
+import com.cedica.cedica.ui.utils.composables.SimpleAlertDialog
 
 @Composable
 fun ProfileListScreen(
@@ -22,6 +26,7 @@ fun ProfileListScreen(
     onNavigateUserLogin: () -> Unit = {},
     onNavigateCreateTherapist: () -> Unit = {},
     onNavigateCreatePatient: () -> Unit = {},
+    alertNotification: String? = null,
     modifier: Modifier = Modifier
 ) {
     val profileUiState by viewModel.uiState.collectAsState()
@@ -43,6 +48,7 @@ fun ProfileListScreen(
         onCreateTherapist = onNavigateCreateTherapist,
         onCreatePatient = onNavigateCreatePatient,
         onUserSetting = onNavigateUserSetting,
+        alertNotification = AlertNotification(alertNotification),
         modifier = modifier,
         currentUser = profileUiState.currentUser
     )
@@ -60,6 +66,7 @@ private fun Screen(
     onCreatePatient: () -> Unit = {},
     onUserSetting: () -> Unit,
     currentUser: User = GuestUser,
+    alertNotification: AlertNotification = AlertNotification(),
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -79,6 +86,16 @@ private fun Screen(
             onDelete = onDeleteUser,
             onUserSetting = onUserSetting
         )
+
+        alertNotification.alert.value?.let {
+            SimpleAlertDialog(
+                displayDismissButton = false,
+                dialogTitle = "Alert",
+                dialogText = it,
+                onConfirmation = { alertNotification.hiddenAlert() },
+                icon = Icons.Default.Info
+            )
+        }
     }
 }
 
