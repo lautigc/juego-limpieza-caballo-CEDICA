@@ -12,7 +12,7 @@ data class GameState(
     private var currentStage: Int = 1,
     private var amountDirtyPart: Int = 100,
     private var attemptsLeft: Int = 3,
-    private val startDate: String = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+    private val startDate: String = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy/hh/mm/ss")),
     private var startTime: LocalDateTime = LocalDateTime.now(),
     private var endTime: LocalDateTime? = null,
     private var completionTime: Duration? = null,

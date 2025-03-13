@@ -5,6 +5,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.cedica.cedica.core.session.Session
 import com.cedica.cedica.data.repository.RepositoryProvider
 import com.cedica.cedica.ui.game.PlaySessionViewModel
+import com.cedica.cedica.ui.home.PatientViewModel
 import com.cedica.cedica.ui.profile.ProfileListScreenViewModel
 import com.cedica.cedica.ui.profile.create.CreateTherapistFormViewModel
 import com.cedica.cedica.ui.profile.create.CreateUserFormViewModel
@@ -48,6 +49,13 @@ object AppViewModelProvider {
             CreateTherapistFormViewModel(
                 therapistRepository = RepositoryProvider.therapistRepository,
                 userRepository = RepositoryProvider.userRepository
+            )
+        }
+
+        initializer {
+            PatientViewModel(
+                session = Session,
+                patientRepository = RepositoryProvider.patientRepository,
             )
         }
     }

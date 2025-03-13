@@ -6,9 +6,11 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Query
+import androidx.room.Relation
 import com.cedica.cedica.data.generic.BaseDao
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDateTime
+import java.util.Date
 
 @Entity(
     tableName = "PlaySession",
@@ -26,7 +28,7 @@ import java.time.LocalDateTime
 )
 data class PlaySession(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val date: String,
+    val date: Date,
     val difficultyLevel: String,
     val correctAnswers: Int,
     val incorrectAnswers: Int,

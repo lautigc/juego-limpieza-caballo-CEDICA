@@ -63,7 +63,9 @@ import com.cedica.cedica.data.user.PlaySession
 import com.cedica.cedica.ui.AppViewModelProvider
 import com.cedica.cedica.ui.utils.view_models.UserViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.util.Date
 import kotlin.math.roundToInt
 
 data class Tool(val imageRes: Int, val name: String)
@@ -169,14 +171,15 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     if (showCompletionDialog) {
         LaunchedEffect(Unit) {
             speech?.speak("Completaste el juego, felicitaciones!!. Hacé click en el botón para volver al menú.")
+            val id = sessionViewModel.getUserSessionID().first()
             val playSession = gameState.value.getCompletionTime()?.seconds?.let {
                 PlaySession(
-                    date = gameState.value.getStartDate(),
+                    date = Date(),
                     difficultyLevel = gameState.value.getDifficulty(),
-                    correctAnswers = 5,
+                    correctAnswers = 5, // TODO: integrar correct/incorrect counters
                     incorrectAnswers = 4,
                     timeSpent = it,
-                    userID = sessionViewModel.uiState.value.user.id,
+                    userID = id
                 )
             }
             // TODO: terminar de poner los parametros de inicializacion

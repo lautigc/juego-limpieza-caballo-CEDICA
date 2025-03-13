@@ -36,9 +36,11 @@ import java.util.Locale
 
 
 // Datos de prueba
+import java.util.Date
+
 val sampleGameSessions = listOf(
     PlaySession(
-        date = "2023-10-01",
+        date = Date(2023 - 1900, 9, 1), // 1 de octubre de 2023
         difficultyLevel = "Fácil",
         correctAnswers = 8,
         incorrectAnswers = 2,
@@ -46,7 +48,7 @@ val sampleGameSessions = listOf(
         userID = 1,
     ),
     PlaySession(
-        date = "2023-10-02",
+        date = Date(2023 - 1900, 9, 2), // 2 de octubre de 2023
         difficultyLevel = "Medio",
         correctAnswers = 6,
         incorrectAnswers = 4,
@@ -54,7 +56,7 @@ val sampleGameSessions = listOf(
         userID = 1,
     ),
     PlaySession(
-        date = "2023-10-02",
+        date = Date(2023 - 1900, 9, 2), // 2 de octubre de 2023
         difficultyLevel = "Medio",
         correctAnswers = 6,
         incorrectAnswers = 4,
@@ -62,14 +64,13 @@ val sampleGameSessions = listOf(
         userID = 1,
     ),
     PlaySession(
-        date = "2023-10-03",
+        date = Date(2023 - 1900, 9, 3), // 3 de octubre de 2023
         difficultyLevel = "Difícil",
         correctAnswers = 5,
         incorrectAnswers = 5,
         timeSpent = 180,
         userID = 1,
     )
-
 )
 
 
@@ -323,7 +324,6 @@ fun PerformanceCharts(gameSessions: List<PlaySession>) {
 fun GameHistoryList(gameSessions: List<PlaySession>) {
         LazyColumn {
             items(gameSessions) { session ->
-                GameSessionItem(session)
                 GameSessionItem(session)
             }
         }

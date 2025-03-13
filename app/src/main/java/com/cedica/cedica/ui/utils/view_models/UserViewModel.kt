@@ -7,6 +7,7 @@ import com.cedica.cedica.data.repository.interfaces.UserRepository
 import com.cedica.cedica.data.user.GuestUser
 import com.cedica.cedica.data.user.LoadingUser
 import com.cedica.cedica.data.user.User
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -30,5 +31,9 @@ class UserViewModel(
 
     companion object {
         private const val TIMEOUT_MILLIS = 5_000L
+    }
+
+    suspend fun getUserSessionID(): Flow<Long> {
+        return session.getUserID()
     }
 }
