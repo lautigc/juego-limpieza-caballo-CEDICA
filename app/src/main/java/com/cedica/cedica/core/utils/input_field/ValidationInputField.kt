@@ -6,7 +6,29 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
 /**
- * The InputField class is a class that can be used to manage the state of an input field.
+ * The InputField class is a class that can be used to manage the state of an simple input field that
+ * no requires any validation.
+ * The class provides a common property:
+ * - input: the value of the input field
+ * The onChange method is a method that can be used to update the value of the input field.
+ * @param T
+ * @constructor
+ * @param initialValueField initial value of the input field
+ */
+open class InputField<T>(
+    initialValueField: T,
+) {
+    var input by mutableStateOf<T>(initialValueField)
+        protected set
+
+    open fun onChange(newValue: T) {
+        this.input = newValue
+    }
+}
+
+/**
+ * The InputKeyboardField class is a class that can be used to manage the state of an input field
+ * that requires validation.
  * The class provides three common properties:
  * - input: the value of the input field
  * - errorText: the error message of the input field.
@@ -19,12 +41,9 @@ import androidx.compose.runtime.setValue
  * @constructor
  * @param initialValueField initial value of the input field
  */
-abstract class InputField<T>(
+abstract class ValidationInputField<T>(
     initialValueField: T,
-) {
-    var input by mutableStateOf<T>(initialValueField)
-        private set
-
+): InputField<T>(initialValueField) {
     var errorText = ""
         protected set
 
@@ -32,7 +51,4 @@ abstract class InputField<T>(
 
     abstract fun inputIsValid(): Boolean
 
-    open fun onChange(newValue: T) {
-        this.input = newValue
-    }
 }
