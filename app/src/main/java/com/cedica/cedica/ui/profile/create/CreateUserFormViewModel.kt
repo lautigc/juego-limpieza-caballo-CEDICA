@@ -2,7 +2,7 @@ package com.cedica.cedica.ui.profile.create
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cedica.cedica.core.utils.input_field.InputField
+import com.cedica.cedica.core.utils.input_field.ValidationInputField
 import com.cedica.cedica.core.utils.input_field.NameField
 import com.cedica.cedica.data.permissions.Role
 import com.cedica.cedica.data.repository.interfaces.UserRepository
@@ -13,9 +13,9 @@ import kotlinx.coroutines.launch
 open class CreateUserFormViewModel(
     private val userRepository: UserRepository
 ): ViewModel() {
-    var firstName: InputField<String> = NameField("")
+    var firstName: ValidationInputField<String> = NameField("")
 
-    var lastName: InputField<String> = NameField("")
+    var lastName: ValidationInputField<String> = NameField("")
 
     val dataError = AlertNotification()
 
