@@ -3,10 +3,12 @@ package com.cedica.cedica.core.navigation
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.cedica.cedica.ui.AppViewModelProvider
 import com.cedica.cedica.ui.home.AboutScreen
 import com.cedica.cedica.ui.home.ConfigurationScreen
 import com.cedica.cedica.ui.game.GameScreen
@@ -17,6 +19,7 @@ import com.cedica.cedica.ui.profile.ProfileListScreen
 import com.cedica.cedica.ui.profile.UserSettingScreen
 import com.cedica.cedica.ui.profile.create.CreatePatientForm
 import com.cedica.cedica.ui.profile.create.CreateTherapistForm
+import com.cedica.cedica.ui.utils.composables.AlertNotification
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
@@ -49,12 +52,12 @@ fun NavigationWrapper() {
         composable<UserListScreen> { backStackEntry ->
             val route: UserListScreen = backStackEntry.toRoute()
             ProfileListScreen(
+                notification = route.alertNotification,
                 onNavigateGuestLogin = { navController.navigate(Menu) },
                 onNavigateUserSetting = { navController.navigate(UserSetting) },
                 onNavigateUserLogin = { navController.navigate(Menu) },
                 onNavigateCreateTherapist = { navController.navigate(CreateTherapistScreen) },
                 onNavigateCreatePatient = { navController.navigate(CreatePatientScreen) },
-                alertNotification = route.alertNotification
             )
         }
 
