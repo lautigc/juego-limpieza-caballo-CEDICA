@@ -322,9 +322,13 @@ fun PerformanceCharts(gameSessions: List<PlaySession>) {
 // Historial de partidas
 @Composable
 fun GameHistoryList(gameSessions: List<PlaySession>) {
-        LazyColumn {
-            items(gameSessions) { session ->
-                GameSessionItem(session)
+        if (gameSessions.isEmpty()) {
+            Text("No hay partidas registradas por ahora")
+        } else {
+            LazyColumn {
+                items(gameSessions) { session ->
+                    GameSessionItem(session)
+                }
             }
         }
 }

@@ -176,13 +176,12 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                 PlaySession(
                     date = Date(),
                     difficultyLevel = gameState.value.getDifficulty(),
-                    correctAnswers = 5, // TODO: integrar correct/incorrect counters
-                    incorrectAnswers = 4,
+                    correctAnswers = gameState.value.getCantSuccess(),
+                    incorrectAnswers = gameState.value.getCantErrors(),
                     timeSpent = it,
                     userID = id
                 )
             }
-            // TODO: terminar de poner los parametros de inicializacion
             if (playSession != null) {
                 psViewModel.insert(playSession)
             }
