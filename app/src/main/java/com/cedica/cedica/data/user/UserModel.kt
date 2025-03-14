@@ -9,6 +9,7 @@ import androidx.room.Query
 import com.cedica.cedica.data.generic.BaseDao
 import com.cedica.cedica.data.permissions.Role
 import kotlinx.coroutines.flow.Flow
+import kotlinx.serialization.Serializable
 
 
 val GuestUser = User(
@@ -25,6 +26,7 @@ val LoadingUser = User(
     lastName = "",
 )
 
+@Serializable
 @Entity(
     tableName = "User",
     indices = [

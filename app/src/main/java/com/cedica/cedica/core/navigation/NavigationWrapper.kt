@@ -3,12 +3,10 @@ package com.cedica.cedica.core.navigation
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.cedica.cedica.ui.AppViewModelProvider
 import com.cedica.cedica.ui.home.AboutScreen
 import com.cedica.cedica.ui.home.ConfigurationScreen
 import com.cedica.cedica.ui.game.GameScreen
@@ -19,7 +17,8 @@ import com.cedica.cedica.ui.profile.ProfileListScreen
 import com.cedica.cedica.ui.profile.UserSettingScreen
 import com.cedica.cedica.ui.profile.create.CreatePatientForm
 import com.cedica.cedica.ui.profile.create.CreateTherapistForm
-import com.cedica.cedica.ui.utils.composables.AlertNotification
+import com.cedica.cedica.ui.profile.create.EditPatientForm
+import com.cedica.cedica.ui.profile.create.EditTherapistForm
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
@@ -58,6 +57,8 @@ fun NavigationWrapper() {
                 onNavigateUserLogin = { navController.navigate(Menu) },
                 onNavigateCreateTherapist = { navController.navigate(CreateTherapistScreen) },
                 onNavigateCreatePatient = { navController.navigate(CreatePatientScreen) },
+                onNavigateEditTherapist = { userID -> navController.navigate(EditTherapistScreen(userID)) },
+                onNavigateEditPatient = { userID -> navController.navigate(EditPatientScreen(userID)) }
             )
         }
 
@@ -87,5 +88,28 @@ fun NavigationWrapper() {
                 )) }
             )
         }
+
+        composable<EditTherapistScreen> { backStackEntry ->
+            val args: EditTherapistScreen = backStackEntry.toRoute()
+            EditTherapistForm(
+                userID = args.userID,
+                onEditTherapistNavigateTo = {
+                    navController
+                        .navigate(UserListScreen(alertNotification = "Usuario editado correctamente"))
+                }
+            )
+        }
+
+        composable<EditPatientScreen> { backStackEntry ->
+            val args: EditTherapistScreen = backStackEntry.toRoute()
+            EditPatientForm(
+                userID = args.userID,
+                onEditPatientNavigateTo = {
+                    navController
+                        .navigate(UserListScreen(alertNotification = "Usuario editado correctamente"))
+                }
+            )
+        }
+
     }
 }

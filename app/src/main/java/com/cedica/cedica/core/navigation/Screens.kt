@@ -1,5 +1,6 @@
 package com.cedica.cedica.core.navigation
 
+import com.cedica.cedica.data.user.User
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -28,3 +29,9 @@ object CreateTherapistScreen
 
 @Serializable
 object CreatePatientScreen
+
+@Serializable
+data class EditTherapistScreen(val userID: Long)
+
+@Serializable
+data class EditPatientScreen(val userID: Long)

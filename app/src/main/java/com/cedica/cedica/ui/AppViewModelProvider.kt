@@ -9,6 +9,9 @@ import com.cedica.cedica.ui.profile.ProfileListScreenViewModel
 import com.cedica.cedica.ui.profile.create.CreatePatientFormViewModel
 import com.cedica.cedica.ui.profile.create.CreateTherapistFormViewModel
 import com.cedica.cedica.ui.profile.create.CreateUserFormViewModel
+import com.cedica.cedica.ui.profile.create.EditPatientFormViewModel
+import com.cedica.cedica.ui.profile.create.EditTherapistForm
+import com.cedica.cedica.ui.profile.create.EditUserFormViewModel
 import com.cedica.cedica.ui.utils.view_models.UserViewModel
 
 /**
@@ -50,8 +53,33 @@ object AppViewModelProvider {
     }
 
     /**
-     * Functions factories to create instance of ViewModel that require parameters
+     * Provides functions factories to create instance of ViewModel that require parameters
      */
+    object FactoryWithArgs {
+        fun editUserForm(userID: Long): ViewModelProvider.Factory {
+            return viewModelFactory {
+                initializer {
+                    EditUserFormViewModel(
+                        userRepository = RepositoryProvider.userRepository,
+                        userID = userID,
+                    )
+                }
+            }
+        }
+
+        fun editPatientForm(userID: Long): ViewModelProvider.Factory? {
+            return viewModelFactory {
+                initializer {
+                    EditPatientFormViewModel(
+                        patientRepository = RepositoryProvider.patientRepository,
+                        userRepository = RepositoryProvider.userRepository,
+                        userID = userID,
+                    )
+                }
+            }
+        }
+    }
+
     fun profileListScreenViewModelFactory(notification: String? = null): ViewModelProvider.Factory {
         return viewModelFactory {
             initializer {

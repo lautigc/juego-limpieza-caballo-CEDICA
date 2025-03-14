@@ -10,14 +10,14 @@ import com.cedica.cedica.data.user.User
 import com.cedica.cedica.ui.utils.composables.AlertNotification
 import kotlinx.coroutines.launch
 
-open class CreateUserFormViewModel(
+abstract class UserFormViewModel(
     private val userRepository: UserRepository
 ): ViewModel() {
-    var firstName: ValidationInputField<String> = NameField("")
+    open var firstName: ValidationInputField<String> = NameField("")
 
-    var lastName: ValidationInputField<String> = NameField("")
+    open var lastName: ValidationInputField<String> = NameField("")
 
-    val dataError = AlertNotification()
+    open val dataError = AlertNotification()
 
     protected open suspend fun validateForm(): Boolean {
         return firstName.inputIsValid() && lastName.inputIsValid()
@@ -31,19 +31,26 @@ open class CreateUserFormViewModel(
         return true
     }
 
-    fun createUser(redirectTo: () -> Unit = {}) {
+    fun insertUser(redirectTo: () -> Unit = {}) {
         this.viewModelScope.launch {
             if (
-                this@CreateUserFormViewModel.validateForm() &&
-                this@CreateUserFormViewModel.validateData()
+                this@UserFormViewModel.validateForm() &&
+                this@UserFormViewModel.validateData()
             ) {
-                userCreationProcess()
+                insertProccess()
                 redirectTo()
             }
         }
     }
 
-    protected open suspend fun userCreationProcess(): Long {
+    abstract suspend fun insertProccess(): Long
+}
+
+open class CreateUserFormViewModel(
+    private val userRepository: UserRepository
+): UserFormViewModel(userRepository) {
+
+    override suspend fun insertProccess(): Long {
         return this.userRepository.insert(
             User(
                 firstName = this.firstName.input,
@@ -51,5 +58,36 @@ open class CreateUserFormViewModel(
                 role = Role.USER,
             )
         )
+    }
+}
+
+open class EditUserFormViewModel(
+    private val userRepository: UserRepository,
+    private val userID: Long,
+): UserFormViewModel(userRepository) {
+
+    init {
+        this.viewModelScope.launch {
+            this@EditUserFormViewModel.loadUser()
+        }
+    }
+
+    protected open suspend fun loadUser(): Long {
+        val user = userRepository.getByID(userID)
+        this.firstName.onChange(user.firstName)
+        this.lastName.onChange(user.lastName)
+        return user.id
+    }
+
+    override suspend fun insertProccess(): Long {
+        this.userRepository.update(
+            User(
+                id = userID,
+                firstName = this.firstName.input,
+                lastName = this.lastName.input,
+                role = Role.USER,
+            )
+        )
+        return this.userID
     }
 }

@@ -1,6 +1,7 @@
 package com.cedica.cedica.ui.profile
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Scaffold
@@ -30,6 +31,8 @@ fun ProfileListScreen(
     onNavigateUserLogin: () -> Unit = {},
     onNavigateCreateTherapist: () -> Unit = {},
     onNavigateCreatePatient: () -> Unit = {},
+    onNavigateEditTherapist: (userID: Long) -> Unit = {},
+    onNavigateEditPatient: (userID: Long) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val profileUiState by viewModel.uiState.collectAsState()
@@ -52,6 +55,8 @@ fun ProfileListScreen(
         onCreateTherapist = onNavigateCreateTherapist,
         onCreatePatient = onNavigateCreatePatient,
         onUserSetting = onNavigateUserSetting,
+        onEditTherapist = onNavigateEditTherapist,
+        onEditPatient = onNavigateEditPatient,
         modifier = modifier,
         currentUser = profileUiState.currentUser
     )
@@ -77,6 +82,8 @@ private fun Screen(
     onGuestLogin: () -> Unit = {},
     onCreateTherapist: () -> Unit = {},
     onCreatePatient: () -> Unit = {},
+    onEditTherapist: (Long) -> Unit = {},
+    onEditPatient: (Long) -> Unit = {},
     onUserSetting: () -> Unit,
     currentUser: User = GuestUser,
     modifier: Modifier = Modifier,
@@ -90,18 +97,35 @@ private fun Screen(
             )
         }
     ) { _ ->
-        UserScreen(
-            patients = patients,
-            therapists = therapists,
-            currentUser = currentUser,
-            onLogin = onLogin,
-            onDelete = onDeleteUser,
-            onUserSetting = onUserSetting
+        TabRowComponent(
+            tabs = listOf("Alumnos", "Maestros"),
+            contentScreens = listOf(
+                {
+                    UserList(
+                        users = patients,
+                        currentUser = currentUser,
+                        onLogin = onLogin,
+                        onDelete = onDeleteUser,
+                        onEdit = onEditPatient,
+                        onUserSetting = onUserSetting,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
+                {
+                    UserList(
+                        users = therapists,
+                        currentUser = currentUser,
+                        onLogin = onLogin,
+                        onDelete = onDeleteUser,
+                        onUserSetting = onUserSetting,
+                        onEdit = onEditTherapist,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            )
         )
-
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable
