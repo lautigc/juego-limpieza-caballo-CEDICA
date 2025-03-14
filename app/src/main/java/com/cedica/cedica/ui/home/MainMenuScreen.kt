@@ -87,7 +87,7 @@ fun TopBar(navController: NavController, modifier: Modifier = Modifier, firstNam
 
         // Botón de perfil
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            IconButton(onClick = { navController.navigate(UserListScreen) }) {
+            IconButton(onClick = { navController.navigate(UserListScreen(alertNotification = null)) }) {
                 Icon(
                     imageVector = Icons.Rounded.AccountCircle,
                     contentDescription = "Perfil",

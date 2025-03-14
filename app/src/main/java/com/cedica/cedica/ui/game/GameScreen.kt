@@ -211,12 +211,14 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                             gameState.value.setCustomMessage("¡Excelente! Seleccionaste la herramienta correcta para la limpieza.")
                             gameState.value.setMessageType("success")
                             gameState.value.addScore(20)
+                            gameState.value.increaseSuccess()
                             soundPlayer?.playSound("success")
                         } else {
                             // Si la herramienta seleccionada es incorrecta
                             gameState.value.setCustomMessage("Ups... Seleccionaste la herramienta incorrecta. Intenta de nuevo.")
                             speech?.speak("Ups... Seleccionaste la herramienta incorrecta. Intentá de nuevo.")
                             gameState.value.setMessageType("error")
+                            gameState.value.increaseError()
                             soundPlayer?.playSound("wrong")
                         }
                     }
@@ -320,6 +322,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                         onPartSelected = { part ->
                             if (part == stageInfo.correctHorsePart.name) {
                                 gameState.value.addScore(20)
+                                gameState.value.increaseSuccess()
                                 showZoomedView = true
                                 coroutineScope.launch {
                                     gameState.value.setCustomMessage("¡Excelente! Seleccionaste la parte correcta del caballo")
@@ -332,6 +335,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                                     gameState.value.setMessageType("selection")
                                 }
                             } else {
+                                gameState.value.increaseError()
                                 gameState.value.setCustomMessage("Ups... Seleccionaste la parte incorrecta. Intenta de nuevo.")
                                 speech?.speak("Ups... Seleccionaste la parte incorrecta. Intenta de nuevo.")
                                 gameState.value.setMessageType("error")

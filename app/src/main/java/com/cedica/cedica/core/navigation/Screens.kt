@@ -15,7 +15,7 @@ object Game
 object About
 
 @Serializable
-object UserListScreen
+data class UserListScreen(val alertNotification: String? = null)
 
 @Serializable
 object UserSetting
@@ -25,3 +25,6 @@ object Stats
 
 @Serializable
 object CreateTherapistScreen
+
+@Serializable
+object CreatePatientScreen

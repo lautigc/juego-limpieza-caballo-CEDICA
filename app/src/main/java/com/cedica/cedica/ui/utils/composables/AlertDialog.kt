@@ -1,5 +1,6 @@
 package com.cedica.cedica.ui.utils.composables
 
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -7,7 +8,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextAlign
 
 /**
  * AlertNotification is a class that can be used to display alerts to the user. The use expected is
@@ -27,15 +30,29 @@ import androidx.compose.ui.graphics.vector.ImageVector
  *          )
  *       }
  * {
+ *
+ * @constructor
+ * @param displayAlert: The initial alert to display. If null, no alert will be displayed, otherwise
+ * the alert will be displayed immediately.
  */
-class AlertNotification() {
-    private val _alert = mutableStateOf<String?>(null)
+class AlertNotification(
+    displayAlert: String? = null
+) {
+    private val _alert = mutableStateOf<String?>(displayAlert)
     val alert: State<String?> get() = _alert
 
+    /**
+     * Display an alert.
+     *
+     * @param alert: The alert to display.
+     */
     fun displayAlert(alert: String) {
         this._alert.value = alert
     }
 
+    /**
+     * Hide the alert.
+     */
     fun hiddenAlert() {
         this._alert.value = null
     }
@@ -68,7 +85,11 @@ fun SimpleAlertDialog(
             Text(text = dialogTitle)
         },
         text = {
-            Text(text = dialogText)
+            Text(
+                text = dialogText,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
         },
         onDismissRequest = {
             onDismissRequest()

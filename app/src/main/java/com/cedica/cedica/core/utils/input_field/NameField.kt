@@ -10,7 +10,7 @@ private fun String.isOnlyLetters(): Boolean {
  * @constructor
  * @param initialValue initial value of the input field
  */
-class NameField(initialValue: String): InputField<String>(initialValue) {
+class NameField(initialValue: String): ValidationInputField<String>(initialValue) {
     override fun inputIsValid(): Boolean {
         if (input.isEmpty()) {
             this.errorText = "El Campo no puede estar vacío"
