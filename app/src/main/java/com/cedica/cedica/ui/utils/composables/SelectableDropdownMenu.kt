@@ -16,21 +16,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 /**
- * Selector de opciones desplegable.
+ * Dropdown option selector.
  *
- * Muestra un campo de texto con un icono de desplegar que al hacer click muestra las opciones.
+ * Displays a text field with a dropdown icon that shows the options when clicked.
  *
- * @param options lista de opciones seleccionables
- * @param expanded indica si el menú está expandido
- * @param selectedOption indica el texto seleccionado
- * @param onExpandedChange función que se ejecuta al cambiar el estado de la expansión
- * @param onCollapse función que se ejecuta al colapsar el menú luego de ser desplegado
- * @param onSelectedText función que se ejecuta al seleccionar una nueva opcion
- * @param modifier modificador del menú
+ * @param options list of selectable options
+ * @param expanded indicates if the menu is expanded
+ * @param selectedOption indicates the selected text
+ * @param onExpandedChange function executed when the expansion state changes
+ * @param onCollapse function executed when the menu collapses after being expanded
+ * @param onSelectedText function executed when a new option is selected
+ * @param modifier menu modifier
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun <T> SelectedDropdownMenu(
+fun <T> SelectableDropdownMenu(
     options: List<T> = emptyList(),
     expanded: Boolean,
     selectedOption: T,
