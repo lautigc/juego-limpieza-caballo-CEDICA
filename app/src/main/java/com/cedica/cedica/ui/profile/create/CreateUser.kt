@@ -386,8 +386,7 @@ private fun GenderSelector(
         Triple(stringResource(R.string.woman_voice_option_title), Icons.Outlined.Woman, Gender.FEMALE),
     )
 
-    // Set gender value with first option of selector
-    gender.onChange(options[selectedIndex].third)
+    selectedIndex = options.indexOfFirst { it.third == gender.input }
 
     SingleChoiceSegmentedButtonRow(modifier = modifier) {
         options.forEachIndexed { index, pair ->

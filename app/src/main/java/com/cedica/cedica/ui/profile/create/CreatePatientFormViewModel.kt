@@ -15,7 +15,7 @@ class CreatePatientFormViewModel(
     private val patientRepository: PatientRepository
 ): CreateUserFormViewModel(userRepository) {
 
-    val gender = InputField(Gender.FEMALE)
+    val gender = InputField(Gender.MALE)
 
     val observations = InputField("")
 
@@ -41,7 +41,7 @@ class EditPatientFormViewModel(
     userID: Long,
     private val patientRepository: PatientRepository
 ): EditUserFormViewModel(userRepository, userID) {
-    val gender = InputField(Gender.FEMALE)
+    val gender = InputField(Gender.MALE)
 
     val observations = InputField("")
 
