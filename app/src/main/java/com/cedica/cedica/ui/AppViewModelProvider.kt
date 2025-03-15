@@ -7,12 +7,11 @@ import com.cedica.cedica.core.session.Session
 import com.cedica.cedica.data.repository.RepositoryProvider
 import com.cedica.cedica.ui.game.PlaySessionViewModel
 import com.cedica.cedica.ui.home.PatientViewModel
-import com.cedica.cedica.ui.profile.ProfileListScreenViewModel
+import com.cedica.cedica.ui.profile.screen.ProfileListScreenViewModel
 import com.cedica.cedica.ui.profile.create.CreatePatientFormViewModel
 import com.cedica.cedica.ui.profile.create.CreateTherapistFormViewModel
 import com.cedica.cedica.ui.profile.create.CreateUserFormViewModel
 import com.cedica.cedica.ui.profile.create.EditPatientFormViewModel
-import com.cedica.cedica.ui.profile.create.EditTherapistForm
 import com.cedica.cedica.ui.profile.create.EditUserFormViewModel
 import com.cedica.cedica.ui.utils.view_models.UserViewModel
 

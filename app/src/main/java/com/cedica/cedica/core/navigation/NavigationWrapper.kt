@@ -12,9 +12,8 @@ import com.cedica.cedica.ui.home.ConfigurationScreen
 import com.cedica.cedica.ui.game.GameScreen
 import com.cedica.cedica.ui.home.MainMenuScreen
 import com.cedica.cedica.ui.home.StatisticsScreen
-import com.cedica.cedica.ui.home.sampleGameSessions
-import com.cedica.cedica.ui.profile.ProfileListScreen
-import com.cedica.cedica.ui.profile.UserSettingScreen
+import com.cedica.cedica.ui.profile.screen.ProfileListScreen
+import com.cedica.cedica.ui.profile.configuration.UserSettingScreen
 import com.cedica.cedica.ui.profile.create.CreatePatientForm
 import com.cedica.cedica.ui.profile.create.CreateTherapistForm
 import com.cedica.cedica.ui.profile.create.EditPatientForm

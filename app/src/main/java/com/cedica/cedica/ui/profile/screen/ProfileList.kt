@@ -1,4 +1,4 @@
-package com.cedica.cedica.ui.profile
+package com.cedica.cedica.ui.profile.screen
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring

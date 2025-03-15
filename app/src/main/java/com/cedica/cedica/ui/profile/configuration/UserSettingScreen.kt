@@ -1,4 +1,4 @@
-package com.cedica.cedica.ui.profile
+package com.cedica.cedica.ui.profile.configuration
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement

@@ -1,4 +1,4 @@
-package com.cedica.cedica.ui.profile
+package com.cedica.cedica.ui.profile.screen
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.fillMaxWidth
