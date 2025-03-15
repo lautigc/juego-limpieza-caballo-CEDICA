@@ -1,28 +1,20 @@
 package com.cedica.cedica.ui.profile.configuration
 
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Man
 import androidx.compose.material.icons.outlined.Woman
-import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -31,7 +23,6 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -46,102 +37,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cedica.cedica.R
+import com.cedica.cedica.core.utils.input_field.InputField
+import com.cedica.cedica.core.utils.input_field.NumberField
+import com.cedica.cedica.data.configuration.DifficultyLevel
+import com.cedica.cedica.data.configuration.VoiceType
+import com.cedica.cedica.ui.AppViewModelProvider
 import com.cedica.cedica.ui.theme.CedicaTheme
-
-/**
- * Elemento que representa una opción de configuración.
- *
- * @param label Titulo de la opción
- * @param secondaryText Texto complementario
- * @param selector Composable que representa el elemento seleccionable para la opcion
- * @param arrangementSelector Alineación del selector
- */
-data class Option(
-    val label: String = "",
-    val secondaryText: String? = null,
-    val selector: @Composable () -> Unit,
-    val arrangementSelector: Arrangement.Horizontal = Arrangement.Start
-)
-
-/**
- * Elemento que representa una sección de configuración.
- *
- * Una sección agrupa una serie de opciones de configuración relacionadas.
- *
- * @param modifier: Modificador de la sección
- * @param title: Título de la sección
- * @param content: Contenido de la sección
- */
-@Composable
-fun SettingSection(
-    modifier: Modifier = Modifier,
-    title: String,
-    content: @Composable () -> Unit,
-) {
-    Card(modifier) {
-        Column(modifier = Modifier.padding(dimensionResource(R.dimen.padding_medium))) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(
-                    bottom = dimensionResource(R.dimen.padding_large)
-                ),
-                color = MaterialTheme.colorScheme.primary
-            )
-            content()
-        }
-    }
-    Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_medium)))
-}
-
-/**
- * Elemento que representa una opción de configuración.
- *
- * @param modifier Modificador del elemento
- * @param label Título de la opción
- * @param secondaryText Texto complementario de la opción
- * @param selector elemento de IU para configurar la opcion
- * @param arrangementSelector Alineación del selector
- */
-@Composable
-fun SettingOption(
-    modifier: Modifier = Modifier,
-    label: String,
-    secondaryText: String?,
-    selector: @Composable () -> Unit,
-    arrangementSelector: Arrangement.Horizontal = Arrangement.Start,
-) {
-    Row(modifier = modifier) {
-        Column(modifier = Modifier.width(150.dp)) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelSmall,
-                maxLines = 2,
-                modifier = Modifier
-                    .horizontalScroll(rememberScrollState()),
-            )
-            secondaryText?.let {
-                Text(
-                    text = secondaryText,
-                    style = MaterialTheme.typography.bodySmall,
-                    maxLines = 3,
-                    modifier = Modifier.heightIn(max = 80.dp).verticalScroll(rememberScrollState())
-                )
-            }
-        }
-        Spacer(modifier = Modifier.width(dimensionResource(R.dimen.padding_medium)))
-        Row(modifier = Modifier.weight(1f), horizontalArrangement = arrangementSelector) {
-            selector()
-        }
-    }
-    HorizontalDivider(thickness = 1.dp, modifier = Modifier.padding(
-        top = dimensionResource(R.dimen.padding_medium),
-        bottom = dimensionResource(R.dimen.padding_medium),
-    ),
-
-    )
-}
 
 /**
  * Pantalla de configuración de usuario.
@@ -149,7 +52,32 @@ fun SettingOption(
  * Representa las opciones de configuración personalizada para cada usuario.
  */
 @Composable
-fun UserSettingScreen() {
+fun UserSettingScreen(
+    userID: Long,
+    viewModel: UserSettingViewModel = viewModel(
+            factory = AppViewModelProvider.FactoryWithArgs.userSetting(userID = userID)
+    ),
+) {
+    UserSettingScreenContent(
+        level = viewModel.level,
+        time = viewModel.time,
+        imageCount = viewModel.imageCount,
+        tryCount = viewModel.tryCount,
+        voice = viewModel.voice,
+        onSave = viewModel::onSave,
+    )
+
+}
+
+@Composable
+private fun UserSettingScreenContent(
+    level: InputField<DifficultyLevel>,
+    time: NumberField<Int>,
+    imageCount: NumberField<Int>,
+    tryCount: NumberField<Int>,
+    onSave: () -> Unit,
+    voice: InputField<VoiceType>
+) {
     val optionModifier = Modifier.padding(
         bottom = dimensionResource(R.dimen.padding_medium)
     )
@@ -159,8 +87,23 @@ fun UserSettingScreen() {
             .fillMaxSize()
             .padding(dimensionResource(R.dimen.padding_medium))
     ) {
-        item { DifficultySettingSection(optionModifier = optionModifier) }
-        item { SoundSettingSection(optionModifier = optionModifier) }
+        item {
+            DifficultySettingSection(
+                optionModifier = optionModifier,
+                onChangeConfiguration = onSave,
+                level = level,
+                time = time,
+                imageCount = imageCount,
+                tryCount = tryCount
+            )
+        }
+        item {
+            SoundSettingSection(
+                optionModifier = optionModifier,
+                onChangeConfiguration = onSave,
+                voice = voice
+            )
+        }
     }
 }
 
@@ -170,13 +113,20 @@ fun UserSettingScreen() {
  * @param optionModifier: Modificador aplicado a cada opción de la sección
  */
 @Composable
-private fun SoundSettingSection(optionModifier: Modifier) {
+private fun SoundSettingSection(
+    onChangeConfiguration: () -> Unit = {},
+    voice: InputField<VoiceType>,
+    optionModifier: Modifier
+) {
 
     val options = listOf(
         Option(
             label = "Tipo de voz",
             secondaryText = null,
-            selector = { VoiceSelector() },
+            selector = { VoiceSelector(
+                voice = voice,
+                onChangeConfiguration = onChangeConfiguration,
+            ) },
             arrangementSelector = Arrangement.Center
         )
     )
@@ -202,29 +152,16 @@ private fun SoundSettingSection(optionModifier: Modifier) {
  * @param optionModifier Modificador aplicado a cada opción de la sección
  */
 @Composable
-private fun DifficultySettingSection(optionModifier: Modifier) {
-    var timeValue by rememberSaveable { mutableStateOf("0") }
-    val timeRange = 0..Int.MAX_VALUE
-    val hasErrorTimeValue by remember {
-        derivedStateOf { outOfRange(timeValue, timeRange) }
-    }
-
-
-    var imageCountValue by rememberSaveable { mutableStateOf("0") }
-    val imageCountRange = 0..5
-    val hasErrorImageCountValue by remember {
-        derivedStateOf { outOfRange(imageCountValue, imageCountRange) }
-    }
-
-    var tryCountValue by rememberSaveable { mutableStateOf("0") }
-    val tryCountRange = 0..Int.MAX_VALUE
-    val hasErrorTryCountValue by remember {
-        derivedStateOf { outOfRange(tryCountValue, tryCountRange) }
-    }
-
-    val optionsDropdown = listOf("Fácil", "Medio", "Dificil")
+private fun DifficultySettingSection(
+    optionModifier: Modifier,
+    onChangeConfiguration: () -> Unit = {},
+    level: InputField<DifficultyLevel>,
+    time: NumberField<Int>,
+    imageCount: NumberField<Int>,
+    tryCount: NumberField<Int>,
+) {
+    val optionsDropdown = DifficultyLevel.entries.toList()
     var expanded by remember { mutableStateOf(false) }
-    var selectedOption by remember { mutableStateOf(optionsDropdown.first()) }
 
     val options = listOf(
         Option(
@@ -234,7 +171,7 @@ private fun DifficultySettingSection(optionModifier: Modifier) {
                 SelectedDropdownMenu(
                     options = optionsDropdown,
                     expanded = expanded,
-                    selectedText = selectedOption,
+                    selectedOption = level.input,
                     onExpandedChange = {
                         expanded = !expanded
                     },
@@ -242,7 +179,7 @@ private fun DifficultySettingSection(optionModifier: Modifier) {
                         expanded = false
                     },
                     onSelectedText = {
-                        selectedOption = it
+                        level.onChange(DifficultyLevel.toDifficultyLevel(it))
                     },
                 )
             },
@@ -253,10 +190,13 @@ private fun DifficultySettingSection(optionModifier: Modifier) {
             secondaryText = "Para completar el juego",
             selector = {
                 NumberInput(
-                    range = timeRange,
-                    selectedValue = timeValue,
-                    onValueChange = { timeValue = it },
-                    hasError = hasErrorTimeValue,
+                    selectedValue = time.input.toString(),
+                    onValueChange = { value ->
+                        time.onChange(time.toInput(value, String::toInt, 0))
+                        onChangeConfiguration()
+                    },
+                    hasError = time.hasError,
+                    supportText = time.errorText
                 )
             },
             arrangementSelector = Arrangement.Center
@@ -266,10 +206,13 @@ private fun DifficultySettingSection(optionModifier: Modifier) {
             secondaryText = "Como ayuda en el juego",
             selector = {
                 NumberInput(
-                    range = imageCountRange,
-                    selectedValue = imageCountValue,
-                    onValueChange = { imageCountValue = it },
-                    hasError = hasErrorImageCountValue
+                    selectedValue = imageCount.input.toString(),
+                    onValueChange = { value ->
+                        imageCount.onChange(imageCount.toInput(value, String::toInt, 0))
+                        onChangeConfiguration()
+                    },
+                    hasError = imageCount.hasError,
+                    supportText = imageCount.errorText,
                 )
             },
             arrangementSelector = Arrangement.Center
@@ -279,10 +222,13 @@ private fun DifficultySettingSection(optionModifier: Modifier) {
             secondaryText = "Errores permitidos antes de restar puntos",
             selector = {
                 NumberInput(
-                    range = tryCountRange,
-                    selectedValue = tryCountValue,
-                    onValueChange = { tryCountValue = it },
-                    hasError = hasErrorTryCountValue
+                    selectedValue = tryCount.input.toString(),
+                    onValueChange = { value ->
+                        tryCount.onChange(tryCount.toInput(value, String::toInt, 0))
+                        onChangeConfiguration()
+                    },
+                    hasError = tryCount.hasError,
+                    supportText = tryCount.errorText,
                 )
             },
             arrangementSelector = Arrangement.Center
@@ -310,12 +256,18 @@ private fun DifficultySettingSection(optionModifier: Modifier) {
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VoiceSelector(modifier: Modifier = Modifier) {
+fun VoiceSelector(
+    voice: InputField<VoiceType>,
+    onChangeConfiguration: () -> Unit = {},
+    modifier: Modifier = Modifier) {
+
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
     val options = listOf(
-        Pair(stringResource(R.string.man_voice_option_title), Icons.Outlined.Man),
-        Pair(stringResource(R.string.woman_voice_option_title), Icons.Outlined.Woman),
+        Triple(stringResource(R.string.man_voice_option_title), Icons.Outlined.Man, VoiceType.MALE),
+        Triple(stringResource(R.string.woman_voice_option_title), Icons.Outlined.Woman, VoiceType.FEMALE),
     )
+
+    selectedIndex = options.indexOfFirst { it.third == voice.input }
 
     SingleChoiceSegmentedButtonRow(modifier = modifier) {
         options.forEachIndexed { index, pair ->
@@ -324,13 +276,16 @@ fun VoiceSelector(modifier: Modifier = Modifier) {
                     index = index,
                     count = options.size
                 ),
-                onClick = { selectedIndex = index },
+                onClick = {
+                    selectedIndex = index
+                    voice.onChange(options[selectedIndex].third)
+                    onChangeConfiguration()
+                },
                 selected = index == selectedIndex,
                 label =
                 {
                     Column {
                         Icon(imageVector = pair.second, contentDescription = null)
-                       //Text(text = pair.first, style = MaterialTheme.typography.labelLarge)
                     }
                 }
             )
@@ -342,23 +297,15 @@ fun VoiceSelector(modifier: Modifier = Modifier) {
 @Composable
 fun UserSettingScreenPreview() {
     CedicaTheme {
-        UserSettingScreen()
+        UserSettingScreenContent(
+            level = InputField(DifficultyLevel.EASY),
+            time = NumberField(rangeStart = 0, rangeEnd = Int.MAX_VALUE, initialValue = 0),
+            imageCount = NumberField(rangeStart = 0, rangeEnd = 5, initialValue = 0),
+            tryCount = NumberField(rangeStart = 0, rangeEnd = Int.MAX_VALUE, initialValue = 0),
+            voice = InputField(VoiceType.FEMALE),
+            onSave = {},
+        )
     }
-}
-
-/**
- * Validador de rango de valores.
- *
- * Se utiliza en NumberInput
- *
- * @param value valor a validar
- * @param range rango de valores permitido
- * @return true si el valor no está en el rango, false en caso contrario
- */
-fun outOfRange(value: String, range: IntRange): Boolean {
-   return  value.toIntOrNull()?.let {
-        it !in range
-    } ?: true
 }
 
 /**
@@ -372,9 +319,9 @@ fun outOfRange(value: String, range: IntRange): Boolean {
  */
 @Composable
 fun NumberInput(
-    range: IntRange,
     selectedValue: String,
     onValueChange: (String) -> Unit,
+    supportText: String = "",
     hasError: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
@@ -392,14 +339,9 @@ fun NumberInput(
             singleLine = true,
         )
 
-        val textError = if (range.last == Int.MAX_VALUE) {
-            "El rango permitido es a partir de ${range.first}"
-        } else {
-            "El rango permitido es entre ${range.first} y ${range.last}"
-        }
         if (hasError) {
             Text(
-                text = textError,
+                text = supportText,
                 maxLines = 2,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.error,
@@ -415,7 +357,7 @@ fun NumberInput(
  *
  * @param options lista de opciones seleccionables
  * @param expanded indica si el menú está expandido
- * @param selectedText indica el texto seleccionado
+ * @param selectedOption indica el texto seleccionado
  * @param onExpandedChange función que se ejecuta al cambiar el estado de la expansión
  * @param onCollapse función que se ejecuta al colapsar el menú luego de ser desplegado
  * @param onSelectedText función que se ejecuta al seleccionar una nueva opcion
@@ -423,10 +365,10 @@ fun NumberInput(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SelectedDropdownMenu(
-    options: List<String> = emptyList(),
+fun <T> SelectedDropdownMenu(
+    options: List<T> = emptyList(),
     expanded: Boolean,
-    selectedText: String,
+    selectedOption: T,
     onExpandedChange: () -> Unit,
     onCollapse: () -> Unit,
     onSelectedText: (selected: String) -> Unit,
@@ -441,7 +383,7 @@ fun SelectedDropdownMenu(
         ) {
             OutlinedTextField(
                 modifier = Modifier.menuAnchor().width(125.dp).height(60.dp),
-                value = selectedText,
+                value = selectedOption.toString(),
                 onValueChange = {},
                 readOnly = true,
                 trailingIcon = {
@@ -457,9 +399,9 @@ fun SelectedDropdownMenu(
             ) {
                 options.forEachIndexed { _, item ->
                     DropdownMenuItem(
-                        text = { Text(item) },
+                        text = { Text(item.toString()) },
                         onClick = {
-                            onSelectedText(item)
+                            onSelectedText(item.toString())
                             onCollapse()
                         },
                         contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
@@ -484,7 +426,7 @@ fun Preview() {
             SelectedDropdownMenu(
                 options = options,
                 expanded = expanded,
-                selectedText = selectedOption,
+                selectedOption = selectedOption,
                 onExpandedChange = {
                     expanded = !expanded
                 },
