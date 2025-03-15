@@ -41,7 +41,7 @@ import com.cedica.cedica.data.configuration.DifficultyLevel
 import com.cedica.cedica.data.configuration.VoiceType
 import com.cedica.cedica.ui.AppViewModelProvider
 import com.cedica.cedica.ui.theme.CedicaTheme
-import com.cedica.cedica.ui.utils.composables.SelectedDropdownMenu
+import com.cedica.cedica.ui.utils.composables.SelectableDropdownMenu
 
 /**
  * Pantalla de configuración de usuario.
@@ -165,7 +165,7 @@ private fun DifficultySettingSection(
             label = "Nivel",
             secondaryText = null,
             selector = {
-                SelectedDropdownMenu(
+                SelectableDropdownMenu(
                     options = optionsDropdown,
                     expanded = expanded,
                     selectedOption = level.input,
@@ -357,7 +357,7 @@ fun Preview() {
 
     CedicaTheme {
         Column(Modifier.fillMaxSize()) {
-            SelectedDropdownMenu(
+            SelectableDropdownMenu(
                 options = options,
                 expanded = expanded,
                 selectedOption = selectedOption,
