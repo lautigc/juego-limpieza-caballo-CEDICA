@@ -123,7 +123,7 @@ fun UserList(
     onLogin: (User) -> Unit = {},
     onDelete: (User) -> Unit = {},
     onEdit: (userID: Long) -> Unit = {},
-    onUserSetting: () -> Unit = {},
+    onUserSetting: (Long) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val userItemModifier = Modifier.padding(dimensionResource(R.dimen.padding_small))
@@ -146,7 +146,7 @@ fun UserList(
                     onLogin = { onLogin(currentUser) },
                     onDelete = { onDelete(currentUser) },
                     onEdit = { onEdit(currentUser.id) },
-                    onUserSetting = { onUserSetting() },
+                    onUserSetting = { onUserSetting(currentUser.id) },
                     selected = true,
                 )
             }
@@ -159,7 +159,7 @@ fun UserList(
                     modifier = userItemModifier,
                     onLogin = { onLogin(user) },
                     onDelete = { onDelete(user) },
-                    onUserSetting = { onUserSetting() } ,
+                    onUserSetting = { onUserSetting(user.id) } ,
                     onEdit = { onEdit(user.id) },
                 )
             }

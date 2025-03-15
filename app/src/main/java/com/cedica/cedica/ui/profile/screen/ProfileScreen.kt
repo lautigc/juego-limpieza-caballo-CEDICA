@@ -27,12 +27,12 @@ fun ProfileListScreen(
         )
     ),
     onNavigateGuestLogin: () -> Unit = {},
-    onNavigateUserSetting: () -> Unit = {},
     onNavigateUserLogin: () -> Unit = {},
     onNavigateCreateTherapist: () -> Unit = {},
     onNavigateCreatePatient: () -> Unit = {},
     onNavigateEditTherapist: (userID: Long) -> Unit = {},
     onNavigateEditPatient: (userID: Long) -> Unit = {},
+    onNavigateUserSetting: (userID: Long) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val profileUiState by viewModel.uiState.collectAsState()
@@ -84,7 +84,7 @@ private fun Screen(
     onCreatePatient: () -> Unit = {},
     onEditTherapist: (Long) -> Unit = {},
     onEditPatient: (Long) -> Unit = {},
-    onUserSetting: () -> Unit,
+    onUserSetting: (Long) -> Unit,
     currentUser: User = GuestUser,
     modifier: Modifier = Modifier,
 ) {

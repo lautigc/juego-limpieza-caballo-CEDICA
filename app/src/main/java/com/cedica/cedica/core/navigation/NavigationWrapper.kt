@@ -52,17 +52,13 @@ fun NavigationWrapper() {
             ProfileListScreen(
                 notification = route.alertNotification,
                 onNavigateGuestLogin = { navController.navigate(Menu) },
-                onNavigateUserSetting = { navController.navigate(UserSetting) },
                 onNavigateUserLogin = { navController.navigate(Menu) },
                 onNavigateCreateTherapist = { navController.navigate(CreateTherapistScreen) },
                 onNavigateCreatePatient = { navController.navigate(CreatePatientScreen) },
                 onNavigateEditTherapist = { userID -> navController.navigate(EditTherapistScreen(userID)) },
-                onNavigateEditPatient = { userID -> navController.navigate(EditPatientScreen(userID)) }
+                onNavigateEditPatient = { userID -> navController.navigate(EditPatientScreen(userID)) },
+                onNavigateUserSetting = { userID -> navController.navigate(UserSetting(userID)) },
             )
-        }
-
-        composable<UserSetting> {
-            UserSettingScreen()
         }
 
         composable<Stats> {
@@ -104,6 +100,13 @@ fun NavigationWrapper() {
                     navController
                         .navigate(UserListScreen(alertNotification = "Usuario editado correctamente"))
                 }
+            )
+        }
+
+        composable<UserSetting> { backStackEntry ->
+            val args: UserSetting = backStackEntry.toRoute()
+            UserSettingScreen(
+                userID = args.userID,
             )
         }
 
