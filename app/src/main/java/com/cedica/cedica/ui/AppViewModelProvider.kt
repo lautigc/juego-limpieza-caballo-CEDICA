@@ -7,6 +7,7 @@ import com.cedica.cedica.core.session.Session
 import com.cedica.cedica.data.repository.RepositoryProvider
 import com.cedica.cedica.ui.game.PlaySessionViewModel
 import com.cedica.cedica.ui.home.PatientViewModel
+import com.cedica.cedica.ui.profile.configuration.UserSettingViewModel
 import com.cedica.cedica.ui.profile.screen.ProfileListScreenViewModel
 import com.cedica.cedica.ui.profile.create.CreatePatientFormViewModel
 import com.cedica.cedica.ui.profile.create.CreateTherapistFormViewModel
@@ -81,13 +82,24 @@ object AppViewModelProvider {
             }
         }
 
-        fun editPatientForm(userID: Long): ViewModelProvider.Factory? {
+        fun editPatientForm(userID: Long): ViewModelProvider.Factory {
             return viewModelFactory {
                 initializer {
                     EditPatientFormViewModel(
                         patientRepository = RepositoryProvider.patientRepository,
                         userRepository = RepositoryProvider.userRepository,
                         userID = userID,
+                    )
+                }
+            }
+        }
+
+        fun userSetting(userID: Long): ViewModelProvider.Factory {
+            return viewModelFactory {
+                initializer {
+                    UserSettingViewModel(
+                        userID = userID,
+                        userRepository = RepositoryProvider.userRepository,
                     )
                 }
             }
