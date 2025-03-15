@@ -14,7 +14,8 @@ class CreatePatientFormViewModel(
     userRepository: UserRepository,
     private val patientRepository: PatientRepository
 ): CreateUserFormViewModel(userRepository) {
-    val gender = InputField(Gender.FEMALE)
+
+    val gender = InputField(Gender.MALE)
 
     val observations = InputField("")
 
@@ -22,8 +23,8 @@ class CreatePatientFormViewModel(
 
     val alert = AlertNotification()
 
-    override suspend fun userCreationProcess(): Long {
-        val id = super.userCreationProcess()
+    override suspend fun insertProccess(): Long {
+        val id = super.insertProccess()
         return this.patientRepository.insert(
             Patient(
                 userID = id,
@@ -33,7 +34,40 @@ class CreatePatientFormViewModel(
             )
         )
     }
+}
 
+class EditPatientFormViewModel(
+    userRepository: UserRepository,
+    userID: Long,
+    private val patientRepository: PatientRepository
+): EditUserFormViewModel(userRepository, userID) {
+    val gender = InputField(Gender.MALE)
 
+    val observations = InputField("")
 
+    val birthDate = InputField(Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()))
+
+    val alert = AlertNotification()
+
+    override suspend fun loadUser(): Long {
+        val userID = super.loadUser()
+        val patient = this.patientRepository.getByID(userID)
+        this.gender.onChange(patient.gender)
+        this.observations.onChange(patient.observations)
+        this.birthDate.onChange(patient.birthDate)
+        return patient.userID
+    }
+
+    override suspend fun insertProccess(): Long {
+        val id = super.insertProccess()
+        this.patientRepository.update(
+            Patient(
+                userID = id,
+                gender = gender.input,
+                observations = observations.input,
+                birthDate = birthDate.input,
+            )
+        )
+        return id
+    }
 }

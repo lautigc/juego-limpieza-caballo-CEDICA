@@ -105,7 +105,6 @@ fun ExpandableFAB(
 
 }
 
-
 @Preview(showBackground = true)
 @Composable
 fun ExpandableFABPreview() {

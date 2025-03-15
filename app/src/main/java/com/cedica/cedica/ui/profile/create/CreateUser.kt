@@ -83,7 +83,7 @@ fun CreateTherapistForm(
         lastName = viewModel.lastName,
         dataError = viewModel.dataError,
         onClick = {
-            viewModel.createUser(redirectTo = onNavigateToCreateUser) }
+            viewModel.insertUser(redirectTo = onNavigateToCreateUser) }
     )
 }
 
@@ -152,7 +152,42 @@ fun CreatePatientForm(
         gender = viewModel.gender,
         date = viewModel.birthDate,
         alert = viewModel.alert,
-        onCreate = { viewModel.createUser(redirectTo = onNavigateToCreateUser) }
+        onCreate = { viewModel.insertUser(redirectTo = onNavigateToCreateUser) }
+    )
+}
+
+@Composable
+fun EditTherapistForm(
+    userID: Long,
+    viewModel: EditUserFormViewModel = viewModel(
+        factory = AppViewModelProvider.FactoryWithArgs.editUserForm(userID = userID)
+    ),
+    onEditTherapistNavigateTo: () -> Unit = {},
+) {
+    CreateTherapistFormContent(
+        firstName = viewModel.firstName,
+        lastName = viewModel.lastName,
+        dataError = viewModel.dataError,
+        onClick = { viewModel.insertUser(redirectTo = onEditTherapistNavigateTo) }
+    )
+}
+
+@Composable
+fun EditPatientForm(
+    userID: Long,
+    viewModel: EditPatientFormViewModel = viewModel(
+        factory = AppViewModelProvider.FactoryWithArgs.editPatientForm(userID = userID)
+    ),
+    onEditPatientNavigateTo: () -> Unit = {},
+) {
+    CreatePatientFormContent(
+        firstName = viewModel.firstName,
+        lastName = viewModel.lastName,
+        observations = viewModel.observations,
+        gender = viewModel.gender,
+        date = viewModel.birthDate,
+        alert = viewModel.alert,
+        onCreate = { viewModel.insertUser(redirectTo = onEditPatientNavigateTo) }
     )
 }
 
@@ -351,8 +386,7 @@ private fun GenderSelector(
         Triple(stringResource(R.string.woman_voice_option_title), Icons.Outlined.Woman, Gender.FEMALE),
     )
 
-    // Set gender value with first option of selector
-    gender.onChange(options[selectedIndex].third)
+    selectedIndex = options.indexOfFirst { it.third == gender.input }
 
     SingleChoiceSegmentedButtonRow(modifier = modifier) {
         options.forEachIndexed { index, pair ->
