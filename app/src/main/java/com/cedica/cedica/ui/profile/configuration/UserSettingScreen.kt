@@ -180,6 +180,7 @@ private fun DifficultySettingSection(
                     },
                     onSelectedText = {
                         level.onChange(DifficultyLevel.toDifficultyLevel(it))
+                        onChangeConfiguration()
                     },
                 )
             },
