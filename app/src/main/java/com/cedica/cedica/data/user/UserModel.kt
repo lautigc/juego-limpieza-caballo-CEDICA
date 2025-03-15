@@ -5,7 +5,9 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Dao
+import androidx.room.Embedded
 import androidx.room.Query
+import com.cedica.cedica.data.configuration.PersonalConfiguration
 import com.cedica.cedica.data.generic.BaseDao
 import com.cedica.cedica.data.permissions.Role
 import kotlinx.coroutines.flow.Flow
@@ -26,7 +28,6 @@ val LoadingUser = User(
     lastName = "",
 )
 
-@Serializable
 @Entity(
     tableName = "User",
     indices = [
@@ -38,6 +39,7 @@ data class User(
     val role: Role,
     @ColumnInfo(collate = ColumnInfo.NOCASE) val firstName: String,
     @ColumnInfo(collate = ColumnInfo.NOCASE) val lastName: String,
+    @Embedded val personalConfiguration: PersonalConfiguration = PersonalConfiguration(),
 ) {
     val fullName: String
         get() = "$firstName $lastName"
