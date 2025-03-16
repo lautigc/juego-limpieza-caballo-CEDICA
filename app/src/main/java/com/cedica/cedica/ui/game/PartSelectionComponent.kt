@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.MutableState
@@ -66,6 +67,8 @@ import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.max
+import kotlin.math.pow
+import kotlin.math.sqrt
 import kotlin.random.Random
 
 const val originalImageWidth = 560f
@@ -337,15 +340,22 @@ fun DirtyHorsePart(part: HorsePart = horseParts[0], toolPosition: Offset, soundM
     val isCleaning = remember { mutableStateOf(false) }
     val isPlayingSound = remember { mutableStateOf(false) }
     var lastPosition by remember { mutableStateOf(toolPosition) }
+    val isMoving = remember { mutableStateOf(false) }
+
 
     LaunchedEffect(isCleaning.value) {
         while (isCleaning.value) {
             if (!isPlayingSound.value) {
                 isPlayingSound.value = true
-                soundManager?.playSound("cleaning")
-                delay(500) // Ajusta el tiempo para evitar solapamientos
-                isPlayingSound.value = false
+                soundManager?.playOnlyOneSound("cleaning")
             }
+            delay(500)
+        }
+
+        if (isPlayingSound.value) {
+            delay(300)
+            soundManager?.stopSound()
+            isPlayingSound.value = false
         }
     }
 
@@ -356,15 +366,23 @@ fun DirtyHorsePart(part: HorsePart = horseParts[0], toolPosition: Offset, soundM
         Log.d("GameDebug", "X: ${(toolPosition.x - imagePosition.value.x) / imageSize.value.width}, Y: ${(toolPosition.y - imagePosition.value.y) / imageSize.value.height}")
         Log.d("GameDebug", "🟢 Herramienta dentro del área centrada: $isOverCleanZone")
 
-        val isMoving = toolPosition != lastPosition
+        val distance = sqrt((toolPosition.x - lastPosition.x).pow(2) + (toolPosition.y - lastPosition.y).pow(2))
+        isMoving.value = distance > 20f
+        Log.d("GameDebug", "¿Hay movimiento?: ${isMoving.value}")
         lastPosition = toolPosition
-        isCleaning.value = isOverCleanZone && isMoving
+        isCleaning.value = isOverCleanZone && isMoving.value
 
         if (isCleaning.value) {
-            dirtAlpha.floatValue = (dirtAlpha.floatValue - 0.005f).coerceAtLeast(0f)
+            dirtAlpha.floatValue = (dirtAlpha.floatValue - 0.05f).coerceAtLeast(0f)
             isCleaning.value = true
         } else {
             isCleaning.value = false
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            soundManager?.stopSound()
         }
     }
 
