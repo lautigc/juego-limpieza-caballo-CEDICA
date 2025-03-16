@@ -167,12 +167,6 @@ fun ConfigButtons(navigateToMenu: () -> Unit) {
         ) {
             Text("Volver")
         }
-        Button(
-            onClick = { navigateToMenu() },
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
-        ) {
-            Text("Guardar")
-        }
     }
 }
 
