@@ -4,6 +4,7 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.media.SoundPool
 import com.cedica.cedica.R
+import kotlinx.coroutines.delay
 
 class SoundPlayer(private val context: Context) {
     private val soundPool: SoundPool
@@ -16,7 +17,7 @@ class SoundPlayer(private val context: Context) {
             .build()
 
         soundPool = SoundPool.Builder()
-            .setMaxStreams(2)
+            .setMaxStreams(1)
             .setAudioAttributes(audioAttributes)
             .build()
     }
@@ -29,6 +30,15 @@ class SoundPlayer(private val context: Context) {
     fun playSound(key: String) {
         val soundId = soundMap[key] ?: return
         soundPool.play(soundId, 1.0f, 1.0f, 1, 0, 1.0f)
+    }
+
+    fun playOnlyOneSound(key:String){
+        this.stopSound()
+        this.playSound(key)
+    }
+
+    fun stopSound() {
+        soundPool.autoPause()
     }
 
     fun release() {
