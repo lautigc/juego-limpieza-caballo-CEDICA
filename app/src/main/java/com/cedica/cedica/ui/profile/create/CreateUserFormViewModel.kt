@@ -66,17 +66,26 @@ open class EditUserFormViewModel(
     private val userID: Long,
 ): UserFormViewModel(userRepository) {
 
+    private lateinit var currentUser: User
+
     init {
         this.viewModelScope.launch {
             this@EditUserFormViewModel.loadUser()
         }
     }
 
+    override suspend fun validateData(): Boolean {
+        if (this.firstName.input != this.currentUser.firstName || this.lastName.input != this.currentUser.lastName) {
+            return super.validateData()
+        }
+        return true
+    }
+
     protected open suspend fun loadUser(): Long {
-        val user = userRepository.getByID(userID)
-        this.firstName.onChange(user.firstName)
-        this.lastName.onChange(user.lastName)
-        return user.id
+        currentUser = userRepository.getByID(userID)
+        this.firstName.onChange(currentUser.firstName)
+        this.lastName.onChange(currentUser.lastName)
+        return currentUser.id
     }
 
     override suspend fun insertProccess(): Long {
