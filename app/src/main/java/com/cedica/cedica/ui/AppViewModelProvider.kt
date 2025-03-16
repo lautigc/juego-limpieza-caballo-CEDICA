@@ -3,9 +3,11 @@ package com.cedica.cedica.ui
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.cedica.cedica.core.configuration.GlobalConfiguration
 import com.cedica.cedica.core.session.Session
 import com.cedica.cedica.data.repository.RepositoryProvider
 import com.cedica.cedica.ui.game.PlaySessionViewModel
+import com.cedica.cedica.ui.home.ConfigurationScreenViewModel
 import com.cedica.cedica.ui.home.PatientViewModel
 import com.cedica.cedica.ui.profile.configuration.UserSettingViewModel
 import com.cedica.cedica.ui.profile.screen.ProfileListScreenViewModel
@@ -63,6 +65,12 @@ object AppViewModelProvider {
             CreatePatientFormViewModel(
                 patientRepository = RepositoryProvider.patientRepository,
                 userRepository = RepositoryProvider.userRepository
+            )
+        }
+
+        initializer {
+            ConfigurationScreenViewModel(
+                globalConfiguration = GlobalConfiguration,
             )
         }
     }
