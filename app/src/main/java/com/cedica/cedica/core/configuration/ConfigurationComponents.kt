@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.map
 private const val DATA_STORE_NAME = "GLOBAL_CONFIGURATION"
 val Context.globalConfigurationStore: DataStore<Preferences> by preferencesDataStore(name = DATA_STORE_NAME)
 
-private enum class GlobalConfigurationDefaults(val defaultValue: Int) {
+enum class GlobalConfigurationDefaults(val defaultValue: Int) {
     GENERAL(100),
     MUSIC(100),
     EFFECTS(100),
