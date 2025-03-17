@@ -3,12 +3,13 @@ package com.cedica.cedica.data.repository.local
 import com.cedica.cedica.data.repository.interfaces.PatientRepository
 import com.cedica.cedica.data.user.Patient
 import com.cedica.cedica.data.user.PatientDao
+import com.cedica.cedica.data.user.PlaySession
 import com.cedica.cedica.data.user.UserPatient
 import kotlinx.coroutines.flow.Flow
 
 class LocalPatientRepository(private val dao: PatientDao): PatientRepository {
-    override suspend fun insert(entity: Patient) {
-        dao.insert(entity)
+    override suspend fun insert(entity: Patient): Long {
+        return dao.insert(entity)
     }
 
     override suspend fun insert(entities: List<Patient>) {
@@ -41,5 +42,9 @@ class LocalPatientRepository(private val dao: PatientDao): PatientRepository {
 
     override fun getAllUserPatient(): Flow<List<UserPatient>> {
         return dao.getAllUserPatient()
+    }
+
+    override fun getAllPlaySessions(userID: Long): Flow<List<PlaySession>> {
+        return dao.getAllPlaySessions(userID)
     }
 }

@@ -1,4 +1,4 @@
-package com.cedica.cedica.ui.profile
+package com.cedica.cedica.ui.profile.screen
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
@@ -7,7 +7,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -17,33 +16,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Help
 import androidx.compose.material.icons.automirrored.outlined.Login
-import androidx.compose.material.icons.automirrored.outlined.OpenInNew
-import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.Feedback
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Tab
@@ -55,14 +41,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
@@ -71,7 +55,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cedica.cedica.R
 import com.cedica.cedica.data.seed.users_seed
-import com.cedica.cedica.data.user.GuestUser
 import com.cedica.cedica.data.user.User
 import com.cedica.cedica.ui.theme.CedicaTheme
 import com.cedica.cedica.ui.utils.composables.BottomSheetMenu
@@ -134,48 +117,13 @@ fun TabRowComponent(
 }
 
 @Composable
-fun UserScreen(
-    patients: List<User>,
-    therapists: List<User>,
-    currentUser: User,
-    onLogin: (User) -> Unit = {},
-    onDelete: (User) -> Unit = {},
-    onUserSetting: () -> Unit = {},
-) {
-    TabRowComponent(
-        tabs = listOf("Alumnos", "Maestros"),
-        contentScreens = listOf(
-            {
-                UserList(
-                    users = patients,
-                    currentUser = currentUser,
-                    onLogin = onLogin,
-                    onDelete = onDelete,
-                    onUserSetting = onUserSetting,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            },
-            {
-                UserList(
-                    users = therapists,
-                    currentUser = currentUser,
-                    onLogin = onLogin,
-                    onDelete = onDelete,
-                    onUserSetting = onUserSetting,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        )
-    )
-}
-
-@Composable
 fun UserList(
     users: List<User>,
     currentUser: User,
     onLogin: (User) -> Unit = {},
     onDelete: (User) -> Unit = {},
-    onUserSetting: () -> Unit = {},
+    onEdit: (userID: Long) -> Unit = {},
+    onUserSetting: (Long) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val userItemModifier = Modifier.padding(dimensionResource(R.dimen.padding_small))
@@ -191,14 +139,17 @@ fun UserList(
         contentPadding = PaddingValues(dimensionResource(R.dimen.padding_small)),
     ) {
         if (currentUser in users) {
-            currentUserItem(
-                currentUser = currentUser,
-                userItemModifier = userItemModifier,
-                users = users,
-                onLogin = onLogin,
-                onDelete = onDelete,
-                onUserSetting = onUserSetting
-            )
+            item {
+                UserItem(
+                    userItem = currentUser,
+                    modifier = userItemModifier,
+                    onLogin = { onLogin(currentUser) },
+                    onDelete = { onDelete(currentUser) },
+                    onEdit = { onEdit(currentUser.id) },
+                    onUserSetting = { onUserSetting(currentUser.id) },
+                    selected = true,
+                )
+            }
         }
 
         itemsIndexed(users) { _, user ->
@@ -208,8 +159,8 @@ fun UserList(
                     modifier = userItemModifier,
                     onLogin = { onLogin(user) },
                     onDelete = { onDelete(user) },
-                    onUserSetting = onUserSetting,
-                    currentUser = currentUser,
+                    onUserSetting = { onUserSetting(user.id) } ,
+                    onEdit = { onEdit(user.id) },
                 )
             }
         }
@@ -217,135 +168,35 @@ fun UserList(
     }
 }
 
-
-fun LazyListScope.currentUserItem(
-    currentUser: User,
-    userItemModifier: Modifier,
-    users: List<User>,
-    onLogin: (User) -> Unit,
-    onDelete: (User) -> Unit,
-    onUserSetting: () -> Unit
-) {
-
-
-    if (currentUser.id != GuestUser.id) {
-        item {
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.inversePrimary,
-                ),
-                shape = MaterialTheme.shapes.medium,
-            ) {
-//                Text(
-//                    style = MaterialTheme.typography.titleMedium,
-//                    modifier = Modifier.padding(
-//                        top = dimensionResource(R.dimen.padding_medium),
-//                        start = dimensionResource(R.dimen.padding_medium),
-//                        bottom = dimensionResource(R.dimen.padding_extra_small),
-//                    ),
-//                    text = "Usuario actual",
-//                )
-                OutlinedCard(
-                    elevation = CardDefaults.cardElevation(defaultElevation = 16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    ),
-                    border = BorderStroke(4.dp, MaterialTheme.colorScheme.primary),
-                    modifier = Modifier.padding(all = dimensionResource(R.dimen.padding_medium))
-                ) {
-                    ContentItem(
-                        userItem = currentUser,
-                        currentUser = currentUser,
-                        onLogin = { onLogin(currentUser) },
-                        onDelete = { onDelete(currentUser) },
-                        onUserSetting = onUserSetting,
-                    )
-                }
-
-            }
-        }
-    }
-}
-
 @Composable
-fun UserItem(
-    userItem: User,
-    currentUser: User,
-    cardColors: CardColors = CardDefaults.cardColors(),
-    onLogin: () -> Unit = {},
-    onDelete: () -> Unit = {},
-    onUserSetting: () -> Unit = {},
-    modifier: Modifier = Modifier,
-) {
+fun SelectedContainer(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Card(
-        modifier = modifier,
-        colors = cardColors,
-    ) {
-        ContentItem(
-            userItem = userItem,
-            currentUser = currentUser,
-            onLogin = onLogin,
-            onDelete = onDelete,
-            onUserSetting = onUserSetting,
-        )
-    }
-}
-
-@Composable
-private fun ContentItem(
-    userItem: User,
-    currentUser: User,
-    onLogin: () -> Unit,
-    onDelete: () -> Unit,
-    onUserSetting: () -> Unit
-) {
-    Column {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(dimensionResource(R.dimen.padding_medium))
-        ) {
-            UserIcon(
-                rememberVectorPainter(Icons.Filled.Person),
-                modifier = Modifier.align(Alignment.CenterVertically)
-            )
-            Spacer(Modifier.size(dimensionResource(R.dimen.padding_small)))
-            UserInformation(
-                userItem,
-                modifier = Modifier
-                    .align(Alignment.Top)
-                    .weight(0.8f),
-                isSelected = userItem.id == currentUser.id
-            )
-            //Spacer(modifier = Modifier.weight(1f))
-            ItemUserActions(
-                isCurrent = userItem.id == currentUser.id,
-                onLogin = onLogin,
-                onDelete = onDelete,
-                onUserSetting = onUserSetting,
-                userItem = userItem
-            )
-        }
-    }
-}
-
-@Composable
-private fun ExpandButton(
-    expanded: Boolean,
-    onClick: () -> Unit,
-    lessIcon: ImageVector = Icons.Filled.ExpandLess,
-    moreIcon: ImageVector = Icons.Filled.MoreVert,
-    modifier: Modifier = Modifier
-) {
-    IconButton(
-        onClick = onClick,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.inversePrimary,
+        ),
+        shape = MaterialTheme.shapes.medium,
         modifier = modifier
     ) {
-        Icon(
-            imageVector = if (expanded) lessIcon else moreIcon,
-            contentDescription = null,
-        )
+        OutlinedCard(
+            elevation = CardDefaults.cardElevation(defaultElevation = 16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            ),
+            border = BorderStroke(4.dp, MaterialTheme.colorScheme.primary),
+            modifier = Modifier.padding(all = dimensionResource(R.dimen.padding_medium))
+        ) {
+            content()
+        }
+    }
+}
+
+@Composable
+fun SimpleContainer(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    Card(
+        modifier = modifier,
+    ) {
+        content()
     }
 }
 
@@ -369,7 +220,6 @@ fun UserIcon(
 @Composable
 fun UserInformation(
     user: User,
-    isSelected: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Row(modifier = modifier) {
@@ -381,14 +231,51 @@ fun UserInformation(
             modifier = Modifier.padding(top = dimensionResource(R.dimen.padding_small))
                 .weight(0.7f)
         )
-        if (isSelected) {
-            Icon(
-                Icons.Outlined.CheckCircle,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.align(Alignment.CenterVertically)
-                    .weight(0.3f)
-            )
+    }
+}
+
+@Composable
+fun UserItem(
+    userItem: User,
+    onLogin: () -> Unit = {},
+    onDelete: () -> Unit = {},
+    onEdit: () -> Unit = {},
+    onUserSetting: () -> Unit = {},
+    selected: Boolean = false,
+    modifier: Modifier = Modifier,
+) {
+    val container: @Composable (Modifier, @Composable () -> Unit) -> Unit =
+        if (selected) { mod, cont -> SelectedContainer(mod, cont) }
+        else { mod, cont -> SimpleContainer(mod, cont) }
+
+    container(modifier) {
+        Column {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(dimensionResource(R.dimen.padding_medium))
+            ) {
+                UserIcon(
+                    rememberVectorPainter(Icons.Filled.Person),
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                )
+                Spacer(Modifier.size(dimensionResource(R.dimen.padding_small)))
+                UserInformation(
+                    userItem,
+                    modifier = Modifier
+                        .align(Alignment.Top)
+                        .weight(0.8f),
+                )
+
+                ItemUserActions(
+                    isCurrent = selected,
+                    onLogin = onLogin,
+                    onDelete = onDelete,
+                    onEdit = onEdit,
+                    onUserSetting = onUserSetting,
+                    userItem = userItem
+                )
+            }
         }
     }
 }
@@ -399,6 +286,7 @@ fun ItemUserActions(
     onLogin: () -> Unit = {},
     onDelete: () -> Unit = {},
     onUserSetting: () -> Unit = {},
+    onEdit: () -> Unit = {},
     userItem: User,
     modifier: Modifier = Modifier,
 ) {
@@ -465,7 +353,7 @@ fun ItemUserActions(
                     contentDescription = null,
                 )
             },
-            onClick = {},
+            onClick = onEdit,
             modifier = itemModifier
         )
         BottomSheetMenuItem(
@@ -529,102 +417,11 @@ fun UserListDarkPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun UserItemPreview() {
-    CedicaTheme {
-        UserItem(
-            users_seed.first(),
-            currentUser = users_seed[2],
-            onLogin = {},
-            onUserSetting = {  }
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun UserItemButtonPreview() {
-    CedicaTheme {
-        ExpandButton(
-            expanded = false,
-            onClick = {}
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun UserIconPreview() {
-    CedicaTheme {
-        UserIcon(
-            icon = rememberVectorPainter(Icons.Filled.Person)
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
 fun UserInformationPreview() {
     CedicaTheme {
         UserInformation(
             user = users_seed.first()
         )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DropdownMenuWithDetails() {
-    var expanded by remember { mutableStateOf(false) }
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        IconButton(onClick = { expanded = !expanded }) {
-            Icon(Icons.Default.MoreVert, contentDescription = "More options")
-        }
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            // First section
-            DropdownMenuItem(
-                text = { Text("Profile") },
-                leadingIcon = { Icon(Icons.Outlined.Person, contentDescription = null) },
-                onClick = { /* Do something... */ }
-            )
-            DropdownMenuItem(
-                text = { Text("Settings") },
-                leadingIcon = { Icon(Icons.Outlined.Settings, contentDescription = null) },
-                onClick = { /* Do something... */ }
-            )
-
-            HorizontalDivider()
-
-            // Second section
-            DropdownMenuItem(
-                text = { Text("Send Feedback") },
-                leadingIcon = { Icon(Icons.Outlined.Feedback, contentDescription = null) },
-                trailingIcon = { Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = null) },
-                onClick = { /* Do something... */ }
-            )
-
-            HorizontalDivider()
-
-            // Third section
-            DropdownMenuItem(
-                text = { Text("About") },
-                leadingIcon = { Icon(Icons.Outlined.Info, contentDescription = null) },
-                onClick = { /* Do something... */ }
-            )
-            DropdownMenuItem(
-                text = { Text("Help") },
-                leadingIcon = { Icon(Icons.AutoMirrored.Outlined.Help, contentDescription = null) },
-                trailingIcon = { Icon(Icons.AutoMirrored.Outlined.OpenInNew, contentDescription = null) },
-                onClick = { /* Do something... */ }
-            )
-        }
     }
 }
 
@@ -639,20 +436,6 @@ fun TabRowComponentPreview() {
                 { Text("Contenido de Tab 2") },
                 { Text("Contenido de Tab 3") }
             )
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun UserScreenPreview() {
-    CedicaTheme {
-        UserScreen(
-            patients = users_seed,
-            therapists = users_seed.slice(3..6),
-            currentUser = users_seed.first(),
-            onLogin = {},
-            onUserSetting = {}
         )
     }
 }

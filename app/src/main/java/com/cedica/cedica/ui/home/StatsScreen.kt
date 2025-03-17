@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cedica.cedica.core.utils.exportToCSV
 import com.cedica.cedica.core.utils.exportToPDF
+import com.cedica.cedica.data.user.PlaySession
 import com.cedica.cedica.ui.AppViewModelProvider
 import com.cedica.cedica.ui.game.LockScreenOrientation
 import com.cedica.cedica.ui.theme.CedicaTheme
@@ -33,82 +34,68 @@ import com.cedica.cedica.ui.utils.view_models.UserViewModel
 import kotlinx.coroutines.launch
 import java.util.Locale
 
-// Modelo de datos
-data class GameSession(
-    val date: String,
-    val difficultyLevel: String,
-    val correctAnswers: Int,
-    val incorrectAnswers: Int,
-    val timeSpent: Int // Tiempo en segundos
-)
 
 // Datos de prueba
-val sampleGameSessions = listOf(
-    GameSession(
-        date = "2023-10-01",
-        difficultyLevel = "Fácil",
-        correctAnswers = 8,
-        incorrectAnswers = 2,
-        timeSpent = 120
-    ),
-    GameSession(
-        date = "2023-10-02",
-        difficultyLevel = "Medio",
-        correctAnswers = 6,
-        incorrectAnswers = 4,
-        timeSpent = 150
-    ),
-    GameSession(
-        date = "2023-10-03",
-        difficultyLevel = "Difícil",
-        correctAnswers = 5,
-        incorrectAnswers = 5,
-        timeSpent = 180
-    ),
-    GameSession(
-        date = "2023-10-01",
-        difficultyLevel = "Fácil",
-        correctAnswers = 8,
-        incorrectAnswers = 2,
-        timeSpent = 120
-    ),
-    GameSession(
-        date = "2023-10-02",
-        difficultyLevel = "Medio",
-        correctAnswers = 6,
-        incorrectAnswers = 4,
-        timeSpent = 150
-    ),
-    GameSession(
-        date = "2023-10-03",
-        difficultyLevel = "Difícil",
-        correctAnswers = 5,
-        incorrectAnswers = 5,
-        timeSpent = 180
-    )
+import java.util.Date
 
+val sampleGameSessions = listOf(
+    PlaySession(
+        date = Date(2023 - 1900, 9, 1), // 1 de octubre de 2023
+        difficultyLevel = "Fácil",
+        correctAnswers = 8,
+        incorrectAnswers = 2,
+        timeSpent = 120,
+        userID = 1,
+    ),
+    PlaySession(
+        date = Date(2023 - 1900, 9, 2), // 2 de octubre de 2023
+        difficultyLevel = "Medio",
+        correctAnswers = 6,
+        incorrectAnswers = 4,
+        timeSpent = 150,
+        userID = 1,
+    ),
+    PlaySession(
+        date = Date(2023 - 1900, 9, 2), // 2 de octubre de 2023
+        difficultyLevel = "Medio",
+        correctAnswers = 6,
+        incorrectAnswers = 4,
+        timeSpent = 150,
+        userID = 1,
+    ),
+    PlaySession(
+        date = Date(2023 - 1900, 9, 3), // 3 de octubre de 2023
+        difficultyLevel = "Difícil",
+        correctAnswers = 5,
+        incorrectAnswers = 5,
+        timeSpent = 180,
+        userID = 1,
+    )
 )
+
 
 @Composable
 fun StatisticsScreen(
-    gameSessions: List<GameSession>,
-    viewModel: UserViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: UserViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    StaticStatisticScreen(uiState.user.firstName, gameSessions)
+    val patientViewModel: PatientViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    val patientUiState  by patientViewModel.playSessions.collectAsState()
+
+    StaticStatisticScreen(uiState.user.firstName, patientUiState.playSessions)
 }
 
 @Composable
 private fun StaticStatisticScreen(
     username: String,
-    gameSessions: List<GameSession>
+    gameSessions: List<PlaySession>
 ) {
     // Esto es para orientar la pantalla en sentido vertical
     LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
 
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
-    var showChart by remember { mutableStateOf(true) } // Estado para controlar la visibilidad del gráfico
+    var showChart by remember { mutableStateOf(false) } // Estado para controlar la visibilidad del gráfico
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -195,7 +182,7 @@ private fun StaticStatisticScreen(
 }
 
 @Composable
-fun PerformanceCharts(gameSessions: List<GameSession>) {
+fun PerformanceCharts(gameSessions: List<PlaySession>) {
     Column {
         Canvas(
             modifier = Modifier
@@ -334,18 +321,21 @@ fun PerformanceCharts(gameSessions: List<GameSession>) {
 
 // Historial de partidas
 @Composable
-fun GameHistoryList(gameSessions: List<GameSession>) {
-        LazyColumn {
-            items(gameSessions) { session ->
-                GameSessionItem(session)
-                GameSessionItem(session)
+fun GameHistoryList(gameSessions: List<PlaySession>) {
+        if (gameSessions.isEmpty()) {
+            Text("No hay partidas registradas por ahora")
+        } else {
+            LazyColumn {
+                items(gameSessions) { session ->
+                    GameSessionItem(session)
+                }
             }
         }
 }
 
 // Item de sesión de juego
 @Composable
-fun GameSessionItem(session: GameSession) {
+fun GameSessionItem(session: PlaySession) {
     Card(
         modifier = Modifier
             .fillMaxWidth()

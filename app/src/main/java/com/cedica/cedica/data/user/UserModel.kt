@@ -5,10 +5,13 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Dao
+import androidx.room.Embedded
 import androidx.room.Query
+import com.cedica.cedica.data.configuration.PersonalConfiguration
 import com.cedica.cedica.data.generic.BaseDao
 import com.cedica.cedica.data.permissions.Role
 import kotlinx.coroutines.flow.Flow
+import kotlinx.serialization.Serializable
 
 
 val GuestUser = User(
@@ -36,17 +39,28 @@ data class User(
     val role: Role,
     @ColumnInfo(collate = ColumnInfo.NOCASE) val firstName: String,
     @ColumnInfo(collate = ColumnInfo.NOCASE) val lastName: String,
+    @Embedded val personalConfiguration: PersonalConfiguration = PersonalConfiguration(),
 ) {
     val fullName: String
         get() = "$firstName $lastName"
 }
 
 @Dao
-interface UserDao: BaseDao<User> {
+abstract class UserDao: BaseDao<User> {
 
     @Query("SELECT * FROM User")
-    fun getAllUsers(): Flow<List<User>>
+    abstract fun getAllUsers(): Flow<List<User>>
 
     @Query("SELECT * FROM User WHERE id = :id")
-    suspend fun getByID(id: Long): User
+    abstract suspend fun getByID(id: Long): User
+
+    @Query(
+        "SELECT * FROM User " +
+        "WHERE firstname = :firstName AND lastname = :lastName"
+    )
+    abstract suspend fun getByFullName(firstName: String, lastName: String): User?
+
+    suspend fun existsByFullName(firstName: String, lastName: String): Boolean {
+        return getByFullName(firstName, lastName) != null
+    }
 }

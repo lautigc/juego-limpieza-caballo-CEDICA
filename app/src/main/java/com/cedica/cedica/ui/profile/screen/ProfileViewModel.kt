@@ -1,4 +1,4 @@
-package com.cedica.cedica.ui.profile
+package com.cedica.cedica.ui.profile.screen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,6 +11,7 @@ import com.cedica.cedica.data.user.LoadingUser
 import com.cedica.cedica.data.user.User
 import com.cedica.cedica.data.user.UserPatient
 import com.cedica.cedica.data.user.UserTherapist
+import com.cedica.cedica.ui.utils.composables.AlertNotification
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -30,6 +31,7 @@ class ProfileListScreenViewModel(
     private val userRepository: UserRepository,
     private val patientRepository: PatientRepository,
     private val therapistRepository: TherapistRepository,
+    notification: String? = null,
 ): ViewModel() {
 
     val uiState: StateFlow<ProfileListScreenUiState> =
@@ -50,6 +52,8 @@ class ProfileListScreenViewModel(
             started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
             initialValue = ProfileListScreenUiState()
         )
+
+    val alertNotification = AlertNotification(notification)
 
     fun login(user: User) {
         viewModelScope.launch {

@@ -1,4 +1,4 @@
-package com.cedica.cedica.ui.profile
+package com.cedica.cedica.ui.profile.screen
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -33,7 +33,11 @@ data class FABItem(
 )
 
 @Composable
-fun ExpandableFAB(onGuestLogin: () -> Unit = {}) {
+fun ExpandableFAB(
+    onGuestLogin: () -> Unit = {},
+    onCreateTherapist: () -> Unit = {},
+    onCreatePatient: () -> Unit = {},
+) {
     val itemModifier = Modifier.padding(
         top = dimensionResource(R.dimen.padding_small),
         bottom = dimensionResource(R.dimen.padding_small)
@@ -74,9 +78,18 @@ fun ExpandableFAB(onGuestLogin: () -> Unit = {}) {
         )
 
         BottomSheetMenuItem(
-            label = "Registrar usuario",
+            label = "Registrar Maestro",
             leadingIcon = { Icon(imageVector = Icons.Filled.Add, contentDescription = null) },
-            onClick = { },
+            onClick = onCreateTherapist,
+            modifier = Modifier.padding(
+                bottom = dimensionResource(R.dimen.padding_medium),
+            ),
+        )
+
+        BottomSheetMenuItem(
+            label = "Registrar Alumno",
+            leadingIcon = { Icon(imageVector = Icons.Filled.Add, contentDescription = null) },
+            onClick = onCreatePatient,
             modifier = Modifier.padding(
                 bottom = dimensionResource(R.dimen.padding_medium),
             ),
@@ -91,7 +104,6 @@ fun ExpandableFAB(onGuestLogin: () -> Unit = {}) {
     }
 
 }
-
 
 @Preview(showBackground = true)
 @Composable

@@ -11,6 +11,8 @@ import com.cedica.cedica.data.seed.therapists_seed
 import com.cedica.cedica.data.seed.users_seed
 import com.cedica.cedica.data.user.Patient
 import com.cedica.cedica.data.user.PatientDao
+import com.cedica.cedica.data.user.PlaySession
+import com.cedica.cedica.data.user.PlaySessionDao
 import com.cedica.cedica.data.user.Therapist
 import com.cedica.cedica.data.user.TherapistDao
 import com.cedica.cedica.data.user.User
@@ -26,6 +28,7 @@ interface RepositoryDao {
     fun userDao(): UserDao
     fun therapistDao(): TherapistDao
     fun patientDao(): PatientDao
+    fun playSessionDao(): PlaySessionDao
 }
 
 /**
@@ -36,6 +39,7 @@ interface RepositoryDao {
         User::class,
         Therapist::class,
         Patient::class,
+        PlaySession::class,
     ],
     version = 1,
     exportSchema = false
@@ -91,5 +95,9 @@ object DB: RepositoryDao {
 
     override fun patientDao(): PatientDao {
         return this.db.patientDao()
+    }
+
+    override fun playSessionDao(): PlaySessionDao {
+        return this.db.playSessionDao()
     }
 }

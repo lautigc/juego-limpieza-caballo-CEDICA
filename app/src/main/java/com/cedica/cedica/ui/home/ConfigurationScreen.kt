@@ -26,6 +26,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -36,10 +37,32 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.cedica.cedica.core.configuration.GlobalConfigurationState
+import com.cedica.cedica.core.utils.input_field.InputField
+import com.cedica.cedica.ui.AppViewModelProvider
+import com.cedica.cedica.ui.theme.CedicaTheme
 import kotlin.math.roundToInt
 
 @Composable
-fun ConfigurationScreen(navigateToMenu: () -> Unit) {
+fun ConfigurationScreen(
+    viewModel: ConfigurationScreenViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    navigateToMenu: () -> Unit
+) {
+    val uiState by viewModel.uiState.collectAsState()
+    ConfigurationScreenContent(
+        navigateToMenu = navigateToMenu,
+        configuration = uiState,
+        onChangeConfiguration = viewModel::saveConfiguration
+    )
+}
+
+@Composable
+private fun ConfigurationScreenContent(
+    navigateToMenu: () -> Unit = {},
+    onChangeConfiguration: () -> Unit = {},
+    configuration: ConfigurationScreenUiState = ConfigurationScreenUiState(),
+) {
     val scrollState = rememberScrollState()
 
     Column(
@@ -55,9 +78,12 @@ fun ConfigurationScreen(navigateToMenu: () -> Unit) {
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
         HorizontalDivider(modifier = Modifier.padding(16.dp), color = Color.Black)
-        VolumeConfiguration()
+        VolumeConfiguration(
+            configuration = configuration,
+            onChangeConfiguration = onChangeConfiguration
+        )
         HorizontalDivider(modifier = Modifier.padding(16.dp), color = Color.Black)
-        AccessibilityConfiguration()
+        //AccessibilityConfiguration()
         ConfigButtons(navigateToMenu)
     }
 }
@@ -66,10 +92,10 @@ fun ConfigurationScreen(navigateToMenu: () -> Unit) {
 fun VolumeSlider(
     label: String,
     modifier: Modifier = Modifier,
-    initialVolume: Float = 50f
+    volume: InputField<Int>,
+    onChange: () -> Unit = {},
 ) {
-    var sliderPosition by remember { mutableFloatStateOf(initialVolume) }
-    val volumePercentage = sliderPosition.roundToInt()
+    val volumePercentage = volume.input
     var isMuted = volumePercentage == 0
 
     Column (
@@ -88,12 +114,15 @@ fun VolumeSlider(
                     .size(24.dp)
                     .clickable {
                         isMuted = !isMuted
-                        sliderPosition = if (isMuted) 0f else initialVolume
+                        volume.onChange(if (isMuted) 0 else volume.input)
                     }
             )
             Slider(
-                value = sliderPosition,
-                onValueChange = { sliderPosition = it },
+                value = volume.input.toFloat(),
+                onValueChange = {
+                    volume.onChange(it.roundToInt())
+                    onChange()
+                },
                 valueRange = 0f..100f
             )
         }
@@ -102,12 +131,27 @@ fun VolumeSlider(
 }
 
 @Composable
-fun VolumeConfiguration() {
+fun VolumeConfiguration(
+    configuration: ConfigurationScreenUiState,
+    onChangeConfiguration: () -> Unit,
+) {
     Column {
         Text("Volúmen", style = MaterialTheme.typography.titleMedium)
-        VolumeSlider(label = "General")
-        VolumeSlider(label = "Música")
-        VolumeSlider(label = "Efectos")
+        VolumeSlider(
+            label = "General",
+            volume = configuration.generalVolume,
+            onChange = { onChangeConfiguration() },
+        )
+        VolumeSlider(
+            label = "Música",
+            volume = configuration.musicVolume,
+            onChange = { onChangeConfiguration() },
+        )
+        VolumeSlider(
+            label = "Efectos",
+            volume = configuration.effectsVolume,
+            onChange = { onChangeConfiguration() },
+        )
     }
 }
 
@@ -122,12 +166,6 @@ fun ConfigButtons(navigateToMenu: () -> Unit) {
             colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
         ) {
             Text("Volver")
-        }
-        Button(
-            onClick = { navigateToMenu() },
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
-        ) {
-            Text("Guardar")
         }
     }
 }
@@ -170,7 +208,9 @@ fun AccessibilityConfiguration() {
 @Preview(showBackground = true)
 @Composable
 fun PreviewConfigurationScreen() {
-    ConfigurationScreen(navigateToMenu = {
-        println("Navigating to menu")
-    })
+    CedicaTheme {
+        ConfigurationScreenContent(
+            navigateToMenu = { println("Navigating to menu") }
+        )
+    }
 }

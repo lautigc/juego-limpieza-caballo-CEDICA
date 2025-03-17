@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat
 
 import android.os.Environment
 import android.util.Log
-import com.cedica.cedica.ui.home.GameSession
+import com.cedica.cedica.data.user.PlaySession
 import com.itextpdf.kernel.pdf.PdfDocument
 import com.itextpdf.kernel.pdf.PdfWriter
 import com.itextpdf.layout.Document
@@ -16,7 +16,7 @@ import java.nio.charset.StandardCharsets
 import java.util.Date
 import java.util.Locale
 
-fun exportToCSV(gameSessions: List<GameSession>) {
+fun exportToCSV(gameSessions: List<PlaySession>) {
     val csvHeader = "Fecha,Nivel,Aciertos,Errores,Tiempo (segundos)\n"
     val csvRows = gameSessions.joinToString("\n") { session ->
         "${session.date},${session.difficultyLevel},${session.correctAnswers},${session.incorrectAnswers},${session.timeSpent}"
@@ -29,7 +29,7 @@ fun exportToCSV(gameSessions: List<GameSession>) {
     }
 }
 
-fun exportToPDF(gameSessions: List<GameSession>) {
+fun exportToPDF(gameSessions: List<PlaySession>) {
     val pdfWriter = PdfWriter(getDateForName("pdf"))
     val pdfDocument = PdfDocument(pdfWriter)
     val document = Document(pdfDocument)
@@ -38,8 +38,7 @@ fun exportToPDF(gameSessions: List<GameSession>) {
     document.add(
         Paragraph("Historial de Partidas")
         .setTextAlignment(TextAlignment.CENTER)
-        .setFontSize(20f)
-        .setBold())
+        .setFontSize(20f))
 
     // Contenido del PDF
     gameSessions.forEach { session ->

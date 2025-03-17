@@ -4,5 +4,5 @@
     <!-- Profile screen -->
     <string name="register_button_label">Registrar</string>
     <string name="man_voice_option_title">Masculino</string>
-    <string name="woman_voice_option_title">Femenino\n</string>
+    <string name="woman_voice_option_title">Femenino</string>
 </resources>

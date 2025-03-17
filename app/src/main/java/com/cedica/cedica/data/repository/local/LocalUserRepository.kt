@@ -6,8 +6,13 @@ import com.cedica.cedica.data.user.UserDao
 import kotlinx.coroutines.flow.Flow
 
 class LocalUserRepository(private val dao: UserDao): UserRepository {
-    override suspend fun insert(entity: User) {
-        dao.insert(entity)
+
+    override suspend fun existsByFullName(firstName: String, lastName: String): Boolean {
+        return dao.existsByFullName(firstName, lastName)
+    }
+
+    override suspend fun insert(entity: User): Long {
+        return dao.insert(entity)
     }
 
     override suspend fun insert(entities: List<User>) {

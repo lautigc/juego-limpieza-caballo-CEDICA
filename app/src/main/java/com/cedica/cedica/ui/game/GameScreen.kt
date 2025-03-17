@@ -30,7 +30,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -46,14 +48,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cedica.cedica.core.utils.HorsePart
 import com.cedica.cedica.R
 import com.cedica.cedica.core.utils.isInPreview
 import com.cedica.cedica.core.utils.sound.SoundPlayer
 import com.cedica.cedica.core.utils.getStageInfo
+import com.cedica.cedica.core.utils.sound.TextToSpeechWrapper
 import com.cedica.cedica.core.utils.stages
+import com.cedica.cedica.data.user.PlaySession
+import com.cedica.cedica.ui.AppViewModelProvider
+import com.cedica.cedica.ui.utils.view_models.UserViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.util.Date
 import kotlin.math.roundToInt
 
 data class Tool(val imageRes: Int, val name: String)
@@ -93,32 +104,71 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     }
 
     val cantStages = stages.size
+
     // para el audio (solo disponible fuera de la preview)
+    val context = LocalContext.current
     val soundPlayer: SoundPlayer?
+    val speech: TextToSpeechWrapper?
     if(!isInPreview()) {
-        val context = LocalContext.current
         soundPlayer = remember { SoundPlayer(context) }
+        speech = remember { TextToSpeechWrapper(context) }
     } else {
         soundPlayer = remember { null }
-    }
-    soundPlayer?.let {
-        LaunchedEffect(Unit) {
-            soundPlayer.loadSound("success", R.raw.successed2)
-            soundPlayer.loadSound("snort", R.raw.snort_cut)
-            soundPlayer.loadSound("wrong", R.raw.wrong)
-            soundPlayer.loadSound("notification", R.raw.new_notification)
-            soundPlayer.loadSound("cleaning", R.raw.scrubbing_brush)
-        }
+        speech = remember { null }
     }
 
+    LaunchedEffect(Unit) {
+        soundPlayer?.loadSound("success", R.raw.successed2)
+        soundPlayer?.loadSound("snort", R.raw.snort_cut)
+        soundPlayer?.loadSound("wrong", R.raw.wrong)
+        soundPlayer?.loadSound("notification", R.raw.new_notification)
+        soundPlayer?.loadSound("cleaning", R.raw.scrubbing_brush)
+    }
+
+    val isTtsReady = remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        val success = speech?.initialize()
+        if(success == true) {
+            speech.speak("Después de correr por todos lados y ensuciarse, tenemos como desafío limpiar a Coquito, vamos!. Hacé click en el botón para empezar")
+        }
+        isTtsReady.value = true
+    }
+
+    var isLoading = true
     if(showWelcomeDialog) {
-        WelcomeDialog() { showWelcomeDialog = false }
+        if(isTtsReady.value) {
+            isLoading = false
+            WelcomeDialog() {
+                showWelcomeDialog = false
+                speech?.speak("Selecciona la parte del caballo que hay que limpiar en esta etapa")
+            }
+        }
+        LoadingDialog(isLoading)
         gameState.value = gameState.value.copy(
             elapsedTime = 0
         )
     }
 
+    val psViewModel: PlaySessionViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    val sessionViewModel: UserViewModel = viewModel(factory = AppViewModelProvider.Factory)
     if (showCompletionDialog) {
+        LaunchedEffect(Unit) {
+            speech?.speak("Completaste el juego, felicitaciones!!. Hacé click en el botón para volver al menú.")
+            val id = sessionViewModel.getUserSessionID().first()
+            val playSession = gameState.value.getCompletionTime()?.seconds?.let {
+                PlaySession(
+                    date = Date(),
+                    difficultyLevel = gameState.value.getDifficulty(),
+                    correctAnswers = gameState.value.getCantSuccess(),
+                    incorrectAnswers = gameState.value.getCantErrors(),
+                    timeSpent = it,
+                    userID = id
+                )
+            }
+            if (playSession != null) {
+                psViewModel.insert(playSession)
+            }
+        }
         CompletionDialog(
             score = gameState.value.getScore(),
             time = gameState.value.getFormattedElapsedTime(),
@@ -140,15 +190,19 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                     if (showZoomedView && gameState.value.getSelectedTool() == null) {
                         if (tool.name == stageInfo.tool) {
                             // Si la herramienta seleccionada es la correcta
+                            speech?.speak("¡Excelente! Seleccionaste la herramienta correcta para la limpieza.")
                             gameState.value.setSelectedTool(tool.imageRes)
                             gameState.value.setCustomMessage("¡Excelente! Seleccionaste la herramienta correcta para la limpieza.")
                             gameState.value.setMessageType("success")
                             gameState.value.addScore(20)
+                            gameState.value.increaseSuccess()
                             soundPlayer?.playSound("success")
                         } else {
                             // Si la herramienta seleccionada es incorrecta
                             gameState.value.setCustomMessage("Ups... Seleccionaste la herramienta incorrecta. Intenta de nuevo.")
+                            speech?.speak("Ups... Seleccionaste la herramienta incorrecta. Intentá de nuevo.")
                             gameState.value.setMessageType("error")
+                            gameState.value.increaseError()
                             soundPlayer?.playSound("wrong")
                         }
                     }
@@ -171,6 +225,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
+
                 Button(onClick = { navigateToMenu() }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFADD8E6))) {
                     Text("Volver al menú", color = Color.Black)
                 }
@@ -212,6 +267,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
 
                         // Tiempo actual
                         Text(
+
                             text = "⏳Tiempo: ${gameState.value.getFormattedElapsedTime()}",
                             style = TextStyle(
                                 fontFamily = FontFamily.Monospace,
@@ -251,17 +307,22 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                         onPartSelected = { part ->
                             if (part == stageInfo.correctHorsePart.name) {
                                 gameState.value.addScore(20)
+                                gameState.value.increaseSuccess()
                                 showZoomedView = true
                                 coroutineScope.launch {
                                     gameState.value.setCustomMessage("¡Excelente! Seleccionaste la parte correcta del caballo")
+                                    speech?.speak("¡Excelente!")
                                     gameState.value.setMessageType("success")
                                     soundPlayer?.playSound("success")
                                     delay(2000)
                                     gameState.value.setCustomMessage("¿Qué herramienta debemos utilizar para limpiarla?")
+                                    speech?.speak("¿Qué herramienta debemos utilizar para limpiarla?")
                                     gameState.value.setMessageType("selection")
                                 }
                             } else {
+                                gameState.value.increaseError()
                                 gameState.value.setCustomMessage("Ups... Seleccionaste la parte incorrecta. Intenta de nuevo.")
+                                speech?.speak("Ups... Seleccionaste la parte incorrecta. Intenta de nuevo.")
                                 gameState.value.setMessageType("error")
                                 soundPlayer?.playSound("wrong")
                             }
@@ -286,10 +347,12 @@ fun GameScreen(navigateToMenu: () -> Unit) {
                                 coroutineScope.launch {
                                     showZoomedView = false
                                     gameState.value.setCustomMessage("¡La parte está limpia! Avanzando a la siguiente etapa.")
+                                    speech?.speak("Excelente")
                                     gameState.value.setMessageType("success")
                                     delay(3000)
                                     gameState.value.setMessageType("selection")
                                     gameState.value.setCustomMessage("¿Qué parte del caballo debemos seleccionar ahora?")
+                                    speech?.speak("¿Qué parte del caballo debemos seleccionar ahora?")
                                 }
                             }
                         }
@@ -372,6 +435,7 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     DisposableEffect(Unit) {
         onDispose {
             soundPlayer?.release()
+            speech?.release()
         }
     }
 }
@@ -568,7 +632,7 @@ fun WelcomeDialog(onDismiss: () -> Unit) {
                     )
                 )
                 Text(
-                    text = "Después de correr por todos lados y ensuciarse, tenemos como desafío limpiar a Coquito",
+                    text = "Después de correr por todos lados y ensuciarse, tenemos como desafío limpiar a Coquito.",
                     color = Color.Black
                 )
             }
@@ -591,6 +655,42 @@ fun WelcomeDialog(onDismiss: () -> Unit) {
     )
 }
 
+@Composable
+fun LoadingDialog(
+    isLoading: Boolean,
+    onDismissRequest: () -> Unit = {} // Opcional, por si necesitas manejar el cierre
+) {
+    if (isLoading) {
+        Dialog(
+            onDismissRequest = onDismissRequest, // Esto se ejecuta si el usuario intenta cerrar el diálogo (puede estar vacío si no querés permitir cerrar)
+            properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false) // Evita que se cierre accidentalmente
+        ) {
+            // Contenido del diálogo
+            Box(
+                modifier = Modifier
+                    .background(Color.White, shape = RoundedCornerShape(8.dp))
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(32.dp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = "Cargando...",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+        }
+    }
+}
 @RequiresApi(Build.VERSION_CODES.S)
 @Preview(showBackground = true, widthDp = 720, heightDp = 360)
 @Composable
