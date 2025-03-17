@@ -119,7 +119,7 @@ private fun SoundSettingSection(
                 voice = voice,
                 onChangeConfiguration = onChangeConfiguration,
             ) },
-            arrangementSelector = Arrangement.Center
+            arrangementSelector = Arrangement.End
         )
     )
 
@@ -159,7 +159,7 @@ private fun DifficultySettingSection(
             selector = {
                 LevelSelector(level, onChangeConfiguration)
             },
-            arrangementSelector = Arrangement.Center
+            arrangementSelector = Arrangement.End
         ),
         Option(
             label = stringResource(R.string.setting_time_title),
@@ -175,7 +175,7 @@ private fun DifficultySettingSection(
                     supportText = time.errorText
                 )
             },
-            arrangementSelector = Arrangement.Center
+            arrangementSelector = Arrangement.End
         ),
         Option(
             label = stringResource(R.string.setting_images_title),
@@ -191,7 +191,7 @@ private fun DifficultySettingSection(
                     supportText = imageCount.errorText,
                 )
             },
-            arrangementSelector = Arrangement.Center
+            arrangementSelector = Arrangement.End
         ),
         Option(
             label = stringResource(R.string.setting_try_title),
@@ -207,7 +207,7 @@ private fun DifficultySettingSection(
                     supportText = tryCount.errorText,
                 )
             },
-            arrangementSelector = Arrangement.Center
+            arrangementSelector = Arrangement.End
         )
     )
     SettingSection(

@@ -183,7 +183,7 @@ fun DifficultyConfiguration(
             }
         },
         modifier = optionModifier,
-        arrangementSelector = Arrangement.Center,
+        arrangementSelector = Arrangement.End,
         horizontalDivider = false,
     )
     SettingOption(
@@ -204,7 +204,7 @@ fun DifficultyConfiguration(
             }
         },
         modifier = optionModifier,
-        arrangementSelector = Arrangement.Center,
+        arrangementSelector = Arrangement.End,
         horizontalDivider = false,
     )
     SettingOption(
@@ -225,7 +225,7 @@ fun DifficultyConfiguration(
             }
         },
         modifier = optionModifier,
-        arrangementSelector = Arrangement.Center,
+        arrangementSelector = Arrangement.End,
         horizontalDivider = false,
     )
 
