@@ -1,11 +1,17 @@
 package com.cedica.cedica.data.repository.local;
 
+import com.cedica.cedica.core.guestData.GuestData
+import com.cedica.cedica.core.guestData.isGuestUser
 import com.cedica.cedica.data.repository.interfaces.UserRepository
 import com.cedica.cedica.data.user.User
 import com.cedica.cedica.data.user.UserDao
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 
-class LocalUserRepository(private val dao: UserDao): UserRepository {
+class LocalUserRepository(
+    private val dao: UserDao,
+    private val guestData: GuestData,
+): UserRepository {
 
     override suspend fun existsByFullName(firstName: String, lastName: String): Boolean {
         return dao.existsByFullName(firstName, lastName)
@@ -20,7 +26,10 @@ class LocalUserRepository(private val dao: UserDao): UserRepository {
     }
 
     override suspend fun update(entity: User) {
-        dao.update(entity)
+        if (isGuestUser(entity))
+            guestData.setGlobalConfiguration(entity.personalConfiguration)
+        else
+            dao.update(entity)
     }
 
     override suspend fun update(entities: List<User>) {
@@ -40,6 +49,9 @@ class LocalUserRepository(private val dao: UserDao): UserRepository {
     }
 
     override suspend fun getByID(id: Long): User {
-        return dao.getByID(id)
+        return if (isGuestUser(id))
+            guestData.getGuestUser().first()
+        else
+            dao.getByID(id)
     }
 }

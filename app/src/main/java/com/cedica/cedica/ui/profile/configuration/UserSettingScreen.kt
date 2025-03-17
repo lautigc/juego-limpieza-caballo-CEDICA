@@ -19,6 +19,7 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -55,25 +56,19 @@ fun UserSettingScreen(
             factory = AppViewModelProvider.FactoryWithArgs.userSetting(userID = userID)
     ),
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+
     UserSettingScreenContent(
-        level = viewModel.level,
-        time = viewModel.time,
-        imageCount = viewModel.imageCount,
-        tryCount = viewModel.tryCount,
-        voice = viewModel.voice,
-        onSave = viewModel::onSave,
+        uiState = uiState,
+        onSave = viewModel::onSave
     )
 
 }
 
 @Composable
 private fun UserSettingScreenContent(
-    level: InputField<DifficultyLevel>,
-    time: NumberField<Int>,
-    imageCount: NumberField<Int>,
-    tryCount: NumberField<Int>,
+    uiState: UserSettingUiState,
     onSave: () -> Unit,
-    voice: InputField<VoiceType>
 ) {
     val optionModifier = Modifier.padding(
         bottom = dimensionResource(R.dimen.padding_medium)
@@ -88,17 +83,17 @@ private fun UserSettingScreenContent(
             DifficultySettingSection(
                 optionModifier = optionModifier,
                 onChangeConfiguration = onSave,
-                level = level,
-                time = time,
-                imageCount = imageCount,
-                tryCount = tryCount
+                level = uiState.level,
+                time = uiState.time,
+                imageCount = uiState.imageCount,
+                tryCount = uiState.tryCount
             )
         }
         item {
             SoundSettingSection(
                 optionModifier = optionModifier,
                 onChangeConfiguration = onSave,
-                voice = voice
+                voice = uiState.voice
             )
         }
     }
@@ -118,13 +113,13 @@ private fun SoundSettingSection(
 
     val options = listOf(
         Option(
-            label = "Tipo de voz",
+            label = stringResource(R.string.setting_voice_title),
             secondaryText = null,
             selector = { VoiceSelector(
                 voice = voice,
                 onChangeConfiguration = onChangeConfiguration,
             ) },
-            arrangementSelector = Arrangement.Center
+            arrangementSelector = Arrangement.End
         )
     )
 
@@ -157,35 +152,18 @@ private fun DifficultySettingSection(
     imageCount: NumberField<Int>,
     tryCount: NumberField<Int>,
 ) {
-    val optionsDropdown = DifficultyLevel.entries.toList()
-    var expanded by remember { mutableStateOf(false) }
-
     val options = listOf(
         Option(
-            label = "Nivel",
+            label = stringResource(R.string.setting_level_title),
             secondaryText = null,
             selector = {
-                SelectableDropdownMenu(
-                    options = optionsDropdown,
-                    expanded = expanded,
-                    selectedOption = level.input,
-                    onExpandedChange = {
-                        expanded = !expanded
-                    },
-                    onCollapse = {
-                        expanded = false
-                    },
-                    onSelectedText = {
-                        level.onChange(DifficultyLevel.toDifficultyLevel(it))
-                        onChangeConfiguration()
-                    },
-                )
+                LevelSelector(level, onChangeConfiguration)
             },
-            arrangementSelector = Arrangement.Center
+            arrangementSelector = Arrangement.End
         ),
         Option(
-            label = "Tiempo",
-            secondaryText = "Para completar el juego",
+            label = stringResource(R.string.setting_time_title),
+            secondaryText = stringResource(R.string.setting_time_secondary_text),
             selector = {
                 NumberInput(
                     selectedValue = time.input.toString(),
@@ -197,11 +175,11 @@ private fun DifficultySettingSection(
                     supportText = time.errorText
                 )
             },
-            arrangementSelector = Arrangement.Center
+            arrangementSelector = Arrangement.End
         ),
         Option(
-            label = "Cantidad de Imágenes",
-            secondaryText = "Como ayuda en el juego",
+            label = stringResource(R.string.setting_images_title),
+            secondaryText = stringResource(R.string.setting_images_secondary_text),
             selector = {
                 NumberInput(
                     selectedValue = imageCount.input.toString(),
@@ -213,11 +191,11 @@ private fun DifficultySettingSection(
                     supportText = imageCount.errorText,
                 )
             },
-            arrangementSelector = Arrangement.Center
+            arrangementSelector = Arrangement.End
         ),
         Option(
-            label = "Intentos",
-            secondaryText = "Errores permitidos antes de restar puntos",
+            label = stringResource(R.string.setting_try_title),
+            secondaryText = stringResource(R.string.setting_try_secondary_text),
             selector = {
                 NumberInput(
                     selectedValue = tryCount.input.toString(),
@@ -229,11 +207,11 @@ private fun DifficultySettingSection(
                     supportText = tryCount.errorText,
                 )
             },
-            arrangementSelector = Arrangement.Center
+            arrangementSelector = Arrangement.End
         )
     )
     SettingSection(
-        title = "Dificultad",
+        title = stringResource(R.string.setting_dificulty_title),
     ) {
         options.forEach { option ->
             SettingOption(
@@ -245,6 +223,31 @@ private fun DifficultySettingSection(
             )
         }
     }
+}
+
+@Composable
+fun LevelSelector(
+    level: InputField<DifficultyLevel>,
+    onChangeConfiguration: () -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val optionsDropdown = DifficultyLevel.entries.toList()
+
+    SelectableDropdownMenu(
+        options = optionsDropdown,
+        expanded = expanded,
+        selectedOption = level.input,
+        onExpandedChange = {
+            expanded = !expanded
+        },
+        onCollapse = {
+            expanded = false
+        },
+        onSelectedText = {
+            level.onChange(DifficultyLevel.toDifficultyLevel(it))
+            onChangeConfiguration()
+        },
+    )
 }
 
 /**
@@ -296,12 +299,14 @@ fun VoiceSelector(
 fun UserSettingScreenPreview() {
     CedicaTheme {
         UserSettingScreenContent(
+        uiState = UserSettingUiState(
             level = InputField(DifficultyLevel.EASY),
             time = NumberField(rangeStart = 0, rangeEnd = Int.MAX_VALUE, initialValue = 0),
             imageCount = NumberField(rangeStart = 0, rangeEnd = 5, initialValue = 0),
             tryCount = NumberField(rangeStart = 0, rangeEnd = Int.MAX_VALUE, initialValue = 0),
-            voice = InputField(VoiceType.FEMALE),
-            onSave = {},
+            voice = InputField(VoiceType.FEMALE)
+        ),
+        onSave = {},
         )
     }
 }
@@ -309,7 +314,6 @@ fun UserSettingScreenPreview() {
 /**
  * Input de valores numéricos
  *
- * @param range rango de valores permitidos
  * @param selectedValue valor seleccionado
  * @param onValueChange función que se ejecuta al cambiar el valor
  * @param hasError indicador si hay un error en el valor

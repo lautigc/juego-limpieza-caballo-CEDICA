@@ -6,7 +6,7 @@ import com.cedica.cedica.core.session.Session
 import com.cedica.cedica.data.repository.interfaces.PatientRepository
 import com.cedica.cedica.data.repository.interfaces.TherapistRepository
 import com.cedica.cedica.data.repository.interfaces.UserRepository
-import com.cedica.cedica.data.user.GuestUser
+import com.cedica.cedica.core.guestData.GuestUser
 import com.cedica.cedica.data.user.LoadingUser
 import com.cedica.cedica.data.user.User
 import com.cedica.cedica.data.user.UserPatient
@@ -45,7 +45,7 @@ class ProfileListScreenViewModel(
                 users = userFlow,
                 therapists = therapistFlow,
                 patients = patientFlow,
-                currentUser = if (userID == GuestUser.id) GuestUser else userFlow.first { it.id == userID },
+                currentUser = userRepository.getByID(userID),
             )
         }.stateIn(
             scope = viewModelScope,

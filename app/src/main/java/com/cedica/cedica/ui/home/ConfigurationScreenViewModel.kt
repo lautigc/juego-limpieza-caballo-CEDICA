@@ -5,7 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.cedica.cedica.core.configuration.GlobalConfiguration
 import com.cedica.cedica.core.configuration.GlobalConfigurationDefaults
 import com.cedica.cedica.core.configuration.GlobalConfigurationState
+import com.cedica.cedica.core.session.Session
 import com.cedica.cedica.core.utils.input_field.InputField
+import com.cedica.cedica.core.guestData.GuestUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,10 +24,12 @@ data class ConfigurationScreenUiState(
     val musicVolume: InputField<Int> = InputField(
         GlobalConfigurationDefaults.MUSIC.defaultValue
     ),
+    val userID: Long = GuestUser.id,
 )
 
 class ConfigurationScreenViewModel(
-    private val globalConfiguration: GlobalConfiguration
+    private val globalConfiguration: GlobalConfiguration,
+    private val session: Session,
 ): ViewModel() {
     private val _uiState = MutableStateFlow(ConfigurationScreenUiState())
     val uiState: StateFlow<ConfigurationScreenUiState> = _uiState.asStateFlow()
@@ -33,10 +37,12 @@ class ConfigurationScreenViewModel(
     init {
         viewModelScope.launch {
             val configuration = globalConfiguration.getGlobalConfiguration().first()
+            val userID = session.getUserID().first()
             _uiState.value = ConfigurationScreenUiState(
                 generalVolume = InputField(configuration.generalVolume),
                 effectsVolume = InputField(configuration.effectsVolume),
                 musicVolume = InputField(configuration.musicVolume),
+                userID = userID,
             )
         }
     }

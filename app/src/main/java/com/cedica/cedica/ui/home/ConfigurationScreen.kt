@@ -4,13 +4,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -21,26 +21,29 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Slider
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.cedica.cedica.core.configuration.GlobalConfigurationState
+import com.cedica.cedica.R
 import com.cedica.cedica.core.utils.input_field.InputField
 import com.cedica.cedica.ui.AppViewModelProvider
+import com.cedica.cedica.ui.profile.configuration.LevelSelector
+import com.cedica.cedica.ui.profile.configuration.NumberInput
+import com.cedica.cedica.ui.profile.configuration.SettingOption
+import com.cedica.cedica.ui.profile.configuration.UserSettingUiState
+import com.cedica.cedica.ui.profile.configuration.UserSettingViewModel
+import com.cedica.cedica.ui.profile.configuration.VoiceSelector
 import com.cedica.cedica.ui.theme.CedicaTheme
 import kotlin.math.roundToInt
 
@@ -50,18 +53,31 @@ fun ConfigurationScreen(
     navigateToMenu: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
+    val viewModelPersonalConfig: UserSettingViewModel = viewModel(factory = AppViewModelProvider
+        .FactoryWithArgs
+        .userSetting(
+            userID = uiState.userID,
+        )
+    )
+    val uiStatePersonalConfig by viewModelPersonalConfig.uiState.collectAsState()
+
     ConfigurationScreenContent(
         navigateToMenu = navigateToMenu,
-        configuration = uiState,
-        onChangeConfiguration = viewModel::saveConfiguration
+        globalConfig = uiState,
+        personalConfig = uiStatePersonalConfig,
+        onChangeGlobalConfig = viewModel::saveConfiguration,
+        onChangePersonalConfig = viewModelPersonalConfig::onSave,
     )
 }
 
 @Composable
 private fun ConfigurationScreenContent(
     navigateToMenu: () -> Unit = {},
-    onChangeConfiguration: () -> Unit = {},
-    configuration: ConfigurationScreenUiState = ConfigurationScreenUiState(),
+    globalConfig: ConfigurationScreenUiState = ConfigurationScreenUiState(),
+    personalConfig: UserSettingUiState = UserSettingUiState(),
+    onChangeGlobalConfig: () -> Unit = {},
+    onChangePersonalConfig: () -> Unit = {},
 ) {
     val scrollState = rememberScrollState()
 
@@ -72,20 +88,147 @@ private fun ConfigurationScreenContent(
             .padding(16.dp)
             .verticalScroll(scrollState),
     ) {
+        val optionModifier = Modifier.padding(dimensionResource(R.dimen.padding_medium))
+        val labelStyle = MaterialTheme.typography.titleSmall
+
         Text(
             text = "Configuración",
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
+
         HorizontalDivider(modifier = Modifier.padding(16.dp), color = Color.Black)
+
         VolumeConfiguration(
-            configuration = configuration,
-            onChangeConfiguration = onChangeConfiguration
+            configuration = globalConfig,
+            onChangeConfiguration = onChangeGlobalConfig,
         )
+
         HorizontalDivider(modifier = Modifier.padding(16.dp), color = Color.Black)
-        //AccessibilityConfiguration()
+
+        SectionTitle("Dificultad") {
+            DifficultyConfiguration(
+                optionModifier = optionModifier,
+                configuration = personalConfig,
+                onChange = onChangePersonalConfig,
+                labelStyle = labelStyle,
+            )
+        }
+
+        HorizontalDivider(modifier = Modifier.padding(16.dp), color = Color.Black)
+
+        SectionTitle("Accesibilidad"
+
+        ) {
+            AccessibilityConfiguration(
+                configuration = personalConfig,
+                onChange = onChangePersonalConfig,
+            )
+        }
         ConfigButtons(navigateToMenu)
     }
+}
+
+@Composable
+fun SectionTitle(
+    title: String,
+    content: @Composable (ColumnScope.() -> Unit)
+): Unit {
+    Column {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+        )
+        content()
+    }
+}
+
+@Composable
+fun DifficultyConfiguration(
+    optionModifier: Modifier,
+    configuration: UserSettingUiState,
+    onChange: () -> Unit = {},
+    labelStyle: TextStyle,
+) {
+    SettingOption(
+        label = stringResource(R.string.setting_level_title),
+        labelStyle = labelStyle,
+        selector = {
+            Column {
+                LevelSelector(
+                    level = configuration.level,
+                    onChangeConfiguration = onChange,
+                )
+            }
+        },
+        modifier = optionModifier,
+        arrangementSelector = Arrangement.End,
+        horizontalDivider = false,
+    )
+    SettingOption(
+        label = stringResource(R.string.setting_time_title),
+        secondaryText = stringResource(R.string.setting_time_secondary_text),
+        labelStyle = labelStyle,
+        selector = {
+            Column(Modifier.padding(start = 16.dp)) {
+                NumberInput(
+                    selectedValue = configuration.time.input.toString(),
+                    onValueChange = { value ->
+                        configuration.time.onChange(configuration.time.toInput(value, String::toInt, 0))
+                        onChange()
+                    },
+                    hasError = configuration.time.hasError,
+                    supportText = configuration.time.errorText
+                )
+            }
+        },
+        modifier = optionModifier,
+        arrangementSelector = Arrangement.End,
+        horizontalDivider = false,
+    )
+    SettingOption(
+        label = stringResource(R.string.setting_try_title),
+        secondaryText = stringResource(R.string.setting_try_secondary_text),
+        labelStyle = labelStyle,
+        selector = {
+            Column(Modifier.padding(start = 16.dp)) {
+                NumberInput(
+                    selectedValue = configuration.tryCount.input.toString(),
+                    onValueChange = { value ->
+                        configuration.tryCount.onChange(configuration.tryCount.toInput(value, String::toInt, 0))
+                        onChange()
+                    },
+                    hasError = configuration.tryCount.hasError,
+                    supportText = configuration.tryCount.errorText
+                )
+            }
+        },
+        modifier = optionModifier,
+        arrangementSelector = Arrangement.End,
+        horizontalDivider = false,
+    )
+    SettingOption(
+        label = stringResource(R.string.setting_images_title),
+        secondaryText = stringResource(R.string.setting_images_secondary_text),
+        labelStyle = labelStyle,
+        selector = {
+            Column(Modifier.padding(start = 16.dp)) {
+                NumberInput(
+                    selectedValue = configuration.imageCount.input.toString(),
+                    onValueChange = { value ->
+                        configuration.imageCount.onChange(configuration.imageCount.toInput(value, String::toInt, 0))
+                        onChange()
+                    },
+                    hasError = configuration.imageCount.hasError,
+                    supportText = configuration.imageCount.errorText
+                )
+            }
+        },
+        modifier = optionModifier,
+        arrangementSelector = Arrangement.End,
+        horizontalDivider = false,
+    )
+
 }
 
 @Composable
@@ -136,7 +279,7 @@ fun VolumeConfiguration(
     onChangeConfiguration: () -> Unit,
 ) {
     Column {
-        Text("Volúmen", style = MaterialTheme.typography.titleMedium)
+        Text(text = stringResource(R.string.setting_voice_title), style = MaterialTheme.typography.titleMedium)
         VolumeSlider(
             label = "General",
             volume = configuration.generalVolume,
@@ -171,37 +314,22 @@ fun ConfigButtons(navigateToMenu: () -> Unit) {
 }
 
 @Composable
-fun AccessibilityConfiguration() {
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text("Accesibilidad", style = MaterialTheme.typography.titleMedium)
+fun AccessibilityConfiguration(
+    configuration: UserSettingUiState,
+    onChange: () -> Unit = {},
+) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 8.dp)) {
+        Text(
+            "Voz",
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(top = 8.dp)
+        )
+        Spacer(modifier = Modifier.weight(1f))
 
-        var selectedVoice by remember { mutableStateOf("Masculino") }
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 8.dp)) {
-            Text("Voz:", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 8.dp))
-            Spacer(modifier = Modifier.weight(1f))
-
-            RadioButton(
-                selected = selectedVoice == "Masculino",
-                onClick = { selectedVoice = "Masculino" }
-            )
-            Text("Masculino", modifier = Modifier.clickable { selectedVoice = "Masculino" })
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            RadioButton(
-                selected = selectedVoice == "Femenino",
-                onClick = { selectedVoice = "Femenino" }
-            )
-            Text("Femenino", modifier = Modifier.clickable { selectedVoice = "Femenino" })
-        }
-
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 8.dp)) {
-            var hintsEnabled by remember { mutableStateOf(true) }
-            Text("Pistas:", style = MaterialTheme.typography.bodyMedium)
-            Spacer(modifier = Modifier.weight(1f))
-            Switch(checked = hintsEnabled, onCheckedChange = { hintsEnabled = it })
-        }
-
+        VoiceSelector(
+            voice = configuration.voice,
+            onChangeConfiguration = onChange,
+        )
     }
 }
 
