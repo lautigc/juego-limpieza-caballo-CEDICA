@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cedica.cedica.core.session.Session
 import com.cedica.cedica.data.repository.interfaces.UserRepository
-import com.cedica.cedica.data.user.GuestUser
+import com.cedica.cedica.core.guestData.GuestUser
 import com.cedica.cedica.data.user.LoadingUser
 import com.cedica.cedica.data.user.User
 import kotlinx.coroutines.flow.Flow

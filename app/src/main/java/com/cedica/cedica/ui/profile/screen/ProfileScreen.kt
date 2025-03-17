@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cedica.cedica.data.seed.users_seed
-import com.cedica.cedica.data.user.GuestUser
+import com.cedica.cedica.core.guestData.GuestUser
 import com.cedica.cedica.data.user.User
 import com.cedica.cedica.ui.AppViewModelProvider
 import com.cedica.cedica.ui.theme.CedicaTheme

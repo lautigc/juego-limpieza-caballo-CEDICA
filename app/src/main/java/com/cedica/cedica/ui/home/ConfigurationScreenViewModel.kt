@@ -7,13 +7,12 @@ import com.cedica.cedica.core.configuration.GlobalConfigurationDefaults
 import com.cedica.cedica.core.configuration.GlobalConfigurationState
 import com.cedica.cedica.core.session.Session
 import com.cedica.cedica.core.utils.input_field.InputField
-import com.cedica.cedica.data.user.GuestUser
+import com.cedica.cedica.core.guestData.GuestUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 data class ConfigurationScreenUiState(
     val generalVolume: InputField<Int> = InputField(

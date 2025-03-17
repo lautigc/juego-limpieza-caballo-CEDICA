@@ -24,13 +24,6 @@ val Context.guestDataStore: DataStore<Preferences> by preferencesDataStore(name 
 fun isGuestUser(user: User): Boolean = user.id == GuestUser.id
 fun isGuestUser(id: Long): Boolean = id == GuestUser.id
 
-val GuestUser = User(
-    id = 0,
-    role = Role.GUEST,
-    firstName = "Invitado",
-    lastName = "",
-)
-
 /*
 * Session object to management user session
  */
@@ -83,3 +76,10 @@ object GuestData {
     }
 
 }
+
+val GuestUser = User(
+    id = 0,
+    role = Role.GUEST,
+    firstName = "Invitado",
+    lastName = "",
+)

@@ -3,7 +3,6 @@ package com.cedica.cedica.data.repository.local;
 import com.cedica.cedica.core.guestData.GuestData
 import com.cedica.cedica.core.guestData.isGuestUser
 import com.cedica.cedica.data.repository.interfaces.UserRepository
-import com.cedica.cedica.data.user.GuestUser
 import com.cedica.cedica.data.user.User
 import com.cedica.cedica.data.user.UserDao
 import kotlinx.coroutines.flow.Flow

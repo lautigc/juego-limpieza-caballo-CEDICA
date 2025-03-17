@@ -2,19 +2,16 @@ package com.cedica.cedica.ui.profile.configuration
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cedica.cedica.core.guestData.GuestData
 import com.cedica.cedica.core.utils.input_field.InputField
 import com.cedica.cedica.core.utils.input_field.NumberField
 import com.cedica.cedica.data.configuration.ConfigurationConstraints
 import com.cedica.cedica.data.configuration.DifficultyLevel
 import com.cedica.cedica.data.configuration.VoiceType
 import com.cedica.cedica.data.repository.interfaces.UserRepository
-import com.cedica.cedica.data.user.GuestUser
 import com.cedica.cedica.data.user.LoadingUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 data class UserSettingUiState(

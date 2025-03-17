@@ -11,15 +11,7 @@ import com.cedica.cedica.data.configuration.PersonalConfiguration
 import com.cedica.cedica.data.generic.BaseDao
 import com.cedica.cedica.data.permissions.Role
 import kotlinx.coroutines.flow.Flow
-import kotlinx.serialization.Serializable
 
-
-val GuestUser = User(
-    id = 0,
-    role = Role.GUEST,
-    firstName = "Invitado",
-    lastName = "",
-)
 
 val LoadingUser = User(
     id = -1,

@@ -6,7 +6,7 @@ import com.cedica.cedica.core.session.Session
 import com.cedica.cedica.data.repository.interfaces.PatientRepository
 import com.cedica.cedica.data.repository.interfaces.TherapistRepository
 import com.cedica.cedica.data.repository.interfaces.UserRepository
-import com.cedica.cedica.data.user.GuestUser
+import com.cedica.cedica.core.guestData.GuestUser
 import com.cedica.cedica.data.user.LoadingUser
 import com.cedica.cedica.data.user.User
 import com.cedica.cedica.data.user.UserPatient
