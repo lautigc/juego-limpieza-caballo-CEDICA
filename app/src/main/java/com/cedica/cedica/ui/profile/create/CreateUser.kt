@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -78,12 +79,13 @@ fun CreateTherapistForm(
     viewModel: CreateTherapistFormViewModel = viewModel(factory = AppViewModelProvider.Factory),
     onNavigateToCreateUser: () -> Unit = {},
 ) {
+
     CreateTherapistFormContent(
         firstName = viewModel.firstName,
         lastName = viewModel.lastName,
         dataError = viewModel.dataError,
-        onClick = {
-            viewModel.insertUser(redirectTo = onNavigateToCreateUser) }
+        onClick = { viewModel.insertUser(redirectTo = onNavigateToCreateUser) },
+        SaveButtonTitle = "Registrar",
     )
 }
 
@@ -108,6 +110,7 @@ private fun CreateTherapistFormContent(
     firstName: ValidationInputField<String>,
     lastName: ValidationInputField<String>,
     dataError: AlertNotification,
+    SaveButtonTitle: String = "Botón",
     onClick: () -> Unit = {},
 ) {
     FormContainer {
@@ -122,21 +125,9 @@ private fun CreateTherapistFormContent(
 
         Spacer(modifier = spacerModifier)
 
-        Button(
-            onClick = onClick,
-        ) {
-            Text("Registras usuario")
-        }
+        SaveButton(onClick, SaveButtonTitle)
 
-        dataError.alert.value?.let {
-            SimpleAlertDialog(
-                displayDismissButton = false,
-                onConfirmation = { dataError.hiddenAlert() },
-                dialogTitle = "Error",
-                dialogText = it,
-                icon = Icons.Outlined.ErrorOutline
-            )
-        }
+        ErrorAlertDialog(dataError)
     }
 }
 
@@ -152,6 +143,7 @@ fun CreatePatientForm(
         gender = viewModel.gender,
         date = viewModel.birthDate,
         alert = viewModel.alert,
+        saveButtonTitle = "Registrar",
         onCreate = { viewModel.insertUser(redirectTo = onNavigateToCreateUser) }
     )
 }
@@ -199,6 +191,7 @@ fun CreatePatientFormContent(
     gender: InputField<Gender>,
     date: InputField<Date>,
     alert: AlertNotification,
+    saveButtonTitle: String = "Botón",
     headerStyle: TextStyle = MaterialTheme.typography.displayMedium,
     onCreate: () -> Unit = {},
 ) {
@@ -230,22 +223,37 @@ fun CreatePatientFormContent(
 
         DateInputField(date)
 
-        alert.alert.value?.let {
-            SimpleAlertDialog(
-                displayDismissButton = false,
-                onConfirmation = { alert.hiddenAlert() },
-                dialogTitle = "Error",
-                dialogText = it,
-                icon = Icons.Outlined.ErrorOutline
-            )
-        }
+        ErrorAlertDialog(alert)
 
         Spacer(modifier = spacerModifier)
 
+        SaveButton(onCreate, saveButtonTitle)
+    }
+}
+
+@Composable
+private fun ErrorAlertDialog(alert: AlertNotification) {
+    alert.alert.value?.let {
+        SimpleAlertDialog(
+            displayDismissButton = false,
+            onConfirmation = { alert.hiddenAlert() },
+            dialogTitle = "Error",
+            dialogText = it,
+            icon = Icons.Outlined.ErrorOutline
+        )
+    }
+}
+
+@Composable
+private fun SaveButton(onCreate: () -> Unit, saveButtonTitle: String) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth()
+    ) {
         Button(
             onClick = onCreate,
         ) {
-            Text("Registras usuario")
+            Text(text = saveButtonTitle)
         }
     }
 }
@@ -327,6 +335,7 @@ fun DateInputField(
 private fun CreateUserFormContent(
     firstName: ValidationInputField<String>,
     lastName: ValidationInputField<String>,
+    SaveButtonTitle: String = "Botón",
     headerStyle: TextStyle = MaterialTheme.typography.displayMedium,
     spacerModifier: Modifier,
 ) {
