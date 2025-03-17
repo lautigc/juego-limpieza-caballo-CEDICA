@@ -5,7 +5,9 @@ import com.cedica.cedica.data.user.User
 import com.cedica.cedica.data.user.UserDao
 import kotlinx.coroutines.flow.Flow
 
-class LocalUserRepository(private val dao: UserDao): UserRepository {
+class LocalUserRepository(
+    private val dao: UserDao
+): UserRepository {
 
     override suspend fun existsByFullName(firstName: String, lastName: String): Boolean {
         return dao.existsByFullName(firstName, lastName)
