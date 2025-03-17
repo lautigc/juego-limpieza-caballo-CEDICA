@@ -2,7 +2,8 @@ package com.cedica.cedica.data.configuration
 
 enum class VoiceType {
     MALE,
-    FEMALE
+    FEMALE,
+    NONE
 }
 
 enum class DifficultyLevel(private val stringRepresentation: String) {
