@@ -13,11 +13,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import com.cedica.cedica.R
 
@@ -34,15 +36,18 @@ import com.cedica.cedica.R
 fun SettingOption(
     modifier: Modifier = Modifier,
     label: String,
-    secondaryText: String?,
+    labelStyle: TextStyle = MaterialTheme.typography.labelSmall,
+    secondaryText: String? = null,
+    secondaryTextStyle: TextStyle = MaterialTheme.typography.bodySmall,
     selector: @Composable () -> Unit,
+    horizontalDivider: Boolean = true,
     arrangementSelector: Arrangement.Horizontal = Arrangement.Start,
 ) {
     Row(modifier = modifier) {
         Column(modifier = Modifier.width(150.dp)) {
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelSmall,
+                style = labelStyle,
                 maxLines = 2,
                 modifier = Modifier
                     .horizontalScroll(rememberScrollState()),
@@ -50,7 +55,7 @@ fun SettingOption(
             secondaryText?.let {
                 Text(
                     text = secondaryText,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = secondaryTextStyle,
                     maxLines = 3,
                     modifier = Modifier.heightIn(max = 80.dp).verticalScroll(rememberScrollState())
                 )
@@ -61,14 +66,15 @@ fun SettingOption(
             selector()
         }
     }
-    HorizontalDivider(
-        thickness = 1.dp,
-        modifier = Modifier.padding(
-            top = dimensionResource(R.dimen.padding_medium),
-            bottom = dimensionResource(R.dimen.padding_medium),
-        ),
-
+    horizontalDivider.takeIf { it }?.let {
+        HorizontalDivider(
+            thickness = 1.dp,
+            modifier = Modifier.padding(
+                top = dimensionResource(R.dimen.padding_medium),
+                bottom = dimensionResource(R.dimen.padding_medium),
+            ),
         )
+    }
 }
 
 /**
