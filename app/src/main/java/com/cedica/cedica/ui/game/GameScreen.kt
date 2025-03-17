@@ -58,8 +58,11 @@ import com.cedica.cedica.core.utils.sound.SoundPlayer
 import com.cedica.cedica.core.utils.getStageInfo
 import com.cedica.cedica.core.utils.sound.TextToSpeechWrapper
 import com.cedica.cedica.core.utils.stages
+import com.cedica.cedica.data.configuration.PersonalConfiguration
+import com.cedica.cedica.data.configuration.VoiceType
 import com.cedica.cedica.data.user.PlaySession
 import com.cedica.cedica.ui.AppViewModelProvider
+import com.cedica.cedica.ui.home.PatientViewModel
 import com.cedica.cedica.ui.utils.view_models.UserViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -80,7 +83,9 @@ val tools = listOf(
 @RequiresApi(Build.VERSION_CODES.S)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GameScreen(navigateToMenu: () -> Unit) {
+fun GameScreen(navigateToMenu: () -> Unit,
+               viewModel: UserViewModel = viewModel(factory = AppViewModelProvider.Factory),
+               ) {
 
     // Esto es para orientar la pantalla en sentido horizontal
     LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
@@ -109,9 +114,11 @@ fun GameScreen(navigateToMenu: () -> Unit) {
     val context = LocalContext.current
     val soundPlayer: SoundPlayer?
     val speech: TextToSpeechWrapper?
+    val uiState by viewModel.uiState.collectAsState()
+    val voice = uiState.user.personalConfiguration.voiceType
     if(!isInPreview()) {
         soundPlayer = remember { SoundPlayer(context) }
-        speech = remember { TextToSpeechWrapper(context) }
+        speech = remember { TextToSpeechWrapper(context, voice) }
     } else {
         soundPlayer = remember { null }
         speech = remember { null }
