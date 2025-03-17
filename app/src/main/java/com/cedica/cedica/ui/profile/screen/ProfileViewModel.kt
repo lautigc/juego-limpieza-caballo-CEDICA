@@ -45,7 +45,7 @@ class ProfileListScreenViewModel(
                 users = userFlow,
                 therapists = therapistFlow,
                 patients = patientFlow,
-                currentUser = if (userID == GuestUser.id) GuestUser else userFlow.first { it.id == userID },
+                currentUser = userRepository.getByID(userID),
             )
         }.stateIn(
             scope = viewModelScope,

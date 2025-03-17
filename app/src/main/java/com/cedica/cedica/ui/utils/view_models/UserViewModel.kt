@@ -22,7 +22,7 @@ class UserViewModel(
     ): ViewModel() {
 
     val uiState = session.getUserID().map {
-        if (it == GuestUser.id) UserUiState(GuestUser) else UserUiState(userRepository.getByID(it))
+        UserUiState(userRepository.getByID(it))
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
