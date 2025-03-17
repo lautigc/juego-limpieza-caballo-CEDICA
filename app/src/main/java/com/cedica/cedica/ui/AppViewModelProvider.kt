@@ -71,6 +71,7 @@ object AppViewModelProvider {
         initializer {
             ConfigurationScreenViewModel(
                 globalConfiguration = GlobalConfiguration,
+                session = Session
             )
         }
     }

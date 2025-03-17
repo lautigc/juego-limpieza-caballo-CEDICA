@@ -5,12 +5,14 @@ import androidx.lifecycle.viewModelScope
 import com.cedica.cedica.core.configuration.GlobalConfiguration
 import com.cedica.cedica.core.configuration.GlobalConfigurationDefaults
 import com.cedica.cedica.core.configuration.GlobalConfigurationState
+import com.cedica.cedica.core.session.Session
 import com.cedica.cedica.core.utils.input_field.InputField
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 data class ConfigurationScreenUiState(
     val generalVolume: InputField<Int> = InputField(
@@ -25,7 +27,8 @@ data class ConfigurationScreenUiState(
 )
 
 class ConfigurationScreenViewModel(
-    private val globalConfiguration: GlobalConfiguration
+    private val globalConfiguration: GlobalConfiguration,
+    private val session: Session,
 ): ViewModel() {
     private val _uiState = MutableStateFlow(ConfigurationScreenUiState())
     val uiState: StateFlow<ConfigurationScreenUiState> = _uiState.asStateFlow()
@@ -51,5 +54,9 @@ class ConfigurationScreenViewModel(
                 )
             )
         }
+    }
+
+    fun getUserID(): Long = runBlocking {
+        session.getUserID().first()
     }
 }
