@@ -413,7 +413,6 @@ fun DirtyHorsePart(part: HorsePart = horseParts[0], toolPosition: Offset, soundM
             modifier = Modifier
                 .fillMaxSize()
                 .aspectRatio(originalImageWidth / originalImageHeight)
-                .border(border = BorderStroke(2.dp, Color. Blue), shape = CutCornerShape(1.dp))
                 .onGloballyPositioned { coordinates ->
                     imagePosition.value =
                         Offset(coordinates.positionInRoot().x, coordinates.positionInRoot().y)
@@ -430,8 +429,6 @@ fun DirtyHorsePart(part: HorsePart = horseParts[0], toolPosition: Offset, soundM
                 image = horseImage,
                 topLeft = Offset(offsetX.floatValue, offsetY.floatValue)
             )
-
-            drawPath(path = clipPath, color = Color.Red, style = Stroke(5f))
 
             clipPath(clipPath) {
                 dirtPositions.forEach { position ->
