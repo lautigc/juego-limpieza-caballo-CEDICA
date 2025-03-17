@@ -113,7 +113,7 @@ private fun SoundSettingSection(
 
     val options = listOf(
         Option(
-            label = "Tipo de voz",
+            label = stringResource(R.string.setting_voice_title),
             secondaryText = null,
             selector = { VoiceSelector(
                 voice = voice,
@@ -154,7 +154,7 @@ private fun DifficultySettingSection(
 ) {
     val options = listOf(
         Option(
-            label = "Nivel",
+            label = stringResource(R.string.setting_level_title),
             secondaryText = null,
             selector = {
                 LevelSelector(level, onChangeConfiguration)
@@ -162,8 +162,8 @@ private fun DifficultySettingSection(
             arrangementSelector = Arrangement.Center
         ),
         Option(
-            label = "Tiempo",
-            secondaryText = "Para completar el juego",
+            label = stringResource(R.string.setting_time_title),
+            secondaryText = stringResource(R.string.setting_time_secondary_text),
             selector = {
                 NumberInput(
                     selectedValue = time.input.toString(),
@@ -178,8 +178,8 @@ private fun DifficultySettingSection(
             arrangementSelector = Arrangement.Center
         ),
         Option(
-            label = "Cantidad de Imágenes",
-            secondaryText = "Como ayuda en el juego",
+            label = stringResource(R.string.setting_images_title),
+            secondaryText = stringResource(R.string.setting_images_secondary_text),
             selector = {
                 NumberInput(
                     selectedValue = imageCount.input.toString(),
@@ -194,8 +194,8 @@ private fun DifficultySettingSection(
             arrangementSelector = Arrangement.Center
         ),
         Option(
-            label = "Intentos",
-            secondaryText = "Errores permitidos antes de restar puntos",
+            label = stringResource(R.string.setting_try_title),
+            secondaryText = stringResource(R.string.setting_try_secondary_text),
             selector = {
                 NumberInput(
                     selectedValue = tryCount.input.toString(),
@@ -211,7 +211,7 @@ private fun DifficultySettingSection(
         )
     )
     SettingSection(
-        title = "Dificultad",
+        title = stringResource(R.string.setting_dificulty_title),
     ) {
         options.forEach { option ->
             SettingOption(

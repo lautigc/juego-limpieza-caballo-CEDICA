@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -150,7 +151,7 @@ fun DifficultyConfiguration(
     labelStyle: TextStyle,
 ) {
     SettingOption(
-        label = "Nivel",
+        label = stringResource(R.string.setting_level_title),
         labelStyle = labelStyle,
         selector = {
             Column {
@@ -165,7 +166,8 @@ fun DifficultyConfiguration(
         horizontalDivider = false,
     )
     SettingOption(
-        label = "Tiempo",
+        label = stringResource(R.string.setting_time_title),
+        secondaryText = stringResource(R.string.setting_time_secondary_text),
         labelStyle = labelStyle,
         selector = {
             Column(Modifier.padding(start = 16.dp)) {
@@ -185,7 +187,8 @@ fun DifficultyConfiguration(
         horizontalDivider = false,
     )
     SettingOption(
-        label = "Intentos",
+        label = stringResource(R.string.setting_try_title),
+        secondaryText = stringResource(R.string.setting_try_secondary_text),
         labelStyle = labelStyle,
         selector = {
             Column(Modifier.padding(start = 16.dp)) {
@@ -205,7 +208,8 @@ fun DifficultyConfiguration(
         horizontalDivider = false,
     )
     SettingOption(
-        label = "Imagenes",
+        label = stringResource(R.string.setting_images_title),
+        secondaryText = stringResource(R.string.setting_images_secondary_text),
         labelStyle = labelStyle,
         selector = {
             Column(Modifier.padding(start = 16.dp)) {
@@ -275,7 +279,7 @@ fun VolumeConfiguration(
     onChangeConfiguration: () -> Unit,
 ) {
     Column {
-        Text("Volúmen", style = MaterialTheme.typography.titleMedium)
+        Text(text = stringResource(R.string.setting_voice_title), style = MaterialTheme.typography.titleMedium)
         VolumeSlider(
             label = "General",
             volume = configuration.generalVolume,
