@@ -50,12 +50,7 @@ class UserSettingViewModel(
 
     init {
         viewModelScope.launch {
-            user = if (GuestUser.id == userID)
-                GuestUser.copy(
-                    personalConfiguration = GuestData.getGlobalConfiguration().first().configuration
-                )
-
-            else userRepository.getByID(userID)
+            user = userRepository.getByID(userID)
             _uiState.value.voice.onChange(user.personalConfiguration.voiceType)
             _uiState.value.level.onChange(user.personalConfiguration.difficultyLevel)
             _uiState.value.time.onChange(user.personalConfiguration.secondsTime)
@@ -80,10 +75,7 @@ class UserSettingViewModel(
                         numberOfAttempts = _uiState.value.tryCount.input,
                     )
                 )
-                if (GuestUser.id == userID)
-                    GuestData.setGlobalConfiguration(user.personalConfiguration)
-                else
-                    userRepository.update(user)
+                userRepository.update(user)
             }
         }
     }

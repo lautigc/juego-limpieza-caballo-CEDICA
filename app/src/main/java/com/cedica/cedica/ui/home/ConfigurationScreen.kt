@@ -48,24 +48,24 @@ import kotlin.math.roundToInt
 
 @Composable
 fun ConfigurationScreen(
-    viewModelGlobalConfig: ConfigurationScreenViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    viewModel: ConfigurationScreenViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateToMenu: () -> Unit
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+
     val viewModelPersonalConfig: UserSettingViewModel = viewModel(factory = AppViewModelProvider
         .FactoryWithArgs
         .userSetting(
-            userID = viewModelGlobalConfig.getUserID(),
+            userID = uiState.userID,
         )
     )
-
-    val uiStateGlobalConfig by viewModelGlobalConfig.uiState.collectAsState()
     val uiStatePersonalConfig by viewModelPersonalConfig.uiState.collectAsState()
 
     ConfigurationScreenContent(
         navigateToMenu = navigateToMenu,
-        globalConfig = uiStateGlobalConfig,
+        globalConfig = uiState,
         personalConfig = uiStatePersonalConfig,
-        onChangeGlobalConfig = viewModelGlobalConfig::saveConfiguration,
+        onChangeGlobalConfig = viewModel::saveConfiguration,
         onChangePersonalConfig = viewModelPersonalConfig::onSave,
     )
 }
@@ -110,7 +110,7 @@ private fun ConfigurationScreenContent(
                 optionModifier = optionModifier,
                 configuration = personalConfig,
                 onChange = onChangePersonalConfig,
-                labelStyle = MaterialTheme.typography.titleSmall,
+                labelStyle = labelStyle,
             )
         }
 
@@ -131,7 +131,7 @@ private fun ConfigurationScreenContent(
 @Composable
 fun SectionTitle(
     title: String,
-    content: @Composable() (ColumnScope.() -> Unit)
+    content: @Composable (ColumnScope.() -> Unit)
 ): Unit {
     Column {
         Text(

@@ -7,6 +7,7 @@ import com.cedica.cedica.core.configuration.GlobalConfigurationDefaults
 import com.cedica.cedica.core.configuration.GlobalConfigurationState
 import com.cedica.cedica.core.session.Session
 import com.cedica.cedica.core.utils.input_field.InputField
+import com.cedica.cedica.data.user.GuestUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,6 +25,7 @@ data class ConfigurationScreenUiState(
     val musicVolume: InputField<Int> = InputField(
         GlobalConfigurationDefaults.MUSIC.defaultValue
     ),
+    val userID: Long = GuestUser.id,
 )
 
 class ConfigurationScreenViewModel(
@@ -36,10 +38,12 @@ class ConfigurationScreenViewModel(
     init {
         viewModelScope.launch {
             val configuration = globalConfiguration.getGlobalConfiguration().first()
+            val userID = session.getUserID().first()
             _uiState.value = ConfigurationScreenUiState(
                 generalVolume = InputField(configuration.generalVolume),
                 effectsVolume = InputField(configuration.effectsVolume),
                 musicVolume = InputField(configuration.musicVolume),
+                userID = userID,
             )
         }
     }
@@ -54,9 +58,5 @@ class ConfigurationScreenViewModel(
                 )
             )
         }
-    }
-
-    fun getUserID(): Long = runBlocking {
-        session.getUserID().first()
     }
 }

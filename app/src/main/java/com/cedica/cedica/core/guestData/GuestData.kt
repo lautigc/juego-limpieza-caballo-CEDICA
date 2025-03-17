@@ -11,6 +11,8 @@ import com.cedica.cedica.data.configuration.ConfigurationConstraints
 import com.cedica.cedica.data.configuration.DifficultyLevel
 import com.cedica.cedica.data.configuration.PersonalConfiguration
 import com.cedica.cedica.data.configuration.VoiceType
+import com.cedica.cedica.data.permissions.Role
+import com.cedica.cedica.data.user.User
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlin.enums.enumEntries
@@ -19,10 +21,16 @@ import kotlin.enums.enumEntries
 private const val DATA_STORE_NAME = "GUEST_DATA"
 val Context.guestDataStore: DataStore<Preferences> by preferencesDataStore(name = DATA_STORE_NAME)
 
+fun isGuestUser(user: User): Boolean = user.id == GuestUser.id
+fun isGuestUser(id: Long): Boolean = id == GuestUser.id
 
-data class GuestDataState(
-    val configuration: PersonalConfiguration = PersonalConfiguration()
+val GuestUser = User(
+    id = 0,
+    role = Role.GUEST,
+    firstName = "Invitado",
+    lastName = "",
 )
+
 /*
 * Session object to management user session
  */
@@ -44,11 +52,10 @@ object GuestData {
     private val NUMBER_OF_IMAGES = intPreferencesKey("number_of_images")
     private val NUMBER_OF_ATTEMPTS = intPreferencesKey("number_of_attempts")
 
-
-    fun getGlobalConfiguration(): Flow<GuestDataState> {
+    fun getGuestUser(): Flow<User> {
         return this.dataStore.data.map { preferences ->
-            GuestDataState(
-                configuration = PersonalConfiguration(
+            GuestUser.copy(
+                personalConfiguration = PersonalConfiguration(
                     voiceType = VoiceType.valueOf(
                         preferences[VOICE_TYPE] ?: ConfigurationConstraints.DEFAULT_VOICE.name
                     ),
