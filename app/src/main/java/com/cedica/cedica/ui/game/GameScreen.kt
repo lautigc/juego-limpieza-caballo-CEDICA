@@ -63,13 +63,10 @@ import com.cedica.cedica.R
 import com.cedica.cedica.core.utils.isInPreview
 import com.cedica.cedica.core.utils.sound.SoundPlayer
 import com.cedica.cedica.core.utils.getStageInfo
+import com.cedica.cedica.core.utils.groomingStages
 import com.cedica.cedica.core.utils.sound.TextToSpeechWrapper
-import com.cedica.cedica.core.utils.stages
-import com.cedica.cedica.data.configuration.PersonalConfiguration
-import com.cedica.cedica.data.configuration.VoiceType
 import com.cedica.cedica.data.user.PlaySession
 import com.cedica.cedica.ui.AppViewModelProvider
-import com.cedica.cedica.ui.home.PatientViewModel
 import com.cedica.cedica.ui.utils.view_models.UserViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -96,7 +93,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
 
     val uiState by viewModel.uiState.collectAsState()
     val currentConfiguration = uiState.user.personalConfiguration
-
+    
     // Esto es para orientar la pantalla en sentido horizontal
     LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
 
@@ -106,7 +103,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
     var offsetY by remember { mutableFloatStateOf(0f) }
     val gameState = remember { mutableStateOf(GameState(totalAttempts = currentConfiguration.numberOfAttempts)) }
     var stageInfo by remember { mutableStateOf(checkNotNull(getStageInfo(gameState.value.getCurrentStage())) { "No se encontró información para la etapa $gameState.value.getCurrentStage()" }) }
-    var parts by remember { mutableStateOf(emptyArray<HorsePart>()) }
+    var parts by remember { mutableStateOf(emptyList<HorsePart>()) }
     var showZoomedView by remember { mutableStateOf(false) }
     var isAdvanceStageEnabled by remember { mutableStateOf(false) }
     var absoluteX by remember { mutableFloatStateOf(0f) }
@@ -122,8 +119,8 @@ fun GameScreen(navigateToMenu: () -> Unit,
         derivedStateOf { gameState.value.getAttemptsLeft() <= 0 }
     }
 
-    val correctTool = tools.find {it.name == stageInfo.tool}
-    val cantStages = if (currentConfiguration.numberOfImages in 1..stages.size) currentConfiguration.numberOfImages else stages.size
+    val correctTool = tools.find {it.name == stageInfo.tool.displayName}
+    val cantStages = if (currentConfiguration.numberOfImages in 1..groomingStages.size) currentConfiguration.numberOfImages else groomingStages.size
     Log.d("GameDebug", "Cant etapas: ${currentConfiguration.numberOfImages}, $cantStages")
     // para el audio (solo disponible fuera de la preview)
     val context = LocalContext.current
@@ -175,8 +172,8 @@ fun GameScreen(navigateToMenu: () -> Unit,
     if (showCompletionDialog) {
         LaunchedEffect(Unit) {
             speech?.speak("Completaste el juego, felicitaciones!!. Hacé click en el botón para volver al menú.")
-            val id = sessionViewModel.getUserSessionID().first()
             val playSession = gameState.value.getCompletionTime()?.seconds?.let {
+                val id = sessionViewModel.uiState.value.user.id
                 PlaySession(
                     date = Date(),
                     difficultyLevel = gameState.value.getDifficulty(),
@@ -211,7 +208,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
                 highlightCorrectTool = highlightCorrectTool,
                 onImageSelected = { tool ->
                     if (showZoomedView && gameState.value.getSelectedTool() == null) {
-                        if (tool.name == stageInfo.tool) {
+                        if (tool.name == stageInfo.tool.displayName) {
                             // Si la herramienta seleccionada es la correcta
                             speech?.speak("¡Excelente! Seleccionaste la herramienta correcta para la limpieza.")
                             gameState.value.setSelectedTool(tool.imageRes)

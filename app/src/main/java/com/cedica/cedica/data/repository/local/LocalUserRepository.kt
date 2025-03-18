@@ -17,6 +17,10 @@ class LocalUserRepository(
         return dao.existsByFullName(firstName, lastName)
     }
 
+    override suspend fun existByUsername(username: String): Boolean {
+        return dao.existByUsername(username)
+    }
+
     override suspend fun insert(entity: User): Long {
         return dao.insert(entity)
     }

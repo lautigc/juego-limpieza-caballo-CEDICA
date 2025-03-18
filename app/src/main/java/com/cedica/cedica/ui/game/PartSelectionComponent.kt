@@ -187,7 +187,7 @@ fun HorsePartSelection() {
 }
 
 @Composable
-fun HorsePartSelectionRandom(parts: Array<HorsePart>, onPartSelected: (String) -> Unit) {
+fun HorsePartSelectionRandom(parts: List<HorsePart>, onPartSelected: (String) -> Unit) {
     var imageSize by remember { mutableStateOf(IntSize.Zero) }
     val animatedColor = remember { Animatable(Color.Red) }
     var displayedParts by remember { mutableStateOf(parts.toList()) }

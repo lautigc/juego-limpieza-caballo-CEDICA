@@ -76,9 +76,9 @@ fun TabRowComponent(
     tabs: List<String>,
     contentScreens: List<@Composable () -> Unit>,
     modifier: Modifier = Modifier,
-    containerColor: Color = MaterialTheme.colorScheme.primaryContainer,
-    contentColor: Color = MaterialTheme.colorScheme.onPrimaryContainer,
-    indicatorColor: Color = MaterialTheme.colorScheme.inversePrimary
+    containerColor: Color = MaterialTheme.colorScheme.inversePrimary,
+    contentColor: Color = MaterialTheme.colorScheme.primary,
+    indicatorColor: Color = MaterialTheme.colorScheme.primary
 ) {
     // State to keep track of the selected tab index
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
@@ -106,7 +106,7 @@ fun TabRowComponent(
                     onClick = { selectedTabIndex = index }
                 ) {
                     // Text displayed on the tab
-                    Text(text = tabTitle)
+                    Text(text = tabTitle, style = MaterialTheme.typography.titleMedium)
                 }
             }
         }
@@ -223,14 +223,21 @@ fun UserInformation(
     modifier: Modifier = Modifier
 ) {
     Row(modifier = modifier) {
-        Text(
-            text = user.firstName + " " + user.lastName,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(top = dimensionResource(R.dimen.padding_small))
-                .weight(0.7f)
-        )
+        Column {
+            Text(
+                text = user.username,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(top = dimensionResource(R.dimen.padding_extra_small))
+            )
+            Text(
+                text = user.fullName,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.titleLarge,
+            )
+        }
     }
 }
 
