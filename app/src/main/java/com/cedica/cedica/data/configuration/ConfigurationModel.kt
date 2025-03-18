@@ -55,7 +55,7 @@ object ConfigurationConstraints {
     const val MAX_ATTEMPTS = 100
     const val DEFAULT_ATTEMPTS = 10
 
-    val DEFAULT_VOICE = VoiceType.MALE
+    val DEFAULT_VOICE = VoiceType.FEMALE
 
     val DEFAULT_DIFFICULTY = DifficultyLevel.EASY
 }
