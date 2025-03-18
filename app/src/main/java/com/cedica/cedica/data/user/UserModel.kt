@@ -18,17 +18,19 @@ val LoadingUser = User(
     role = Role.GUEST,
     firstName = "Cargando",
     lastName = "",
+    username = "Cargando"
 )
 
 @Entity(
     tableName = "User",
     indices = [
-        Index(value = ["firstName", "lastName"], unique = true)
+        Index(value = ["username"], unique = true)
     ]
 )
 data class User(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val role: Role,
+    @ColumnInfo(collate = ColumnInfo.NOCASE) val username: String,
     @ColumnInfo(collate = ColumnInfo.NOCASE) val firstName: String,
     @ColumnInfo(collate = ColumnInfo.NOCASE) val lastName: String,
     @Embedded val personalConfiguration: PersonalConfiguration = PersonalConfiguration(),
@@ -52,7 +54,14 @@ abstract class UserDao: BaseDao<User> {
     )
     abstract suspend fun getByFullName(firstName: String, lastName: String): User?
 
+    @Query("SELECT * FROM User WHERE username = :username")
+    abstract suspend fun getByUsername(username: String): User?
+
     suspend fun existsByFullName(firstName: String, lastName: String): Boolean {
         return getByFullName(firstName, lastName) != null
+    }
+
+    suspend fun existByUsername(username: String): Boolean {
+        return getByUsername(username) != null
     }
 }
