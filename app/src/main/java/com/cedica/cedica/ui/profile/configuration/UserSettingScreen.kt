@@ -87,17 +87,14 @@ private fun UserSettingScreenContent(
             DifficultySettingSection(
                 optionModifier = optionModifier,
                 onChangeConfiguration = onSave,
-                level = uiState.level,
-                time = uiState.time,
-                imageCount = uiState.imageCount,
-                tryCount = uiState.tryCount
+                uiState = uiState,
             )
         }
         item {
             SoundSettingSection(
                 optionModifier = optionModifier,
                 onChangeConfiguration = onSave,
-                voice = uiState.voice
+                uiState = uiState,
             )
         }
     }
@@ -111,7 +108,7 @@ private fun UserSettingScreenContent(
 @Composable
 private fun SoundSettingSection(
     onChangeConfiguration: () -> Unit = {},
-    voice: InputField<VoiceType>,
+    uiState: UserSettingUiState,
     optionModifier: Modifier
 ) {
 
@@ -120,7 +117,7 @@ private fun SoundSettingSection(
             label = stringResource(R.string.setting_voice_title),
             secondaryText = null,
             selector = { VoiceSelector(
-                voice = voice,
+                voice = uiState.voice,
                 onChangeConfiguration = onChangeConfiguration,
             ) },
             arrangementSelector = Arrangement.End
@@ -151,17 +148,14 @@ private fun SoundSettingSection(
 private fun DifficultySettingSection(
     optionModifier: Modifier,
     onChangeConfiguration: () -> Unit = {},
-    level: InputField<DifficultyLevel>,
-    time: NumberField<Int>,
-    imageCount: NumberField<Int>,
-    tryCount: NumberField<Int>,
+    uiState: UserSettingUiState,
 ) {
     val options = listOf(
         Option(
             label = stringResource(R.string.setting_level_title),
             secondaryText = null,
             selector = {
-                LevelSelector(level, time, imageCount, tryCount, onChangeConfiguration)
+                LevelSelector(uiState.level, uiState.time, uiState.imageCount, uiState.tryCount, onChangeConfiguration)
             },
             arrangementSelector = Arrangement.End
         ),
@@ -170,15 +164,15 @@ private fun DifficultySettingSection(
             secondaryText = stringResource(R.string.setting_time_secondary_text),
             selector = {
                 NumberInput(
-                    selectedValue = time.input.toString(),
+                    selectedValue = uiState.time.input.toString(),
                     onValueChange = { value ->
-                        time.onChange(time.toInput(value, String::toInt, 0))
-                        level.onChange(DifficultyLevel.CUSTOM)
+                        uiState.time.onChange(uiState.time.toInput(value, String::toInt, 0))
+                        uiState.level.onChange(DifficultyLevel.CUSTOM)
                         onChangeConfiguration()
                     },
                     horizontalAligment = Alignment.End,
-                    hasError = time.hasError,
-                    supportText = time.errorText
+                    hasError = uiState.time.hasError,
+                    supportText = uiState.time.errorText
                 )
             },
             arrangementSelector = Arrangement.End
@@ -188,15 +182,15 @@ private fun DifficultySettingSection(
             secondaryText = stringResource(R.string.setting_images_secondary_text),
             selector = {
                 NumberInput(
-                    selectedValue = imageCount.input.toString(),
+                    selectedValue = uiState.imageCount.input.toString(),
                     onValueChange = { value ->
-                        imageCount.onChange(imageCount.toInput(value, String::toInt, 0))
-                        level.onChange(DifficultyLevel.CUSTOM)
+                        uiState.imageCount.onChange(uiState.imageCount.toInput(value, String::toInt, 0))
+                        uiState.level.onChange(DifficultyLevel.CUSTOM)
                         onChangeConfiguration()
                     },
                     horizontalAligment = Alignment.End,
-                    hasError = imageCount.hasError,
-                    supportText = imageCount.errorText,
+                    hasError = uiState.imageCount.hasError,
+                    supportText = uiState.imageCount.errorText,
                 )
             },
             arrangementSelector = Arrangement.End
@@ -206,14 +200,14 @@ private fun DifficultySettingSection(
             secondaryText = stringResource(R.string.setting_try_secondary_text),
             selector = {
                 NumberInput(
-                    selectedValue = tryCount.input.toString(),
+                    selectedValue = uiState.tryCount.input.toString(),
                     onValueChange = { value ->
-                        tryCount.onChange(tryCount.toInput(value, String::toInt, 0))
-                        level.onChange(DifficultyLevel.CUSTOM)
+                        uiState.tryCount.onChange(uiState.tryCount.toInput(value, String::toInt, 0))
+                        uiState.level.onChange(DifficultyLevel.CUSTOM)
                         onChangeConfiguration()
                     },
-                    hasError = tryCount.hasError,
-                    supportText = tryCount.errorText,
+                    hasError = uiState.tryCount.hasError,
+                    supportText = uiState.tryCount.errorText,
                 )
             },
             arrangementSelector = Arrangement.End
