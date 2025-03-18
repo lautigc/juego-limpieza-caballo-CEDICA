@@ -38,9 +38,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cedica.cedica.R
 import com.cedica.cedica.core.utils.input_field.InputField
 import com.cedica.cedica.ui.AppViewModelProvider
+import com.cedica.cedica.ui.profile.configuration.ImageCountInput
 import com.cedica.cedica.ui.profile.configuration.LevelSelector
 import com.cedica.cedica.ui.profile.configuration.NumberInput
 import com.cedica.cedica.ui.profile.configuration.SettingOption
+import com.cedica.cedica.ui.profile.configuration.TimeInput
+import com.cedica.cedica.ui.profile.configuration.TryCountInput
 import com.cedica.cedica.ui.profile.configuration.UserSettingUiState
 import com.cedica.cedica.ui.profile.configuration.UserSettingViewModel
 import com.cedica.cedica.ui.profile.configuration.VoiceSelector
@@ -156,7 +159,7 @@ fun DifficultyConfiguration(
         selector = {
             Column {
                 LevelSelector(
-                    level = configuration.level,
+                    uiState =  configuration,
                     onChangeConfiguration = onChange,
                 )
             }
@@ -171,15 +174,7 @@ fun DifficultyConfiguration(
         labelStyle = labelStyle,
         selector = {
             Column(Modifier.padding(start = 16.dp)) {
-                NumberInput(
-                    selectedValue = configuration.time.input.toString(),
-                    onValueChange = { value ->
-                        configuration.time.onChange(configuration.time.toInput(value, String::toInt, 0))
-                        onChange()
-                    },
-                    hasError = configuration.time.hasError,
-                    supportText = configuration.time.errorText
-                )
+                TimeInput(uiState = configuration, onChangeConfiguration = onChange)
             }
         },
         modifier = optionModifier,
@@ -192,15 +187,7 @@ fun DifficultyConfiguration(
         labelStyle = labelStyle,
         selector = {
             Column(Modifier.padding(start = 16.dp)) {
-                NumberInput(
-                    selectedValue = configuration.tryCount.input.toString(),
-                    onValueChange = { value ->
-                        configuration.tryCount.onChange(configuration.tryCount.toInput(value, String::toInt, 0))
-                        onChange()
-                    },
-                    hasError = configuration.tryCount.hasError,
-                    supportText = configuration.tryCount.errorText
-                )
+                TryCountInput(uiState = configuration, onChangeConfiguration = onChange)
             }
         },
         modifier = optionModifier,
@@ -213,15 +200,7 @@ fun DifficultyConfiguration(
         labelStyle = labelStyle,
         selector = {
             Column(Modifier.padding(start = 16.dp)) {
-                NumberInput(
-                    selectedValue = configuration.imageCount.input.toString(),
-                    onValueChange = { value ->
-                        configuration.imageCount.onChange(configuration.imageCount.toInput(value, String::toInt, 0))
-                        onChange()
-                    },
-                    hasError = configuration.imageCount.hasError,
-                    supportText = configuration.imageCount.errorText
-                )
+            ImageCountInput(uiState = configuration, onChangeConfiguration = onChange)
             }
         },
         modifier = optionModifier,

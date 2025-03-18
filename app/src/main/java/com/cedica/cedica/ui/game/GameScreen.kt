@@ -84,6 +84,9 @@ fun GameScreen(navigateToMenu: () -> Unit,
                viewModel: UserViewModel = viewModel(factory = AppViewModelProvider.Factory),
                ) {
 
+    val uiState by viewModel.uiState.collectAsState()
+
+
     // Esto es para orientar la pantalla en sentido horizontal
     LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
 
@@ -111,7 +114,6 @@ fun GameScreen(navigateToMenu: () -> Unit,
     val context = LocalContext.current
     val soundPlayer: SoundPlayer?
     val speech: TextToSpeechWrapper?
-    val uiState by viewModel.uiState.collectAsState()
     val voice = uiState.user.personalConfiguration.voiceType
     if(!isInPreview()) {
         soundPlayer = remember { SoundPlayer(context) }
@@ -158,8 +160,8 @@ fun GameScreen(navigateToMenu: () -> Unit,
     if (showCompletionDialog) {
         LaunchedEffect(Unit) {
             speech?.speak("Completaste el juego, felicitaciones!!. Hacé click en el botón para volver al menú.")
-            val id = sessionViewModel.getUserSessionID().first()
             val playSession = gameState.value.getCompletionTime()?.seconds?.let {
+                val id = sessionViewModel.uiState.value.user.id
                 PlaySession(
                     date = Date(),
                     difficultyLevel = gameState.value.getDifficulty(),
