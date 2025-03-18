@@ -161,7 +161,7 @@ private fun DifficultySettingSection(
             label = stringResource(R.string.setting_level_title),
             secondaryText = null,
             selector = {
-                LevelSelector(level, onChangeConfiguration)
+                LevelSelector(level, time, imageCount, tryCount, onChangeConfiguration)
             },
             arrangementSelector = Arrangement.End
         ),
@@ -173,6 +173,7 @@ private fun DifficultySettingSection(
                     selectedValue = time.input.toString(),
                     onValueChange = { value ->
                         time.onChange(time.toInput(value, String::toInt, 0))
+                        level.onChange(DifficultyLevel.CUSTOM)
                         onChangeConfiguration()
                     },
                     horizontalAligment = Alignment.End,
@@ -190,6 +191,7 @@ private fun DifficultySettingSection(
                     selectedValue = imageCount.input.toString(),
                     onValueChange = { value ->
                         imageCount.onChange(imageCount.toInput(value, String::toInt, 0))
+                        level.onChange(DifficultyLevel.CUSTOM)
                         onChangeConfiguration()
                     },
                     horizontalAligment = Alignment.End,
@@ -207,6 +209,7 @@ private fun DifficultySettingSection(
                     selectedValue = tryCount.input.toString(),
                     onValueChange = { value ->
                         tryCount.onChange(tryCount.toInput(value, String::toInt, 0))
+                        level.onChange(DifficultyLevel.CUSTOM)
                         onChangeConfiguration()
                     },
                     hasError = tryCount.hasError,
@@ -234,6 +237,9 @@ private fun DifficultySettingSection(
 @Composable
 fun LevelSelector(
     level: InputField<DifficultyLevel>,
+    time: NumberField<Int>,
+    imageCount: NumberField<Int>,
+    tryCount: NumberField<Int>,
     onChangeConfiguration: () -> Unit
 ) {
     val optionsDropdown = DifficultyLevel.entries.toList()
@@ -243,6 +249,9 @@ fun LevelSelector(
         selectedOption = level.input,
         onSelectedText = {
             level.onChange(DifficultyLevel.toDifficultyLevel(it))
+            time.onChange(level.input.getSecondsTime(time.input))
+            imageCount.onChange(level.input.getNumberOfImages(imageCount.input))
+            tryCount.onChange(level.input.getNumberOfAttempts(tryCount.input))
             onChangeConfiguration()
         },
     )
