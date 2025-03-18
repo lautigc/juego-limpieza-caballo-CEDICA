@@ -56,13 +56,10 @@ import com.cedica.cedica.R
 import com.cedica.cedica.core.utils.isInPreview
 import com.cedica.cedica.core.utils.sound.SoundPlayer
 import com.cedica.cedica.core.utils.getStageInfo
+import com.cedica.cedica.core.utils.groomingStages
 import com.cedica.cedica.core.utils.sound.TextToSpeechWrapper
-import com.cedica.cedica.core.utils.stages
-import com.cedica.cedica.data.configuration.PersonalConfiguration
-import com.cedica.cedica.data.configuration.VoiceType
 import com.cedica.cedica.data.user.PlaySession
 import com.cedica.cedica.ui.AppViewModelProvider
-import com.cedica.cedica.ui.home.PatientViewModel
 import com.cedica.cedica.ui.utils.view_models.UserViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -105,10 +102,10 @@ fun GameScreen(navigateToMenu: () -> Unit,
     var showWelcomeDialog by remember { mutableStateOf(true) }
 
     LaunchedEffect(stageInfo) {
-        parts = stageInfo.incorrectRandomHorseParts + stageInfo.correctHorsePart
+        parts = (stageInfo.incorrectRandomHorseParts + stageInfo.correctHorsePart).toTypedArray()
     }
 
-    val cantStages = stages.size
+    val cantStages = groomingStages.size
 
     // para el audio (solo disponible fuera de la preview)
     val context = LocalContext.current
@@ -195,7 +192,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
                 selectedTool = gameState.value.getSelectedTool(),
                 onImageSelected = { tool ->
                     if (showZoomedView && gameState.value.getSelectedTool() == null) {
-                        if (tool.name == stageInfo.tool) {
+                        if (tool.name == stageInfo.tool.displayName) {
                             // Si la herramienta seleccionada es la correcta
                             speech?.speak("¡Excelente! Seleccionaste la herramienta correcta para la limpieza.")
                             gameState.value.setSelectedTool(tool.imageRes)
@@ -347,7 +344,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
                                     offsetX = 0f
                                     offsetY = 0f
                                     stageInfo = checkNotNull(getStageInfo(gameState.value.getCurrentStage()))
-                                    parts = stageInfo.incorrectRandomHorseParts + stageInfo.correctHorsePart
+                                    parts = (stageInfo.incorrectRandomHorseParts + stageInfo.correctHorsePart).toTypedArray()
                                 } else {
                                     showCompletionDialog = true
                                 }
