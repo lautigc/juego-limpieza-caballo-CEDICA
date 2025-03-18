@@ -37,7 +37,8 @@ object AppViewModelProvider {
 
         initializer {
             PlaySessionViewModel(
-                playSessionRepository = RepositoryProvider.playSessionRepository
+                playSessionRepository = RepositoryProvider.playSessionRepository,
+                session = Session,
             )
         }
 
