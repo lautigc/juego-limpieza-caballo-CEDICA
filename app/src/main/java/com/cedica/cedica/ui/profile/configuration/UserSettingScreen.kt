@@ -155,7 +155,7 @@ private fun DifficultySettingSection(
             label = stringResource(R.string.setting_level_title),
             secondaryText = null,
             selector = {
-                LevelSelector(uiState.level, uiState.time, uiState.imageCount, uiState.tryCount, onChangeConfiguration)
+                LevelSelector(uiState, onChangeConfiguration)
             },
             arrangementSelector = Arrangement.End
         ),
@@ -163,17 +163,7 @@ private fun DifficultySettingSection(
             label = stringResource(R.string.setting_time_title),
             secondaryText = stringResource(R.string.setting_time_secondary_text),
             selector = {
-                NumberInput(
-                    selectedValue = uiState.time.input.toString(),
-                    onValueChange = { value ->
-                        uiState.time.onChange(uiState.time.toInput(value, String::toInt, 0))
-                        uiState.level.onChange(DifficultyLevel.CUSTOM)
-                        onChangeConfiguration()
-                    },
-                    horizontalAligment = Alignment.End,
-                    hasError = uiState.time.hasError,
-                    supportText = uiState.time.errorText
-                )
+                TimeInput(uiState, onChangeConfiguration)
             },
             arrangementSelector = Arrangement.End
         ),
@@ -181,17 +171,7 @@ private fun DifficultySettingSection(
             label = stringResource(R.string.setting_images_title),
             secondaryText = stringResource(R.string.setting_images_secondary_text),
             selector = {
-                NumberInput(
-                    selectedValue = uiState.imageCount.input.toString(),
-                    onValueChange = { value ->
-                        uiState.imageCount.onChange(uiState.imageCount.toInput(value, String::toInt, 0))
-                        uiState.level.onChange(DifficultyLevel.CUSTOM)
-                        onChangeConfiguration()
-                    },
-                    horizontalAligment = Alignment.End,
-                    hasError = uiState.imageCount.hasError,
-                    supportText = uiState.imageCount.errorText,
-                )
+                ImageCountInput(uiState, onChangeConfiguration)
             },
             arrangementSelector = Arrangement.End
         ),
@@ -199,16 +179,7 @@ private fun DifficultySettingSection(
             label = stringResource(R.string.setting_try_title),
             secondaryText = stringResource(R.string.setting_try_secondary_text),
             selector = {
-                NumberInput(
-                    selectedValue = uiState.tryCount.input.toString(),
-                    onValueChange = { value ->
-                        uiState.tryCount.onChange(uiState.tryCount.toInput(value, String::toInt, 0))
-                        uiState.level.onChange(DifficultyLevel.CUSTOM)
-                        onChangeConfiguration()
-                    },
-                    hasError = uiState.tryCount.hasError,
-                    supportText = uiState.tryCount.errorText,
-                )
+                TryCountInput(uiState, onChangeConfiguration)
             },
             arrangementSelector = Arrangement.End
         )
@@ -229,23 +200,73 @@ private fun DifficultySettingSection(
 }
 
 @Composable
+fun TryCountInput(
+    uiState: UserSettingUiState,
+    onChangeConfiguration: () -> Unit
+) {
+    NumberInput(
+        selectedValue = uiState.tryCount.input.toString(),
+        onValueChange = { value ->
+            uiState.tryCount.onChange(uiState.tryCount.toInput(value, String::toInt, 0))
+            uiState.level.onChange(DifficultyLevel.CUSTOM)
+            onChangeConfiguration()
+        },
+        hasError = uiState.tryCount.hasError,
+        supportText = uiState.tryCount.errorText,
+    )
+}
+
+@Composable
+fun ImageCountInput(
+    uiState: UserSettingUiState,
+    onChangeConfiguration: () -> Unit
+) {
+    NumberInput(
+        selectedValue = uiState.imageCount.input.toString(),
+        onValueChange = { value ->
+            uiState.imageCount.onChange(uiState.imageCount.toInput(value, String::toInt, 0))
+            uiState.level.onChange(DifficultyLevel.CUSTOM)
+            onChangeConfiguration()
+        },
+        horizontalAligment = Alignment.End,
+        hasError = uiState.imageCount.hasError,
+        supportText = uiState.imageCount.errorText,
+    )
+}
+
+@Composable
+fun TimeInput(
+    uiState: UserSettingUiState,
+    onChangeConfiguration: () -> Unit
+) {
+    NumberInput(
+        selectedValue = uiState.time.input.toString(),
+        onValueChange = { value ->
+            uiState.time.onChange(uiState.time.toInput(value, String::toInt, 0))
+            uiState.level.onChange(DifficultyLevel.CUSTOM)
+            onChangeConfiguration()
+        },
+        horizontalAligment = Alignment.End,
+        hasError = uiState.time.hasError,
+        supportText = uiState.time.errorText
+    )
+}
+
+@Composable
 fun LevelSelector(
-    level: InputField<DifficultyLevel>,
-    time: NumberField<Int>,
-    imageCount: NumberField<Int>,
-    tryCount: NumberField<Int>,
+    uiState: UserSettingUiState,
     onChangeConfiguration: () -> Unit
 ) {
     val optionsDropdown = DifficultyLevel.entries.toList()
 
     StatefulSelectableDropdownMenu(
         options = optionsDropdown,
-        selectedOption = level.input,
+        selectedOption = uiState.level.input,
         onSelectedText = {
-            level.onChange(DifficultyLevel.toDifficultyLevel(it))
-            time.onChange(level.input.getSecondsTime(time.input))
-            imageCount.onChange(level.input.getNumberOfImages(imageCount.input))
-            tryCount.onChange(level.input.getNumberOfAttempts(tryCount.input))
+            uiState.level.onChange(DifficultyLevel.toDifficultyLevel(it))
+            uiState.time.onChange(uiState.level.input.getSecondsTime(uiState.time.input))
+            uiState.imageCount.onChange(uiState.level.input.getNumberOfImages(uiState.imageCount.input))
+            uiState.tryCount.onChange(uiState.level.input.getNumberOfAttempts(uiState.tryCount.input))
             onChangeConfiguration()
         },
     )
@@ -309,7 +330,7 @@ fun UserSettingScreenPreview() {
     CedicaTheme {
         UserSettingScreenContent(
         uiState = UserSettingUiState(
-            level = InputField(DifficultyLevel.EASY),
+            level = InputField(DifficultyLevel.CUSTOM),
             time = NumberField(rangeStart = 0, rangeEnd = Int.MAX_VALUE, initialValue = 0),
             imageCount = NumberField(rangeStart = 0, rangeEnd = 5, initialValue = 0),
             tryCount = NumberField(rangeStart = 0, rangeEnd = 10, initialValue = 0),
