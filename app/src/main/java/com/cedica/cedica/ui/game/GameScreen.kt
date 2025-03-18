@@ -5,6 +5,8 @@ import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -35,8 +37,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
@@ -87,6 +93,9 @@ fun GameScreen(navigateToMenu: () -> Unit,
                viewModel: UserViewModel = viewModel(factory = AppViewModelProvider.Factory),
                ) {
 
+    val uiState by viewModel.uiState.collectAsState()
+    val currentConfiguration = uiState.user.personalConfiguration
+
     // Esto es para orientar la pantalla en sentido horizontal
     LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
 
@@ -94,7 +103,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
     val scaffoldState = rememberBottomSheetScaffoldState()
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
-    val gameState = remember { mutableStateOf(GameState()) }
+    val gameState = remember { mutableStateOf(GameState(attemptsLeft = currentConfiguration.numberOfAttempts)) }
     var stageInfo by remember { mutableStateOf(checkNotNull(getStageInfo(gameState.value.getCurrentStage())) { "No se encontró información para la etapa $gameState.value.getCurrentStage()" }) }
     var parts by remember { mutableStateOf(emptyArray<HorsePart>()) }
     var showZoomedView by remember { mutableStateOf(false) }
@@ -108,13 +117,17 @@ fun GameScreen(navigateToMenu: () -> Unit,
         parts = stageInfo.incorrectRandomHorseParts + stageInfo.correctHorsePart
     }
 
+    val highlightCorrectTool by remember(gameState.value.getAttemptsLeft()) {
+        derivedStateOf { gameState.value.getAttemptsLeft() <= 0 }
+    }
+
+    val correctTool = tools.find {it.name == stageInfo.tool}
     val cantStages = stages.size
 
     // para el audio (solo disponible fuera de la preview)
     val context = LocalContext.current
     val soundPlayer: SoundPlayer?
     val speech: TextToSpeechWrapper?
-    val uiState by viewModel.uiState.collectAsState()
     val voice = uiState.user.personalConfiguration.voiceType
     if(!isInPreview()) {
         soundPlayer = remember { SoundPlayer(context) }
@@ -193,6 +206,8 @@ fun GameScreen(navigateToMenu: () -> Unit,
             ImageSelectionList(
                 images = tools,
                 selectedTool = gameState.value.getSelectedTool(),
+                correctToolId = correctTool?.imageRes,
+                highlightCorrectTool = highlightCorrectTool,
                 onImageSelected = { tool ->
                     if (showZoomedView && gameState.value.getSelectedTool() == null) {
                         if (tool.name == stageInfo.tool) {
@@ -203,6 +218,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
                             gameState.value.setMessageType("success")
                             gameState.value.addScore(20)
                             gameState.value.increaseSuccess()
+                            gameState.value.resetAttempts()
                             soundPlayer?.playSound("success")
                         } else {
                             // Si la herramienta seleccionada es incorrecta
@@ -210,6 +226,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
                             speech?.speak("Ups... Seleccionaste la herramienta incorrecta. Intentá de nuevo.")
                             gameState.value.setMessageType("error")
                             gameState.value.increaseError()
+                            gameState.value.decreaseAttempts()
                             soundPlayer?.playSound("wrong")
                         }
                     }
@@ -248,7 +265,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
 
                 Card(
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFADD8E6)), // Azul más vibrante
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFADD8E6)),
                     elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
                     modifier = Modifier
                         .wrapContentHeight()
@@ -451,6 +468,8 @@ fun GameScreen(navigateToMenu: () -> Unit,
 fun ImageSelectionList(
     images: List<Tool>,
     selectedTool: Int?,
+    correctToolId: Int?,
+    highlightCorrectTool: Boolean,
     onImageSelected: (Tool) -> Unit,
 ) {
     LazyRow(
@@ -461,6 +480,7 @@ fun ImageSelectionList(
             SelectableImage(
                 imageRes = tool.imageRes,
                 isSelected = selectedTool == tool.imageRes,
+                isHighlighted = (tool.imageRes == correctToolId) && highlightCorrectTool,
                 onClick = { onImageSelected(tool) }
             )
         }
@@ -468,15 +488,15 @@ fun ImageSelectionList(
 }
 
 @Composable
-fun SelectableImage(imageRes: Int, isSelected: Boolean, onClick: () -> Unit) {
+fun SelectableImage(imageRes: Int, isSelected: Boolean, isHighlighted: Boolean, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .size(100.dp)
             .padding(8.dp)
             .border(
-                width = if (isSelected) 4.dp else 2.dp,
-                color = if (isSelected) Color(0xFFADD8E6) else Color.Black,
-                RoundedCornerShape(16.dp)
+                width = if (isSelected || isHighlighted) 4.dp else 2.dp,
+                color = if (isHighlighted && !isSelected) Color.Red else if (isSelected) Color(0xFFADD8E6) else Color.Black,
+                shape = RoundedCornerShape(16.dp)
             )
             .clickable { onClick() },
         contentAlignment = Alignment.Center
@@ -489,7 +509,6 @@ fun SelectableImage(imageRes: Int, isSelected: Boolean, onClick: () -> Unit) {
         )
     }
 }
-
 @Composable
 fun MessageBox(messageType: String, customMessage: String? = null, modifier: Modifier = Modifier) {
     val (message, image) = when (messageType) {
