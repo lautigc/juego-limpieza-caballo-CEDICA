@@ -37,10 +37,9 @@ fun NavigationWrapper() {
         }
 
         composable<Game> {
-            GameScreen {
-                navController.navigate(Menu)
-            }
+            GameScreen (navigateToMenu = { navController.navigate(Menu) })
         }
+
         composable<About> {
             AboutScreen {
                 navController.navigate(Menu)

@@ -702,7 +702,7 @@ fun LoadingDialog(
 @Preview(showBackground = true, widthDp = 720, heightDp = 360)
 @Composable
 fun PreviewGameScreen() {
-    GameScreen { println("hola") }
+    GameScreen({ println("hola") })
 }
 
 @Preview
