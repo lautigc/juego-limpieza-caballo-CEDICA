@@ -1,6 +1,7 @@
 package com.cedica.cedica.ui.utils.composables
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
@@ -12,11 +13,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -46,6 +51,7 @@ fun <T> SelectableDropdownMenu(
     onSelectedText: (selected: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val style = MaterialTheme.typography.labelLarge
 
     Column(
         modifier = modifier
@@ -55,14 +61,14 @@ fun <T> SelectableDropdownMenu(
             onExpandedChange = { onExpandedChange() },
         ) {
             OutlinedTextField(
-                modifier = Modifier.menuAnchor().width(125.dp).height(60.dp),
+                modifier = Modifier.menuAnchor().width(IntrinsicSize.Max),
                 value = selectedOption.toString(),
                 onValueChange = {},
                 readOnly = true,
                 trailingIcon = {
                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                 },
-                textStyle = MaterialTheme.typography.labelLarge.copy(textAlign = TextAlign.Center),
+                textStyle = style.copy(textAlign = TextAlign.Center),
                 singleLine = true,
 
                 )
