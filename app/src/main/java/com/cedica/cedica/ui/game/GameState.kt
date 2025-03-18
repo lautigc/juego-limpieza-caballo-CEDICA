@@ -54,7 +54,15 @@ data class GameState(
     }
 
     fun decreaseAttempts() {
-        if (attemptsLeft > 0) attemptsLeft--
+        if (this.attemptsLeft > 0) this.attemptsLeft -= 1
+    }
+
+    fun resetAttempts() {
+        this.attemptsLeft = 0
+    }
+
+    fun cantMaxAttempts(): Boolean {
+        return this.attemptsLeft == 0
     }
 
     fun setSelectedTool(selectedTool: Int){
