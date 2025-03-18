@@ -93,7 +93,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
     var offsetY by remember { mutableFloatStateOf(0f) }
     val gameState = remember { mutableStateOf(GameState()) }
     var stageInfo by remember { mutableStateOf(checkNotNull(getStageInfo(gameState.value.getCurrentStage())) { "No se encontró información para la etapa $gameState.value.getCurrentStage()" }) }
-    var parts by remember { mutableStateOf(emptyArray<HorsePart>()) }
+    var parts by remember { mutableStateOf(emptyList<HorsePart>()) }
     var showZoomedView by remember { mutableStateOf(false) }
     var isAdvanceStageEnabled by remember { mutableStateOf(false) }
     var absoluteX by remember { mutableFloatStateOf(0f) }
@@ -102,7 +102,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
     var showWelcomeDialog by remember { mutableStateOf(true) }
 
     LaunchedEffect(stageInfo) {
-        parts = (stageInfo.incorrectRandomHorseParts + stageInfo.correctHorsePart).toTypedArray()
+        parts = stageInfo.incorrectRandomHorseParts + stageInfo.correctHorsePart
     }
 
     val cantStages = groomingStages.size
@@ -344,7 +344,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
                                     offsetX = 0f
                                     offsetY = 0f
                                     stageInfo = checkNotNull(getStageInfo(gameState.value.getCurrentStage()))
-                                    parts = (stageInfo.incorrectRandomHorseParts + stageInfo.correctHorsePart).toTypedArray()
+                                    parts = stageInfo.incorrectRandomHorseParts + stageInfo.correctHorsePart
                                 } else {
                                     showCompletionDialog = true
                                 }
