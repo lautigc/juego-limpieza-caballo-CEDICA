@@ -3,11 +3,14 @@ package com.cedica.cedica.ui.profile.configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.VolumeOff
 import androidx.compose.material.icons.outlined.Man
 import androidx.compose.material.icons.outlined.Woman
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -43,6 +46,7 @@ import com.cedica.cedica.data.configuration.VoiceType
 import com.cedica.cedica.ui.AppViewModelProvider
 import com.cedica.cedica.ui.theme.CedicaTheme
 import com.cedica.cedica.ui.utils.composables.SelectableDropdownMenu
+import com.cedica.cedica.ui.utils.composables.StatefulSelectableDropdownMenu
 
 /**
  * Pantalla de configuración de usuario.
@@ -171,6 +175,7 @@ private fun DifficultySettingSection(
                         time.onChange(time.toInput(value, String::toInt, 0))
                         onChangeConfiguration()
                     },
+                    horizontalAligment = Alignment.End,
                     hasError = time.hasError,
                     supportText = time.errorText
                 )
@@ -187,6 +192,7 @@ private fun DifficultySettingSection(
                         imageCount.onChange(imageCount.toInput(value, String::toInt, 0))
                         onChangeConfiguration()
                     },
+                    horizontalAligment = Alignment.End,
                     hasError = imageCount.hasError,
                     supportText = imageCount.errorText,
                 )
@@ -230,19 +236,11 @@ fun LevelSelector(
     level: InputField<DifficultyLevel>,
     onChangeConfiguration: () -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
     val optionsDropdown = DifficultyLevel.entries.toList()
 
-    SelectableDropdownMenu(
+    StatefulSelectableDropdownMenu(
         options = optionsDropdown,
-        expanded = expanded,
         selectedOption = level.input,
-        onExpandedChange = {
-            expanded = !expanded
-        },
-        onCollapse = {
-            expanded = false
-        },
         onSelectedText = {
             level.onChange(DifficultyLevel.toDifficultyLevel(it))
             onChangeConfiguration()
@@ -260,10 +258,11 @@ fun LevelSelector(
 fun VoiceSelector(
     voice: InputField<VoiceType>,
     onChangeConfiguration: () -> Unit = {},
-    modifier: Modifier = Modifier) {
-
+    modifier: Modifier = Modifier
+) {
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
     val options = listOf(
+        Triple("Deshabilitado", Icons.AutoMirrored.Outlined.VolumeOff, VoiceType.NONE),
         Triple(stringResource(R.string.man_voice_option_title), Icons.Outlined.Man, VoiceType.MALE),
         Triple(stringResource(R.string.woman_voice_option_title), Icons.Outlined.Woman, VoiceType.FEMALE),
     )
@@ -271,7 +270,7 @@ fun VoiceSelector(
     selectedIndex = options.indexOfFirst { it.third == voice.input }
 
     SingleChoiceSegmentedButtonRow(modifier = modifier) {
-        options.forEachIndexed { index, pair ->
+        options.forEachIndexed { index, triple ->
             SegmentedButton(
                 shape = SegmentedButtonDefaults.itemShape(
                     index = index,
@@ -283,16 +282,23 @@ fun VoiceSelector(
                     onChangeConfiguration()
                 },
                 selected = index == selectedIndex,
-                label =
-                {
-                    Column {
-                        Icon(imageVector = pair.second, contentDescription = null)
+                label = {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            imageVector = triple.second,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp) // Ajusta el tamaño del icono si es necesario
+                        )
                     }
-                }
+                },
+                modifier = Modifier.weight(1f)
             )
         }
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable
@@ -303,7 +309,7 @@ fun UserSettingScreenPreview() {
             level = InputField(DifficultyLevel.EASY),
             time = NumberField(rangeStart = 0, rangeEnd = Int.MAX_VALUE, initialValue = 0),
             imageCount = NumberField(rangeStart = 0, rangeEnd = 5, initialValue = 0),
-            tryCount = NumberField(rangeStart = 0, rangeEnd = Int.MAX_VALUE, initialValue = 0),
+            tryCount = NumberField(rangeStart = 0, rangeEnd = 10, initialValue = 0),
             voice = InputField(VoiceType.FEMALE)
         ),
         onSave = {},
@@ -325,31 +331,33 @@ fun NumberInput(
     onValueChange: (String) -> Unit,
     supportText: String = "",
     hasError: Boolean = false,
+    horizontalAligment: Alignment.Horizontal = Alignment.End,
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = horizontalAligment,
     ) {
         OutlinedTextField(
             value = selectedValue,
             onValueChange = onValueChange,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.width(60.dp),
+            modifier = Modifier.width(80.dp),
             isError = hasError,
-            textStyle = MaterialTheme.typography.labelLarge.copy(textAlign = TextAlign.Center),
+            //supportingText = { if (hasError) Text(text = supportText) },
+            textStyle = MaterialTheme.typography.bodySmall.copy(textAlign = TextAlign.Center),
             singleLine = true,
         )
-
         if (hasError) {
             Text(
                 text = supportText,
-                maxLines = 2,
-                style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.labelSmall,
+                textAlign = TextAlign.Center
             )
         }
     }
+
 }
 
 @Preview(showBackground = true)
