@@ -11,7 +11,8 @@ data class GameState(
     private var difficulty: String = "Normal",
     private var currentStage: Int = 1,
     private var amountDirtyPart: Int = 100,
-    private var attemptsLeft: Int = 3,
+    private val totalAttempts: Int = 3,
+    private var attemptsLeft: Int = totalAttempts,
     private var cantSuccess: Int = 0,
     private var cantErrors: Int = 0,
     private val startDate: String = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
@@ -49,8 +50,13 @@ data class GameState(
         messageType = "Finalizaste el juego!"
     }
 
-    fun addScore(points: Int) {
-        score += points
+    fun addScore() {
+        val maxPoints = 100
+        val penalty = this.cantErrors * 5
+        val minPoints = 5
+
+        val pointsToAdd = maxPoints - penalty
+        this.score += if (pointsToAdd > 0) pointsToAdd else minPoints
     }
 
     fun decreaseAttempts() {
@@ -58,7 +64,7 @@ data class GameState(
     }
 
     fun resetAttempts() {
-        this.attemptsLeft = 0
+        this.attemptsLeft = this.totalAttempts
     }
 
     fun cantMaxAttempts(): Boolean {
