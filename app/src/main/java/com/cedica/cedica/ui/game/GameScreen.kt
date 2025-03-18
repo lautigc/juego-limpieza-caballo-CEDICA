@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -122,8 +123,8 @@ fun GameScreen(navigateToMenu: () -> Unit,
     }
 
     val correctTool = tools.find {it.name == stageInfo.tool}
-    val cantStages = stages.size
-
+    val cantStages = if (currentConfiguration.numberOfImages in 1..stages.size) currentConfiguration.numberOfImages else stages.size
+    Log.d("GameDebug", "Cant etapas: ${currentConfiguration.numberOfImages}, $cantStages")
     // para el audio (solo disponible fuera de la preview)
     val context = LocalContext.current
     val soundPlayer: SoundPlayer?
