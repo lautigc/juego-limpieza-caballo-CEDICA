@@ -103,7 +103,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
     val scaffoldState = rememberBottomSheetScaffoldState()
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
-    val gameState = remember { mutableStateOf(GameState(attemptsLeft = currentConfiguration.numberOfAttempts)) }
+    val gameState = remember { mutableStateOf(GameState(totalAttempts = currentConfiguration.numberOfAttempts)) }
     var stageInfo by remember { mutableStateOf(checkNotNull(getStageInfo(gameState.value.getCurrentStage())) { "No se encontró información para la etapa $gameState.value.getCurrentStage()" }) }
     var parts by remember { mutableStateOf(emptyArray<HorsePart>()) }
     var showZoomedView by remember { mutableStateOf(false) }
@@ -216,7 +216,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
                             gameState.value.setSelectedTool(tool.imageRes)
                             gameState.value.setCustomMessage("¡Excelente! Seleccionaste la herramienta correcta para la limpieza.")
                             gameState.value.setMessageType("success")
-                            gameState.value.addScore(20)
+                            gameState.value.addScore()
                             gameState.value.increaseSuccess()
                             gameState.value.resetAttempts()
                             soundPlayer?.playSound("success")
@@ -330,8 +330,9 @@ fun GameScreen(navigateToMenu: () -> Unit,
                         parts = parts,
                         onPartSelected = { part ->
                             if (part == stageInfo.correctHorsePart.name) {
-                                gameState.value.addScore(20)
+                                gameState.value.addScore()
                                 gameState.value.increaseSuccess()
+                                gameState.value.resetAttempts()
                                 showZoomedView = true
                                 coroutineScope.launch {
                                     gameState.value.setCustomMessage("¡Excelente! Seleccionaste la parte correcta del caballo")
@@ -345,6 +346,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
                                 }
                             } else {
                                 gameState.value.increaseError()
+                                gameState.value.decreaseAttempts()
                                 gameState.value.setCustomMessage("Ups... Seleccionaste la parte incorrecta. Intenta de nuevo.")
                                 speech?.speak("Ups... Seleccionaste la parte incorrecta. Intenta de nuevo.")
                                 gameState.value.setMessageType("error")
@@ -358,7 +360,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
                         soundManager = soundPlayer,
                         onPartCleaned = { isClean ->
                             if (isClean) {
-                                gameState.value.addScore(20)
+                                gameState.value.addScore()
                                 isAdvanceStageEnabled = gameState.value.advanceStage(cantStages)
                                 if (isAdvanceStageEnabled) {
                                     offsetX = 0f
