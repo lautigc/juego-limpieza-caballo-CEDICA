@@ -76,9 +76,9 @@ fun TabRowComponent(
     tabs: List<String>,
     contentScreens: List<@Composable () -> Unit>,
     modifier: Modifier = Modifier,
-    containerColor: Color = MaterialTheme.colorScheme.primaryContainer,
-    contentColor: Color = MaterialTheme.colorScheme.onPrimaryContainer,
-    indicatorColor: Color = MaterialTheme.colorScheme.inversePrimary
+    containerColor: Color = MaterialTheme.colorScheme.inversePrimary,
+    contentColor: Color = MaterialTheme.colorScheme.primary,
+    indicatorColor: Color = MaterialTheme.colorScheme.primary
 ) {
     // State to keep track of the selected tab index
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
@@ -106,7 +106,7 @@ fun TabRowComponent(
                     onClick = { selectedTabIndex = index }
                 ) {
                     // Text displayed on the tab
-                    Text(text = tabTitle)
+                    Text(text = tabTitle, style = MaterialTheme.typography.titleMedium)
                 }
             }
         }
