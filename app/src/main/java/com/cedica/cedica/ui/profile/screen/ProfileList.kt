@@ -223,14 +223,21 @@ fun UserInformation(
     modifier: Modifier = Modifier
 ) {
     Row(modifier = modifier) {
-        Text(
-            text = user.firstName + " " + user.lastName,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(top = dimensionResource(R.dimen.padding_small))
-                .weight(0.7f)
-        )
+        Column {
+            Text(
+                text = user.username,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(top = dimensionResource(R.dimen.padding_extra_small))
+            )
+            Text(
+                text = user.fullName,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.titleLarge,
+            )
+        }
     }
 }
 

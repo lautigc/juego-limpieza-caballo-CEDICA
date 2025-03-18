@@ -15,7 +15,6 @@ import com.cedica.cedica.data.permissions.Role
 import com.cedica.cedica.data.user.User
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlin.enums.enumEntries
 
 // Datastore definition
 private const val DATA_STORE_NAME = "GUEST_DATA"
@@ -82,4 +81,5 @@ val GuestUser = User(
     role = Role.GUEST,
     firstName = "Invitado",
     lastName = "",
+    username = "Invitado",
 )

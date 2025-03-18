@@ -2,6 +2,7 @@ package com.cedica.cedica.ui.profile.create
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cedica.cedica.core.utils.input_field.InputField
 import com.cedica.cedica.core.utils.input_field.ValidationInputField
 import com.cedica.cedica.core.utils.input_field.NameField
 import com.cedica.cedica.data.permissions.Role
@@ -19,13 +20,15 @@ abstract class UserFormViewModel(
 
     open val dataError = AlertNotification()
 
+    open val username : InputField<String> = InputField("")
+
     protected open suspend fun validateForm(): Boolean {
         return firstName.inputIsValid() && lastName.inputIsValid()
     }
 
     protected open suspend fun validateData(): Boolean {
-        if (this.userRepository.existsByFullName(this.firstName.input, this.lastName.input)) {
-            this.dataError.displayAlert("El usuario ${this.firstName.input} ${this.lastName.input} ya existe")
+        if (this.userRepository.existByUsername(this.username.input)) {
+            this.dataError.displayAlert("El username ${this.username.input} ya existe")
             return false
         }
         return true
@@ -55,6 +58,7 @@ open class CreateUserFormViewModel(
             User(
                 firstName = this.firstName.input,
                 lastName = this.lastName.input,
+                username = this.username.input,
                 role = Role.USER,
             )
         )
@@ -75,7 +79,7 @@ open class EditUserFormViewModel(
     }
 
     override suspend fun validateData(): Boolean {
-        if (this.firstName.input != this.currentUser.firstName || this.lastName.input != this.currentUser.lastName) {
+        if (this.username.input != currentUser.username) {
             return super.validateData()
         }
         return true
@@ -85,6 +89,7 @@ open class EditUserFormViewModel(
         currentUser = userRepository.getByID(userID)
         this.firstName.onChange(currentUser.firstName)
         this.lastName.onChange(currentUser.lastName)
+        this.username.onChange(currentUser.username)
         return currentUser.id
     }
 
@@ -94,6 +99,7 @@ open class EditUserFormViewModel(
                 id = userID,
                 firstName = this.firstName.input,
                 lastName = this.lastName.input,
+                username = this.username.input,
                 role = Role.USER,
             )
         )

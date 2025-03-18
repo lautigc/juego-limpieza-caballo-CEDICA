@@ -75,21 +75,6 @@ import java.util.Locale
 import java.util.TimeZone
 
 @Composable
-fun CreateTherapistForm(
-    viewModel: CreateTherapistFormViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    onNavigateToCreateUser: () -> Unit = {},
-) {
-
-    CreateTherapistFormContent(
-        firstName = viewModel.firstName,
-        lastName = viewModel.lastName,
-        dataError = viewModel.dataError,
-        onClick = { viewModel.insertUser(redirectTo = onNavigateToCreateUser) },
-        SaveButtonTitle = "Registrar",
-    )
-}
-
-@Composable
 private fun FormContainer(
     content: @Composable ColumnScope.() -> Unit,
 ) {
@@ -106,45 +91,18 @@ private fun FormContainer(
 }
 
 @Composable
-private fun CreateTherapistFormContent(
-    firstName: ValidationInputField<String>,
-    lastName: ValidationInputField<String>,
-    dataError: AlertNotification,
-    SaveButtonTitle: String = "Botón",
-    onClick: () -> Unit = {},
-) {
-    FormContainer {
-        val spacerModifier = Modifier.height(dimensionResource(R.dimen.padding_extra_large) * 1.5f)
-
-        CreateUserFormContent(
-            firstName = firstName,
-            lastName = lastName,
-            spacerModifier = spacerModifier,
-            headerStyle = MaterialTheme.typography.displayMedium,
-        )
-
-        Spacer(modifier = spacerModifier)
-
-        SaveButton(onClick, SaveButtonTitle)
-
-        ErrorAlertDialog(dataError)
-    }
-}
-
-@Composable
-fun CreatePatientForm(
-    viewModel: CreatePatientFormViewModel = viewModel(factory = AppViewModelProvider.Factory),
+fun CreateTherapistForm(
+    viewModel: CreateTherapistFormViewModel = viewModel(factory = AppViewModelProvider.Factory),
     onNavigateToCreateUser: () -> Unit = {},
 ) {
-    CreatePatientFormContent(
+
+    CreateTherapistFormContent(
         firstName = viewModel.firstName,
         lastName = viewModel.lastName,
-        observations = viewModel.observations,
-        gender = viewModel.gender,
-        date = viewModel.birthDate,
-        alert = viewModel.alert,
+        dataError = viewModel.dataError,
+        username = viewModel.username,
+        onClick = { viewModel.insertUser(redirectTo = onNavigateToCreateUser) },
         saveButtonTitle = "Registrar",
-        onCreate = { viewModel.insertUser(redirectTo = onNavigateToCreateUser) }
     )
 }
 
@@ -160,7 +118,26 @@ fun EditTherapistForm(
         firstName = viewModel.firstName,
         lastName = viewModel.lastName,
         dataError = viewModel.dataError,
+        username = viewModel.username,
         onClick = { viewModel.insertUser(redirectTo = onEditTherapistNavigateTo) }
+    )
+}
+
+@Composable
+fun CreatePatientForm(
+    viewModel: CreatePatientFormViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    onNavigateToCreateUser: () -> Unit = {},
+) {
+    CreatePatientFormContent(
+        firstName = viewModel.firstName,
+        lastName = viewModel.lastName,
+        observations = viewModel.observations,
+        gender = viewModel.gender,
+        date = viewModel.birthDate,
+        alert = viewModel.alert,
+        username = viewModel.username,
+        saveButtonTitle = "Registrar",
+        onCreate = { viewModel.insertUser(redirectTo = onNavigateToCreateUser) }
     )
 }
 
@@ -179,18 +156,48 @@ fun EditPatientForm(
         gender = viewModel.gender,
         date = viewModel.birthDate,
         alert = viewModel.alert,
+        username = viewModel.username,
         onCreate = { viewModel.insertUser(redirectTo = onEditPatientNavigateTo) }
     )
 }
 
 @Composable
+private fun CreateTherapistFormContent(
+    firstName: ValidationInputField<String> = NameField(""),
+    lastName: ValidationInputField<String> = NameField(""),
+    username: InputField<String> = InputField(""),
+    dataError: AlertNotification = AlertNotification(),
+    saveButtonTitle: String = "Botón",
+    onClick: () -> Unit = {},
+) {
+    FormContainer {
+        val spacerModifier = Modifier.height(dimensionResource(R.dimen.padding_extra_large) * 1.5f)
+
+        CreateUserFormContent(
+            firstName = firstName,
+            lastName = lastName,
+            username = username,
+            spacerModifier = spacerModifier,
+            headerStyle = MaterialTheme.typography.displayMedium,
+        )
+
+        Spacer(modifier = spacerModifier)
+
+        SaveButton(onClick, saveButtonTitle)
+
+        ErrorAlertDialog(dataError)
+    }
+}
+
+@Composable
 fun CreatePatientFormContent(
-    firstName: ValidationInputField<String>,
-    lastName: ValidationInputField<String>,
-    observations: InputField<String>,
-    gender: InputField<Gender>,
-    date: InputField<Date>,
-    alert: AlertNotification,
+    firstName: ValidationInputField<String> = NameField(""),
+    lastName: ValidationInputField<String> = NameField(""),
+    observations: InputField<String> = InputField(""),
+    gender: InputField<Gender> = InputField(Gender.MALE),
+    username: InputField<String> = InputField(""),
+    date: InputField<Date> = InputField(Date()),
+    alert: AlertNotification = AlertNotification(),
     saveButtonTitle: String = "Botón",
     headerStyle: TextStyle = MaterialTheme.typography.displayMedium,
     onCreate: () -> Unit = {},
@@ -202,7 +209,8 @@ fun CreatePatientFormContent(
             firstName = firstName,
             lastName = lastName,
             headerStyle = headerStyle,
-            spacerModifier = spacerModifier
+            username = username,
+            spacerModifier = spacerModifier,
         )
 
         Spacer(modifier = spacerModifier)
@@ -333,13 +341,27 @@ fun DateInputField(
 
 @Composable
 private fun CreateUserFormContent(
-    firstName: ValidationInputField<String>,
-    lastName: ValidationInputField<String>,
-    SaveButtonTitle: String = "Botón",
+    firstName: ValidationInputField<String> = NameField(""),
+    lastName: ValidationInputField<String> = NameField(""),
+    username: InputField<String> = InputField(""),
     headerStyle: TextStyle = MaterialTheme.typography.displayMedium,
     spacerModifier: Modifier,
 ) {
     Column {
+        val textFieldStyle = MaterialTheme.typography.headlineLarge
+
+        FormInputField(
+            title = "Nombre de usuario",
+            titleStyle = headerStyle,
+            text = username.input,
+            hasError = false,
+            supportText = "",
+            onValueChange = username::onChange,
+            textFieldStyle = textFieldStyle,
+        )
+
+        Spacer(modifier = spacerModifier)
+
         FormInputField(
             title = "Nombre",
             titleStyle = headerStyle,
@@ -347,7 +369,7 @@ private fun CreateUserFormContent(
             hasError = firstName.hasError,
             supportText = firstName.errorText,
             onValueChange = firstName::onChange,
-            textFieldStyle = MaterialTheme.typography.headlineLarge,
+            textFieldStyle = textFieldStyle,
         )
 
         Spacer(modifier = spacerModifier)
@@ -359,7 +381,7 @@ private fun CreateUserFormContent(
             hasError = lastName.hasError,
             supportText = lastName.errorText,
             onValueChange = lastName::onChange,
-            textFieldStyle = MaterialTheme.typography.headlineLarge,
+            textFieldStyle = textFieldStyle,
         )
     }
 }
