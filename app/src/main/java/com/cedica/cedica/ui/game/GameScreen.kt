@@ -156,7 +156,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
     if(showWelcomeDialog) {
         if(isTtsReady.value) {
             isLoading = false
-            WelcomeDialog() {
+            GameAlertDialog (title="¡A jugar y aprender!", titleButton = "Comenzar", messageType = "start") {
                 showWelcomeDialog = false
                 speech?.speak("Selecciona la parte del caballo que hay que limpiar en esta etapa")
             }
@@ -187,14 +187,24 @@ fun GameScreen(navigateToMenu: () -> Unit,
                 psViewModel.insert(playSession)
             }
         }
-        CompletionDialog(
+        GameAlertDialog(
+            title = "Juego finalizado",
+            messageType = "complete",
+            titleButton = "Volver al menú",
             score = gameState.value.getScore(),
             time = gameState.value.getFormattedElapsedTime(),
             onDismiss = { navigateToMenu() }
         )
     }
 
-
+    if(gameState.value.isTimeUp()){
+        GameAlertDialog(
+            title = "Juego finalizado",
+            messageType = "not complete",
+            titleButton = "Volver al menú",
+            onDismiss = { navigateToMenu() }
+        )
+    }
 
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
@@ -523,6 +533,9 @@ fun SelectableImage(imageRes: Int, isSelected: Boolean, isHighlighted: Boolean, 
 @Composable
 fun MessageBox(messageType: String, customMessage: String? = null, modifier: Modifier = Modifier) {
     val (message, image) = when (messageType) {
+        "start" -> Pair(customMessage ?: "Después de correr por todos lados y ensuciarse, tenemos como desafío limpiar a Coquito. ¿Podras completar todos los pasos para limpiarlo?",
+            R.drawable.vault_boy_thinking
+        )
         "selection" -> Pair(customMessage ?: "¿Qué parte del caballo debemos seleccionar ahora?",
             R.drawable.vault_boy_thinking
         )
@@ -534,6 +547,9 @@ fun MessageBox(messageType: String, customMessage: String? = null, modifier: Mod
         )
         "complete" -> Pair(customMessage ?: "¡Felicitaciones! Has completado la limpieza del caballo",
             R.drawable.vault_boy_rich
+        )
+        "not complete" -> Pair(customMessage ?: "Ups... se te ha acabado el tiempo.",
+            R.drawable.vault_boy_thumbs_down
         )
         else -> Pair("", 0)
     }
@@ -560,7 +576,7 @@ fun MessageBox(messageType: String, customMessage: String? = null, modifier: Mod
             fontWeight = FontWeight.Medium,
             color = Color.Black,
             textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(top = 10.dp)
         )
     }
 }
@@ -580,17 +596,17 @@ fun LockScreenOrientation(orientation: Int) {
 }
 
 @Composable
-fun CompletionDialog(score: Int, time: String, onDismiss: () -> Unit) {
+fun GameAlertDialog(title: String, messageType: String, titleButton: String, score: Int? = null, time: String? = null, onDismiss: () -> Unit) {
     val scrollState = rememberScrollState()
     AlertDialog(
-        onDismissRequest = onDismiss, // Cierra el diálogo al tocar fuera de él
+        onDismissRequest = onDismiss,
         title = {
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "¡Juego Completado!",
+                    text = title,
                     style = TextStyle(
                         fontSize = 26.sp,
                         fontWeight = FontWeight.Bold,
@@ -607,73 +623,35 @@ fun CompletionDialog(score: Int, time: String, onDismiss: () -> Unit) {
             ) {
                 // Mensaje de finalización
                 MessageBox(
-                    messageType = "complete",
+                    messageType = messageType,
                     modifier = Modifier.padding(vertical = 4.dp)
                 )
 
                 // Puntaje final
-                Text(
-                    text = "Puntaje Final: $score",
-                    style = TextStyle(
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.Black
+                score?.let{
+                    Text(
+                        text = "Puntaje Final: $score",
+                        style = TextStyle(
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Black
+                        )
                     )
-                )
+                }
 
                 // Tiempo final
-                Text(
-                    text = "Tiempo Final: $time",
-                    style = TextStyle(
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.Black
+                time?.let {
+                    Text(
+                        text = "Tiempo Final: $time",
+                        style = TextStyle(
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Black
+                        )
                     )
-                )
-            }
-        },
-        confirmButton = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Button(
-                    onClick = onDismiss,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFADD8E6))
-                ) {
-                    Text("Volver al Menú", color = Color.Black)
                 }
             }
         },
-        containerColor = Color(0xFFFFE4B5) // Color de fondo del diálogo
-    )
-}
-
-
-@Composable
-fun WelcomeDialog(onDismiss: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismiss, // Cierra el diálogo al tocar fuera de él
-        title = {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = "A jugar y a aprender!",
-                    style = TextStyle(
-                        fontSize = 26.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
-                )
-                Text(
-                    text = "Después de correr por todos lados y ensuciarse, tenemos como desafío limpiar a Coquito.",
-                    color = Color.Black
-                )
-            }
-        },
         confirmButton = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -684,7 +662,7 @@ fun WelcomeDialog(onDismiss: () -> Unit) {
                     onClick = onDismiss,
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFADD8E6))
                 ) {
-                    Text("Vamos", color = Color.Black)
+                    Text(titleButton, color = Color.Black)
                 }
             }
         },
@@ -728,6 +706,7 @@ fun LoadingDialog(
         }
     }
 }
+
 @RequiresApi(Build.VERSION_CODES.S)
 @Preview(showBackground = true, widthDp = 720, heightDp = 360)
 @Composable
@@ -737,6 +716,6 @@ fun PreviewGameScreen() {
 
 @Preview
 @Composable
-fun PreviewDialog() {
-    WelcomeDialog() { println() }
+fun PreviewGameAlertDialog() {
+    GameAlertDialog (title = "A jugar y a aprender!", messageType = "start", titleButton = "Comenzar", onDismiss = {})
 }
