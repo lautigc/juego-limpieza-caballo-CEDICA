@@ -27,6 +27,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Build
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
@@ -35,6 +39,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.ui.draw.clip
@@ -48,6 +53,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -258,8 +264,16 @@ fun GameScreen(navigateToMenu: () -> Unit,
                 verticalArrangement = Arrangement.Top
             ) {
 
-                Button(onClick = { navigateToMenu() }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFADD8E6))) {
-                    Text("Volver al menú", color = Color.Black)
+                Button(
+                    onClick = { navigateToMenu() },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFADD8E6)),
+                    shape = CircleShape,
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp)
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Rounded.ArrowBack,
+                        contentDescription = "Herramienta"
+                    )
                 }
 
                 LaunchedEffect(Unit) {
@@ -409,7 +423,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
             // Columna 3: Mensajes y Botón de herramientas
             Column(
                 modifier = Modifier
-                    .weight(1f)
+                    .weight(1.2f)
                     .fillMaxHeight(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
@@ -470,8 +484,13 @@ fun GameScreen(navigateToMenu: () -> Unit,
                 Button(
                     onClick = { coroutineScope.launch { scaffoldState.bottomSheetState.expand() } },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFADD8E6)),
+                    shape = CircleShape,
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp)
                 ) {
-                    Text("Herramientas", color = Color.Black)
+                    Icon(
+                        Icons.Rounded.Build,
+                        contentDescription = "Herramienta"
+                    )
                 }
             }
         }
@@ -576,7 +595,7 @@ fun MessageBox(messageType: String, customMessage: String? = null, modifier: Mod
             fontWeight = FontWeight.Medium,
             color = Color.Black,
             textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth().padding(top = 10.dp)
+            modifier = Modifier.fillMaxWidth().padding(top = 5.dp)
         )
     }
 }
