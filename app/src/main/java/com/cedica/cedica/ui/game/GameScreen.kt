@@ -4,7 +4,10 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -35,8 +38,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
@@ -56,13 +63,10 @@ import com.cedica.cedica.R
 import com.cedica.cedica.core.utils.isInPreview
 import com.cedica.cedica.core.utils.sound.SoundPlayer
 import com.cedica.cedica.core.utils.getStageInfo
+import com.cedica.cedica.core.utils.groomingStages
 import com.cedica.cedica.core.utils.sound.TextToSpeechWrapper
-import com.cedica.cedica.core.utils.stages
-import com.cedica.cedica.data.configuration.PersonalConfiguration
-import com.cedica.cedica.data.configuration.VoiceType
 import com.cedica.cedica.data.user.PlaySession
 import com.cedica.cedica.ui.AppViewModelProvider
-import com.cedica.cedica.ui.home.PatientViewModel
 import com.cedica.cedica.ui.utils.view_models.UserViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -88,8 +92,8 @@ fun GameScreen(navigateToMenu: () -> Unit,
                ) {
 
     val uiState by viewModel.uiState.collectAsState()
-
-
+    val currentConfiguration = uiState.user.personalConfiguration
+    
     // Esto es para orientar la pantalla en sentido horizontal
     LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
 
@@ -97,9 +101,9 @@ fun GameScreen(navigateToMenu: () -> Unit,
     val scaffoldState = rememberBottomSheetScaffoldState()
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
-    val gameState = remember { mutableStateOf(GameState()) }
+    val gameState = remember { mutableStateOf(GameState(totalAttempts = currentConfiguration.numberOfAttempts, totalAvailableTime = currentConfiguration.secondsTime)) }
     var stageInfo by remember { mutableStateOf(checkNotNull(getStageInfo(gameState.value.getCurrentStage())) { "No se encontró información para la etapa $gameState.value.getCurrentStage()" }) }
-    var parts by remember { mutableStateOf(emptyArray<HorsePart>()) }
+    var parts by remember { mutableStateOf(emptyList<HorsePart>()) }
     var showZoomedView by remember { mutableStateOf(false) }
     var isAdvanceStageEnabled by remember { mutableStateOf(false) }
     var absoluteX by remember { mutableFloatStateOf(0f) }
@@ -111,8 +115,13 @@ fun GameScreen(navigateToMenu: () -> Unit,
         parts = stageInfo.incorrectRandomHorseParts + stageInfo.correctHorsePart
     }
 
-    val cantStages = stages.size
+    val highlightCorrectTool by remember(gameState.value.getAttemptsLeft()) {
+        derivedStateOf { gameState.value.getAttemptsLeft() <= 0 }
+    }
 
+    val correctTool = tools.find {it.name == stageInfo.tool.displayName}
+    val cantStages = if (currentConfiguration.numberOfImages in 1..groomingStages.size) currentConfiguration.numberOfImages else groomingStages.size
+    Log.d("GameDebug", "Cant etapas: ${currentConfiguration.numberOfImages}, $cantStages")
     // para el audio (solo disponible fuera de la preview)
     val context = LocalContext.current
     val soundPlayer: SoundPlayer?
@@ -147,7 +156,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
     if(showWelcomeDialog) {
         if(isTtsReady.value) {
             isLoading = false
-            WelcomeDialog() {
+            GameAlertDialog (title="¡A jugar y aprender!", titleButton = "Comenzar", messageType = "start") {
                 showWelcomeDialog = false
                 speech?.speak("Selecciona la parte del caballo que hay que limpiar en esta etapa")
             }
@@ -178,14 +187,24 @@ fun GameScreen(navigateToMenu: () -> Unit,
                 psViewModel.insert(playSession)
             }
         }
-        CompletionDialog(
+        GameAlertDialog(
+            title = "Juego finalizado",
+            messageType = "complete",
+            titleButton = "Volver al menú",
             score = gameState.value.getScore(),
             time = gameState.value.getFormattedElapsedTime(),
             onDismiss = { navigateToMenu() }
         )
     }
 
-
+    if(gameState.value.isTimeUp()){
+        GameAlertDialog(
+            title = "Juego finalizado",
+            messageType = "not complete",
+            titleButton = "Volver al menú",
+            onDismiss = { navigateToMenu() }
+        )
+    }
 
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
@@ -195,16 +214,19 @@ fun GameScreen(navigateToMenu: () -> Unit,
             ImageSelectionList(
                 images = tools,
                 selectedTool = gameState.value.getSelectedTool(),
+                correctToolId = correctTool?.imageRes,
+                highlightCorrectTool = highlightCorrectTool,
                 onImageSelected = { tool ->
                     if (showZoomedView && gameState.value.getSelectedTool() == null) {
-                        if (tool.name == stageInfo.tool) {
+                        if (tool.name == stageInfo.tool.displayName) {
                             // Si la herramienta seleccionada es la correcta
                             speech?.speak("¡Excelente! Seleccionaste la herramienta correcta para la limpieza.")
                             gameState.value.setSelectedTool(tool.imageRes)
                             gameState.value.setCustomMessage("¡Excelente! Seleccionaste la herramienta correcta para la limpieza.")
                             gameState.value.setMessageType("success")
-                            gameState.value.addScore(20)
+                            gameState.value.addScore()
                             gameState.value.increaseSuccess()
+                            gameState.value.resetAttempts()
                             soundPlayer?.playSound("success")
                         } else {
                             // Si la herramienta seleccionada es incorrecta
@@ -212,6 +234,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
                             speech?.speak("Ups... Seleccionaste la herramienta incorrecta. Intentá de nuevo.")
                             gameState.value.setMessageType("error")
                             gameState.value.increaseError()
+                            gameState.value.decreaseAttempts()
                             soundPlayer?.playSound("wrong")
                         }
                     }
@@ -250,7 +273,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
 
                 Card(
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFADD8E6)), // Azul más vibrante
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFADD8E6)),
                     elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
                     modifier = Modifier
                         .wrapContentHeight()
@@ -264,7 +287,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
                     ) {
                         // Etapa actual
                         Text(
-                            text = "Etapa ${gameState.value.getCurrentStage()}: ${getStageInfo(gameState.value.getCurrentStage())?.correctHorsePart?.name ?: "Desconocida"}",
+                            text = "Etapa ${gameState.value.getCurrentStage()}",
                             style = TextStyle(
                                 fontFamily = FontFamily.SansSerif,
                                 fontSize = 22.sp,
@@ -278,6 +301,17 @@ fun GameScreen(navigateToMenu: () -> Unit,
                         Text(
 
                             text = "⏳Tiempo: ${gameState.value.getFormattedElapsedTime()}",
+                            style = TextStyle(
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color.White,
+                                textAlign = TextAlign.Center
+                            )
+                        )
+
+                        Text(
+                            text = "⏳Tiempo restante: ${gameState.value.getFormattedRemainingTime()}",
                             style = TextStyle(
                                 fontFamily = FontFamily.Monospace,
                                 fontSize = 18.sp,
@@ -315,8 +349,9 @@ fun GameScreen(navigateToMenu: () -> Unit,
                         parts = parts,
                         onPartSelected = { part ->
                             if (part == stageInfo.correctHorsePart.name) {
-                                gameState.value.addScore(20)
+                                gameState.value.addScore()
                                 gameState.value.increaseSuccess()
+                                gameState.value.resetAttempts()
                                 showZoomedView = true
                                 coroutineScope.launch {
                                     gameState.value.setCustomMessage("¡Excelente! Seleccionaste la parte correcta del caballo")
@@ -330,6 +365,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
                                 }
                             } else {
                                 gameState.value.increaseError()
+                                gameState.value.decreaseAttempts()
                                 gameState.value.setCustomMessage("Ups... Seleccionaste la parte incorrecta. Intenta de nuevo.")
                                 speech?.speak("Ups... Seleccionaste la parte incorrecta. Intenta de nuevo.")
                                 gameState.value.setMessageType("error")
@@ -343,7 +379,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
                         soundManager = soundPlayer,
                         onPartCleaned = { isClean ->
                             if (isClean) {
-                                gameState.value.addScore(20)
+                                gameState.value.addScore()
                                 isAdvanceStageEnabled = gameState.value.advanceStage(cantStages)
                                 if (isAdvanceStageEnabled) {
                                     offsetX = 0f
@@ -453,6 +489,8 @@ fun GameScreen(navigateToMenu: () -> Unit,
 fun ImageSelectionList(
     images: List<Tool>,
     selectedTool: Int?,
+    correctToolId: Int?,
+    highlightCorrectTool: Boolean,
     onImageSelected: (Tool) -> Unit,
 ) {
     LazyRow(
@@ -463,6 +501,7 @@ fun ImageSelectionList(
             SelectableImage(
                 imageRes = tool.imageRes,
                 isSelected = selectedTool == tool.imageRes,
+                isHighlighted = (tool.imageRes == correctToolId) && highlightCorrectTool,
                 onClick = { onImageSelected(tool) }
             )
         }
@@ -470,15 +509,15 @@ fun ImageSelectionList(
 }
 
 @Composable
-fun SelectableImage(imageRes: Int, isSelected: Boolean, onClick: () -> Unit) {
+fun SelectableImage(imageRes: Int, isSelected: Boolean, isHighlighted: Boolean, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .size(100.dp)
             .padding(8.dp)
             .border(
-                width = if (isSelected) 4.dp else 2.dp,
-                color = if (isSelected) Color(0xFFADD8E6) else Color.Black,
-                RoundedCornerShape(16.dp)
+                width = if (isSelected || isHighlighted) 4.dp else 2.dp,
+                color = if (isHighlighted && !isSelected) Color.Red else if (isSelected) Color(0xFFADD8E6) else Color.Black,
+                shape = RoundedCornerShape(16.dp)
             )
             .clickable { onClick() },
         contentAlignment = Alignment.Center
@@ -491,10 +530,12 @@ fun SelectableImage(imageRes: Int, isSelected: Boolean, onClick: () -> Unit) {
         )
     }
 }
-
 @Composable
 fun MessageBox(messageType: String, customMessage: String? = null, modifier: Modifier = Modifier) {
     val (message, image) = when (messageType) {
+        "start" -> Pair(customMessage ?: "Después de correr por todos lados y ensuciarse, tenemos como desafío limpiar a Coquito. ¿Podras completar todos los pasos para limpiarlo?",
+            R.drawable.vault_boy_thinking
+        )
         "selection" -> Pair(customMessage ?: "¿Qué parte del caballo debemos seleccionar ahora?",
             R.drawable.vault_boy_thinking
         )
@@ -506,6 +547,9 @@ fun MessageBox(messageType: String, customMessage: String? = null, modifier: Mod
         )
         "complete" -> Pair(customMessage ?: "¡Felicitaciones! Has completado la limpieza del caballo",
             R.drawable.vault_boy_rich
+        )
+        "not complete" -> Pair(customMessage ?: "Ups... se te ha acabado el tiempo.",
+            R.drawable.vault_boy_thumbs_down
         )
         else -> Pair("", 0)
     }
@@ -532,7 +576,7 @@ fun MessageBox(messageType: String, customMessage: String? = null, modifier: Mod
             fontWeight = FontWeight.Medium,
             color = Color.Black,
             textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(top = 10.dp)
         )
     }
 }
@@ -552,17 +596,17 @@ fun LockScreenOrientation(orientation: Int) {
 }
 
 @Composable
-fun CompletionDialog(score: Int, time: String, onDismiss: () -> Unit) {
+fun GameAlertDialog(title: String, messageType: String, titleButton: String, score: Int? = null, time: String? = null, onDismiss: () -> Unit) {
     val scrollState = rememberScrollState()
     AlertDialog(
-        onDismissRequest = onDismiss, // Cierra el diálogo al tocar fuera de él
+        onDismissRequest = onDismiss,
         title = {
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "¡Juego Completado!",
+                    text = title,
                     style = TextStyle(
                         fontSize = 26.sp,
                         fontWeight = FontWeight.Bold,
@@ -579,73 +623,35 @@ fun CompletionDialog(score: Int, time: String, onDismiss: () -> Unit) {
             ) {
                 // Mensaje de finalización
                 MessageBox(
-                    messageType = "complete",
+                    messageType = messageType,
                     modifier = Modifier.padding(vertical = 4.dp)
                 )
 
                 // Puntaje final
-                Text(
-                    text = "Puntaje Final: $score",
-                    style = TextStyle(
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.Black
+                score?.let{
+                    Text(
+                        text = "Puntaje Final: $score",
+                        style = TextStyle(
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Black
+                        )
                     )
-                )
+                }
 
                 // Tiempo final
-                Text(
-                    text = "Tiempo Final: $time",
-                    style = TextStyle(
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.Black
+                time?.let {
+                    Text(
+                        text = "Tiempo Final: $time",
+                        style = TextStyle(
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Black
+                        )
                     )
-                )
-            }
-        },
-        confirmButton = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Button(
-                    onClick = onDismiss,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFADD8E6))
-                ) {
-                    Text("Volver al Menú", color = Color.Black)
                 }
             }
         },
-        containerColor = Color(0xFFFFE4B5) // Color de fondo del diálogo
-    )
-}
-
-
-@Composable
-fun WelcomeDialog(onDismiss: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismiss, // Cierra el diálogo al tocar fuera de él
-        title = {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = "A jugar y a aprender!",
-                    style = TextStyle(
-                        fontSize = 26.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
-                )
-                Text(
-                    text = "Después de correr por todos lados y ensuciarse, tenemos como desafío limpiar a Coquito.",
-                    color = Color.Black
-                )
-            }
-        },
         confirmButton = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -656,7 +662,7 @@ fun WelcomeDialog(onDismiss: () -> Unit) {
                     onClick = onDismiss,
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFADD8E6))
                 ) {
-                    Text("Vamos", color = Color.Black)
+                    Text(titleButton, color = Color.Black)
                 }
             }
         },
@@ -700,6 +706,7 @@ fun LoadingDialog(
         }
     }
 }
+
 @RequiresApi(Build.VERSION_CODES.S)
 @Preview(showBackground = true, widthDp = 720, heightDp = 360)
 @Composable
@@ -709,6 +716,6 @@ fun PreviewGameScreen() {
 
 @Preview
 @Composable
-fun PreviewDialog() {
-    WelcomeDialog() { println() }
+fun PreviewGameAlertDialog() {
+    GameAlertDialog (title = "A jugar y a aprender!", messageType = "start", titleButton = "Comenzar", onDismiss = {})
 }

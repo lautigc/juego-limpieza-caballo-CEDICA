@@ -187,7 +187,7 @@ fun HorsePartSelection() {
 }
 
 @Composable
-fun HorsePartSelectionRandom(parts: Array<HorsePart>, onPartSelected: (String) -> Unit) {
+fun HorsePartSelectionRandom(parts: List<HorsePart>, onPartSelected: (String) -> Unit) {
     var imageSize by remember { mutableStateOf(IntSize.Zero) }
     val animatedColor = remember { Animatable(Color.Red) }
     var displayedParts by remember { mutableStateOf(parts.toList()) }
@@ -304,7 +304,7 @@ fun ZoomedHorsePart(part: HorsePart) {
 }
 
 @Composable
-fun DirtyHorsePart(part: HorsePart = horseParts[0], toolPosition: Offset, soundManager: SoundPlayer?, onPartCleaned: (Boolean) -> Unit) {
+fun DirtyHorsePart(part: HorsePart = horseParts[0], toolPosition: Offset, soundManager: SoundPlayer? = null, onPartCleaned: (Boolean) -> Unit) {
     val context = LocalContext.current
     val offsetX = remember { mutableFloatStateOf(0f) }
     val offsetY = remember { mutableFloatStateOf(0f) }
@@ -320,7 +320,7 @@ fun DirtyHorsePart(part: HorsePart = horseParts[0], toolPosition: Offset, soundM
     }
 
     val dirtImage = remember { dirtBitmap.asImageBitmap() }
-    val dirtAlpha = remember { mutableFloatStateOf(1f) }
+    val dirtAlpha = remember { mutableFloatStateOf(0.5f) }
     val imagePosition = remember { mutableStateOf(Offset.Zero) }
     val imageSize = remember { mutableStateOf(IntSize.Zero) }
 
@@ -373,7 +373,7 @@ fun DirtyHorsePart(part: HorsePart = horseParts[0], toolPosition: Offset, soundM
         isCleaning.value = isOverCleanZone && isMoving.value
 
         if (isCleaning.value) {
-            dirtAlpha.floatValue = (dirtAlpha.floatValue - 0.05f).coerceAtLeast(0f)
+            dirtAlpha.floatValue = (dirtAlpha.floatValue - 0.005f).coerceAtLeast(0f)
             isCleaning.value = true
         } else {
             isCleaning.value = false
@@ -471,5 +471,5 @@ fun PreviewZoomedHorsePart() {
 @Preview
 @Composable
 fun PreviewDirtyHorsePart() {
-    //DirtyHorsePart(horseParts[0], Offset.Zero, SoundPlayer, onPartCleaned = {})
+    DirtyHorsePart(horseParts[3], Offset.Zero, onPartCleaned = {})
 }
