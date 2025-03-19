@@ -29,8 +29,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Build
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
@@ -74,6 +76,7 @@ import com.cedica.cedica.core.utils.sound.TextToSpeechWrapper
 import com.cedica.cedica.data.user.PlaySession
 import com.cedica.cedica.ui.AppViewModelProvider
 import com.cedica.cedica.ui.utils.view_models.UserViewModel
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -116,6 +119,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
     var absoluteY by remember { mutableFloatStateOf(0f) }
     var showCompletionDialog by remember { mutableStateOf(false) }
     var showWelcomeDialog by remember { mutableStateOf(true) }
+    var showProgress by remember { mutableStateOf(false) }
 
     LaunchedEffect(stageInfo) {
         parts = stageInfo.incorrectRandomHorseParts + stageInfo.correctHorsePart
@@ -212,6 +216,14 @@ fun GameScreen(navigateToMenu: () -> Unit,
         )
     }
 
+    if (showProgress) {
+        ShowCleaningProgressBar(
+            currentStep = gameState.value.getCurrentStage(),
+            totalSteps = cantStages,
+            onDismiss = { showProgress = false }
+        )
+    }
+
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
         sheetContainerColor = Color(0xFFFFE4B5),
@@ -264,16 +276,36 @@ fun GameScreen(navigateToMenu: () -> Unit,
                 verticalArrangement = Arrangement.Top
             ) {
 
-                Button(
-                    onClick = { navigateToMenu() },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFADD8E6)),
-                    shape = CircleShape,
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        Icons.AutoMirrored.Rounded.ArrowBack,
-                        contentDescription = "Herramienta"
-                    )
+                    Button(
+                        onClick = { navigateToMenu() },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFADD8E6)),
+                        shape = CircleShape,
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp),
+                        modifier = Modifier.padding(8.dp)
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Rounded.ArrowBack,
+                            contentDescription = "Ir al menú"
+                        )
+                    }
+
+                    Button(
+                        onClick = { showProgress = true },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFADD8E6)),
+                        shape = CircleShape,
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp),
+                        modifier = Modifier.padding(2.dp)
+                    ) {
+                        Icon(
+                            Icons.Rounded.Info,
+                            contentDescription = "Mostrar progreso"
+                        )
+                    }
                 }
 
                 LaunchedEffect(Unit) {
@@ -615,7 +647,7 @@ fun LockScreenOrientation(orientation: Int) {
 }
 
 @Composable
-fun GameAlertDialog(title: String, messageType: String, titleButton: String, score: Int? = null, time: String? = null, onDismiss: () -> Unit) {
+fun GameAlertDialog(title: String, messageType: String? = null, titleButton: String, score: Int? = null, time: String? = null, onDismiss: () -> Unit) {
     val scrollState = rememberScrollState()
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -640,11 +672,13 @@ fun GameAlertDialog(title: String, messageType: String, titleButton: String, sco
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = Modifier.verticalScroll(scrollState)
             ) {
-                // Mensaje de finalización
-                MessageBox(
-                    messageType = messageType,
-                    modifier = Modifier.padding(vertical = 4.dp)
-                )
+                // Mensaje
+                messageType?.let{
+                    MessageBox(
+                        messageType = messageType,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+                }
 
                 // Puntaje final
                 score?.let{
@@ -726,6 +760,78 @@ fun LoadingDialog(
     }
 }
 
+@Composable
+fun ShowCleaningProgressBar(currentStep: Int, totalSteps: Int, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Progreso actual",
+                    style = TextStyle(
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+                )
+            }
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(totalSteps) { step ->
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .background(
+                                        if (step + 1 <= currentStep) Color(0xFFADD8E6) else Color.Gray,
+                                        shape = CircleShape
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (step + 1 < currentStep) {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = "Completed",
+                                        tint = Color.Black
+                                    )
+                                } else {
+                                    Text(text = (step + 1).toString(), color = Color.Black)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Button(
+                    onClick = onDismiss,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFADD8E6))
+                ) {
+                    Text("Cerrar", color = Color.Black)
+                }
+            }
+        },
+        containerColor = Color(0xFFFFE4B5)
+    )
+}
+
 @RequiresApi(Build.VERSION_CODES.S)
 @Preview(showBackground = true, widthDp = 720, heightDp = 360)
 @Composable
@@ -737,4 +843,10 @@ fun PreviewGameScreen() {
 @Composable
 fun PreviewGameAlertDialog() {
     GameAlertDialog (title = "A jugar y a aprender!", messageType = "start", titleButton = "Comenzar", onDismiss = {})
+}
+
+@Preview
+@Composable
+fun PreviewScrollableCleaningProgressBar(){
+    ShowCleaningProgressBar(2, 6, onDismiss = {})
 }
