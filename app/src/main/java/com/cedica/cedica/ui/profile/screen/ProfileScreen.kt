@@ -57,8 +57,7 @@ fun ProfileListScreen(
         patients = profileUiState.patients.map { it.user },
         therapists = profileUiState.therapists.map { it.user },
         onLogin = { user: User ->
-            viewModel.login(user)
-            onNavigateUserLogin()
+            viewModel.login(user, onNavigateUserLogin)
         },
         onGuestLogin = {
             viewModel.guestLogin()
