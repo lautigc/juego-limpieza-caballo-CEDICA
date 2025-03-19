@@ -1,5 +1,6 @@
 package com.cedica.cedica.ui.home
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -40,7 +41,6 @@ import com.cedica.cedica.core.utils.input_field.InputField
 import com.cedica.cedica.ui.AppViewModelProvider
 import com.cedica.cedica.ui.profile.configuration.ImageCountInput
 import com.cedica.cedica.ui.profile.configuration.LevelSelector
-import com.cedica.cedica.ui.profile.configuration.NumberInput
 import com.cedica.cedica.ui.profile.configuration.SettingOption
 import com.cedica.cedica.ui.profile.configuration.TimeInput
 import com.cedica.cedica.ui.profile.configuration.TryCountInput
@@ -60,10 +60,13 @@ fun ConfigurationScreen(
     val viewModelPersonalConfig: UserSettingViewModel = viewModel(factory = AppViewModelProvider
         .FactoryWithArgs
         .userSetting(
-            userID = uiState.userID,
+            userID = viewModel.getUserID(),
         )
     )
+    Log.d("viewmodelconfigurationScreen", "viewmodelref:$viewModelPersonalConfig")
+
     val uiStatePersonalConfig by viewModelPersonalConfig.uiState.collectAsState()
+    Log.d("viewmodelconfigurationScreen", "user:${viewModelPersonalConfig.user}")
 
     ConfigurationScreenContent(
         navigateToMenu = navigateToMenu,
