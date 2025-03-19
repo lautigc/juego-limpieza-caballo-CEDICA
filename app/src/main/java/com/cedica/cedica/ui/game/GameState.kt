@@ -20,6 +20,7 @@ data class GameState(
     private var endTime: LocalDateTime? = null,
     private var completionTime: Duration? = null,
     private var elapsedTime: Long = 0L,
+    private var totalAvailableTime: Int,
     private var selectedTool: Int? = null,
     private var messageType: String = "selection",
     private var customMessage: String? = null
@@ -67,10 +68,6 @@ data class GameState(
         this.attemptsLeft = this.totalAttempts
     }
 
-    fun cantMaxAttempts(): Boolean {
-        return this.attemptsLeft == 0
-    }
-
     fun setSelectedTool(selectedTool: Int){
         this.selectedTool = selectedTool
     }
@@ -100,21 +97,32 @@ data class GameState(
     @RequiresApi(Build.VERSION_CODES.S)
     fun getFormattedElapsedTime(): String {
         val duration = Duration.ofSeconds(elapsedTime)
-        return String.format("%02d:%02d:%02d", duration.toHours(), duration.toMinutesPart(), duration.toSecondsPart())
+        return this.formatDurationToString(duration)
     }
 
     fun updateElapsedTime() {
         elapsedTime++
     }
 
-    fun reduceDirtLevel(amount: Int) {
-        amountDirtyPart -= amount
+    private fun getRemainingTime(): Int {
+        val remainingTime = totalAvailableTime - elapsedTime.toInt()
+        return if (remainingTime > 0) remainingTime else 0
+    }
+
+    @RequiresApi(Build.VERSION_CODES.S)
+    fun getFormattedRemainingTime(): String {
+        val duration = Duration.ofSeconds(getRemainingTime().toLong())
+        return this.formatDurationToString(duration)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.S)
+    private fun formatDurationToString(duration: Duration): String {
+        return String.format("%02d:%02d:%02d", duration.toHours(), duration.toMinutesPart(), duration.toSecondsPart())
     }
 
     fun getScore(): Int = score
     fun getDifficulty(): String = difficulty
     fun getCurrentStage(): Int = currentStage
-    fun getAmountDirtyPart(): Int = amountDirtyPart
     fun getAttemptsLeft(): Int = attemptsLeft
     fun getStartDate(): String = startDate
     fun getElapsedTime(): Long = elapsedTime
