@@ -63,10 +63,8 @@ fun ConfigurationScreen(
             userID = viewModel.getUserID(),
         )
     )
-    Log.d("viewmodelconfigurationScreen", "viewmodelref:$viewModelPersonalConfig")
 
     val uiStatePersonalConfig by viewModelPersonalConfig.uiState.collectAsState()
-    Log.d("viewmodelconfigurationScreen", "user:${viewModelPersonalConfig.user}")
 
     ConfigurationScreenContent(
         navigateToMenu = navigateToMenu,
