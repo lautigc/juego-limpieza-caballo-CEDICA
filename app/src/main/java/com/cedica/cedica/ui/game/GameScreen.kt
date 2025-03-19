@@ -120,6 +120,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
     var showCompletionDialog by remember { mutableStateOf(false) }
     var showWelcomeDialog by remember { mutableStateOf(true) }
     var showProgress by remember { mutableStateOf(false) }
+    var isGameFinished by remember { mutableStateOf(false) }
 
     LaunchedEffect(stageInfo) {
         parts = stageInfo.incorrectRandomHorseParts + stageInfo.correctHorsePart
@@ -309,7 +310,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
                 }
 
                 LaunchedEffect(Unit) {
-                    while (true) {
+                    while (!isGameFinished) {
                         delay(1000L) // Espera 1 segundo
                         gameState.value = gameState.value.copy(
                             elapsedTime = gameState.value.getElapsedTime() + 1
@@ -434,6 +435,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
                                     parts = stageInfo.incorrectRandomHorseParts + stageInfo.correctHorsePart
                                 } else {
                                     showCompletionDialog = true
+                                    isGameFinished = true
                                 }
                                 coroutineScope.launch {
                                     showZoomedView = false
