@@ -101,7 +101,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
     val scaffoldState = rememberBottomSheetScaffoldState()
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
-    val gameState = remember { mutableStateOf(GameState(totalAttempts = currentConfiguration.numberOfAttempts)) }
+    val gameState = remember { mutableStateOf(GameState(totalAttempts = currentConfiguration.numberOfAttempts, totalAvailableTime = currentConfiguration.secondsTime)) }
     var stageInfo by remember { mutableStateOf(checkNotNull(getStageInfo(gameState.value.getCurrentStage())) { "No se encontró información para la etapa $gameState.value.getCurrentStage()" }) }
     var parts by remember { mutableStateOf(emptyList<HorsePart>()) }
     var showZoomedView by remember { mutableStateOf(false) }
@@ -277,7 +277,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
                     ) {
                         // Etapa actual
                         Text(
-                            text = "Etapa ${gameState.value.getCurrentStage()}: ${getStageInfo(gameState.value.getCurrentStage())?.correctHorsePart?.name ?: "Desconocida"}",
+                            text = "Etapa ${gameState.value.getCurrentStage()}",
                             style = TextStyle(
                                 fontFamily = FontFamily.SansSerif,
                                 fontSize = 22.sp,
@@ -291,6 +291,17 @@ fun GameScreen(navigateToMenu: () -> Unit,
                         Text(
 
                             text = "⏳Tiempo: ${gameState.value.getFormattedElapsedTime()}",
+                            style = TextStyle(
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color.White,
+                                textAlign = TextAlign.Center
+                            )
+                        )
+
+                        Text(
+                            text = "⏳Tiempo restante: ${gameState.value.getFormattedRemainingTime()}",
                             style = TextStyle(
                                 fontFamily = FontFamily.Monospace,
                                 fontSize = 18.sp,
