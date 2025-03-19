@@ -104,10 +104,12 @@ data class GameState(
         elapsedTime++
     }
 
-    private fun getRemainingTime(): Int {
+    fun getRemainingTime(): Int {
         val remainingTime = totalAvailableTime - elapsedTime.toInt()
         return if (remainingTime > 0) remainingTime else 0
     }
+
+    fun isTimeUp(): Boolean = getRemainingTime() == 0
 
     @RequiresApi(Build.VERSION_CODES.S)
     fun getFormattedRemainingTime(): String {
