@@ -15,6 +15,8 @@ import com.cedica.cedica.data.seed.users_seed
 import com.cedica.cedica.core.guestData.GuestUser
 import com.cedica.cedica.data.user.User
 import com.cedica.cedica.ui.AppViewModelProvider
+import com.cedica.cedica.ui.profile.details.UserPatientData
+import com.cedica.cedica.ui.profile.details.UserTherapistData
 import com.cedica.cedica.ui.theme.CedicaTheme
 import com.cedica.cedica.ui.utils.composables.SimpleAlertDialog
 
@@ -38,12 +40,24 @@ fun ProfileListScreen(
     val profileUiState by viewModel.uiState.collectAsState()
     val alertNotification = viewModel.alertNotification
 
+    val onDetailTherapist: @Composable (id: Long) -> Unit = { id ->
+        val user = profileUiState.therapists.find { it.user.id == id }
+        user?.let {
+            UserTherapistData(user = it)
+        }
+    }
+    val onDetailPatient: @Composable (id: Long) -> Unit = { id ->
+        val user = profileUiState.patients.find { it.user.id == id }
+        user?.let {
+            UserPatientData(user = it)
+        }
+    }
+
     Screen(
         patients = profileUiState.patients.map { it.user },
         therapists = profileUiState.therapists.map { it.user },
         onLogin = { user: User ->
-            viewModel.login(user)
-            onNavigateUserLogin()
+            viewModel.login(user, onNavigateUserLogin)
         },
         onGuestLogin = {
             viewModel.guestLogin()
@@ -52,11 +66,13 @@ fun ProfileListScreen(
         onDeleteUser = { user: User ->
             viewModel.deleteUser(user)
         },
-        onCreateTherapist = onNavigateCreateTherapist,
-        onCreatePatient = onNavigateCreatePatient,
         onUserSetting = onNavigateUserSetting,
+        onCreateTherapist = onNavigateCreateTherapist,
         onEditTherapist = onNavigateEditTherapist,
+        onDetailTherapist = onDetailTherapist,
+        onCreatePatient = onNavigateCreatePatient,
         onEditPatient = onNavigateEditPatient,
+        onDetailPatient = onDetailPatient,
         modifier = modifier,
         currentUser = profileUiState.currentUser
     )
@@ -79,15 +95,18 @@ private fun Screen(
     therapists: List<User> = emptyList(),
     onLogin: (User) -> Unit = {},
     onDeleteUser: (User) -> Unit,
+    onUserSetting: (Long) -> Unit,
     onGuestLogin: () -> Unit = {},
     onCreateTherapist: () -> Unit = {},
-    onCreatePatient: () -> Unit = {},
     onEditTherapist: (Long) -> Unit = {},
+    onDetailTherapist: @Composable (id: Long) -> Unit = {},
+    onCreatePatient: () -> Unit = {},
     onEditPatient: (Long) -> Unit = {},
-    onUserSetting: (Long) -> Unit,
+    onDetailPatient: @Composable (id: Long) -> Unit = {},
     currentUser: User = GuestUser,
     modifier: Modifier = Modifier,
 ) {
+
     Scaffold(
         floatingActionButton = {
             ExpandableFAB(
@@ -108,6 +127,7 @@ private fun Screen(
                         onDelete = onDeleteUser,
                         onEdit = onEditPatient,
                         onUserSetting = onUserSetting,
+                        onDetail = onDetailPatient,
                         modifier = Modifier.fillMaxWidth()
                     )
                 },
@@ -118,6 +138,7 @@ private fun Screen(
                         onLogin = onLogin,
                         onDelete = onDeleteUser,
                         onUserSetting = onUserSetting,
+                        onDetail = onDetailTherapist,
                         onEdit = onEditTherapist,
                         modifier = Modifier.fillMaxWidth()
                     )

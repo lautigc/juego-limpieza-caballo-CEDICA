@@ -99,9 +99,9 @@ val tools = listOf(
 fun GameScreen(navigateToMenu: () -> Unit,
                viewModel: UserViewModel = viewModel(factory = AppViewModelProvider.Factory),
                ) {
+    val user = viewModel.getUser()
 
-    val uiState by viewModel.uiState.collectAsState()
-    val currentConfiguration = uiState.user.personalConfiguration
+    val currentConfiguration = user.personalConfiguration
     
     // Esto es para orientar la pantalla en sentido horizontal
     LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
@@ -137,7 +137,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
     val context = LocalContext.current
     val soundPlayer: SoundPlayer?
     val speech: TextToSpeechWrapper?
-    val voice = uiState.user.personalConfiguration.voiceType
+    val voice = currentConfiguration.voiceType
     if(!isInPreview()) {
         soundPlayer = remember { SoundPlayer(context) }
         speech = remember { TextToSpeechWrapper(context, voice) }

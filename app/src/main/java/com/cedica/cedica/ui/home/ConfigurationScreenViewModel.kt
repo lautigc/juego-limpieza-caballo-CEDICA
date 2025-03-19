@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 data class ConfigurationScreenUiState(
     val generalVolume: InputField<Int> = InputField(
@@ -24,7 +25,6 @@ data class ConfigurationScreenUiState(
     val musicVolume: InputField<Int> = InputField(
         GlobalConfigurationDefaults.MUSIC.defaultValue
     ),
-    val userID: Long = GuestUser.id,
 )
 
 class ConfigurationScreenViewModel(
@@ -37,14 +37,16 @@ class ConfigurationScreenViewModel(
     init {
         viewModelScope.launch {
             val configuration = globalConfiguration.getGlobalConfiguration().first()
-            val userID = session.getUserID().first()
             _uiState.value = ConfigurationScreenUiState(
                 generalVolume = InputField(configuration.generalVolume),
                 effectsVolume = InputField(configuration.effectsVolume),
                 musicVolume = InputField(configuration.musicVolume),
-                userID = userID,
             )
         }
+    }
+
+    fun getUserID(): Long = runBlocking {
+        session.getUserID().first()
     }
 
     fun saveConfiguration() {

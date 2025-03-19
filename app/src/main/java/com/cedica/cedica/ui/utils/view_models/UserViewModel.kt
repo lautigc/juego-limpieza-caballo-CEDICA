@@ -9,8 +9,10 @@ import com.cedica.cedica.data.user.LoadingUser
 import com.cedica.cedica.data.user.User
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.runBlocking
 
 data class UserUiState(
     val user: User = LoadingUser,
@@ -35,5 +37,9 @@ class UserViewModel(
 
     suspend fun getUserSessionID(): Flow<Long> {
         return session.getUserID()
+    }
+
+    fun getUser(): User = runBlocking {
+        userRepository.getByID(session.getUserID().first())
     }
 }

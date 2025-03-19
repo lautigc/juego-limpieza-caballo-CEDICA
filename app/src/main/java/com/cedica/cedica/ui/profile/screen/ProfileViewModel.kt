@@ -55,9 +55,10 @@ class ProfileListScreenViewModel(
 
     val alertNotification = AlertNotification(notification)
 
-    fun login(user: User) {
+    fun login(user: User, redirectTo: () -> Unit) {
         viewModelScope.launch {
             this@ProfileListScreenViewModel.session.setUserID(user.id)
+            redirectTo()
         }
     }
 

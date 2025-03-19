@@ -12,11 +12,13 @@ import kotlinx.coroutines.flow.Flow
 import java.util.Date
 
 // ISO/IEC 5218
-enum class Gender(val code: Int) {
-    NOT_KNOWN(0),
-    MALE(1),
-    FEMALE(2),
-    NOT_APPLICABLE(9)
+enum class Gender(val code: Int, private val toStr: String) {
+    NOT_KNOWN(0, "No definido"),
+    MALE(1, "Masculino"),
+    FEMALE(2, "Femenino"),
+    NOT_APPLICABLE(9, "No aplicable");
+
+    override fun toString(): String = this.toStr
 }
 
 @Entity(
