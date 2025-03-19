@@ -184,7 +184,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
         LaunchedEffect(Unit) {
             speech?.speak("Completaste el juego, felicitaciones!!. Hacé click en el botón para volver al menú.")
             val playSession = gameState.value.getCompletionTime()?.seconds?.let {
-                val id = sessionViewModel.uiState.value.user.id
+                val id = user.id
                 PlaySession(
                     date = Date(),
                     difficultyLevel = gameState.value.getDifficulty(),
