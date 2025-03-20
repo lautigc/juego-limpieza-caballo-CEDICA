@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 data class UserUiState(
@@ -33,6 +34,12 @@ class UserViewModel(
 
     companion object {
         private const val TIMEOUT_MILLIS = 5_000L
+    }
+
+    fun guestLogin(): Unit {
+        viewModelScope.launch {
+            session.setUserID(GuestUser.id)
+        }
     }
 
     suspend fun getUserSessionID(): Flow<Long> {

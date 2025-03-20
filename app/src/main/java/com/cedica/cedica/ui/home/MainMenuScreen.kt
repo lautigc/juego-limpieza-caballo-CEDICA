@@ -41,6 +41,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.cedica.cedica.R
+import com.cedica.cedica.core.guestData.isGuestUser
 import com.cedica.cedica.core.navigation.About
 import com.cedica.cedica.core.navigation.Game
 import com.cedica.cedica.core.navigation.Stats
@@ -49,6 +50,7 @@ import com.cedica.cedica.data.permissions.HasPermission
 import com.cedica.cedica.data.permissions.Permission
 import com.cedica.cedica.ui.AppViewModelProvider
 import com.cedica.cedica.ui.theme.CedicaTheme
+import com.cedica.cedica.ui.utils.view_models.UserUiState
 import com.cedica.cedica.ui.utils.view_models.UserViewModel
 
 data class MenuItem(val text: String, val destination: Any, val permission: Permission? = null)
@@ -121,7 +123,7 @@ fun TopBar(navController: NavController, modifier: Modifier = Modifier, firstNam
 }
 
 @Composable
-fun HorizontalLayout(navController: NavController) {
+fun HorizontalLayout(navController: NavController, onGuestLogin: () -> Unit = {}, uiState: UserUiState) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -129,16 +131,30 @@ fun HorizontalLayout(navController: NavController) {
             .fillMaxSize()
             .padding(horizontal = 16.dp)
     ) {
-        MenuItems(navController, Modifier.weight(1f))
+        MenuItems(
+            navController = navController,
+            buttonModifier = Modifier.weight(1f),
+            onGuestLogin = onGuestLogin,
+            uiState = uiState
+        )
     }
 }
 
 @Composable
 private fun MenuItems(
     navController: NavController,
+    uiState: UserUiState,
     buttonModifier: Modifier,
+    onGuestLogin: () -> Unit = {},
     spaceBetweenButtons: Dp? = null,
 ) {
+    if (!isGuestUser(uiState.user.id)) {
+        MenuButton("Ingresar como invitado", modifier = buttonModifier) {
+            onGuestLogin()
+        }
+    }
+    spaceBetweenButtons?.let { Spacer(modifier = Modifier.size(it)) }
+
     menuItems.forEach { item ->
         val button: @Composable () -> Unit = {
             MenuButton(item.text, modifier = buttonModifier) {
@@ -146,24 +162,30 @@ private fun MenuItems(
             }
         }
 
-        item.permission?.let {
-            HasPermission(it) {
+        item.permission?.let { p ->
+            HasPermission(p) {
                 button.invoke()
             }
         } ?: button.invoke()
-        spaceBetweenButtons?.let {Spacer(modifier = Modifier.size(it))}
+        spaceBetweenButtons?.let { Spacer(modifier = Modifier.size(it)) }
     }
 }
 
 @Composable
-fun VerticalLayout(navController: NavController) {
+fun VerticalLayout(navController: NavController, onGuestLogin: () -> Unit = {}, uiState: UserUiState) {
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxSize()
     ) {
-        MenuItems(navController, Modifier.fillMaxWidth(0.6f).scale(1.4f), 32.dp)
+        MenuItems(
+            navController = navController,
+            buttonModifier = Modifier.fillMaxWidth(0.6f).scale(1.4f),
+            spaceBetweenButtons = 32.dp,
+            onGuestLogin = onGuestLogin,
+            uiState = uiState,
+        )
     }
 }
 
@@ -174,13 +196,14 @@ fun MainMenuScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    MainMenu(navController, firstNameUser = uiState.user.firstName)
+    MainMenu(navController, uiState = uiState, onGuestLogin = viewModel::guestLogin)
 }
 
 @Composable
 private fun MainMenu(
     navController: NavController,
-    firstNameUser: String
+    onGuestLogin: () -> Unit = {},
+    uiState: UserUiState = UserUiState(),
 ) {
     Box(
         modifier = Modifier
@@ -190,15 +213,15 @@ private fun MainMenu(
         TopBar(
             navController,
             modifier = Modifier.align(Alignment.TopStart),
-            firstNameUser = firstNameUser
+            firstNameUser = uiState.user.firstName
         )
 
         val isHorizontal =
             LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
         if (isHorizontal) {
-            HorizontalLayout(navController)
+            HorizontalLayout(navController, onGuestLogin = onGuestLogin, uiState)
         } else {
-            VerticalLayout(navController)
+            VerticalLayout(navController, onGuestLogin = onGuestLogin, uiState)
         }
     }
 }
@@ -207,7 +230,7 @@ private fun MainMenu(
 @Composable
 fun PreviewMainMenuVertical() {
     CedicaTheme {
-        MainMenu(navController = rememberNavController(), firstNameUser = "Invitado")
+        MainMenu(navController = rememberNavController())
     }
 }
 
@@ -215,6 +238,6 @@ fun PreviewMainMenuVertical() {
 @Composable
 fun PreviewMainMenuHorizontal() {
     CedicaTheme {
-        MainMenu(navController = rememberNavController(), firstNameUser = "Invitado")
+        MainMenu(navController = rememberNavController())
     }
 }
