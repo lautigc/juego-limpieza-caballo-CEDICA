@@ -5,6 +5,7 @@ import com.cedica.cedica.data.user.Gender
 import com.cedica.cedica.data.user.Patient
 import com.cedica.cedica.data.user.Therapist
 import com.cedica.cedica.data.user.User
+import java.util.Calendar
 import java.util.Date
 
 val users_seed = listOf(
@@ -13,60 +14,31 @@ val users_seed = listOf(
     User(id = 3, role = Role.USER, firstName = "Martín", lastName = "Palermo", username = "martin9"),
     User(id = 4, role = Role.USER, firstName = "Carlos", lastName = "Bianchi", username = "carlos_b"),
     User(id = 5, role = Role.USER, firstName = "Leandro", lastName = "Campos", username = "leandro_c"),
-    User(id = 6, role = Role.USER, firstName = "Adrian", lastName = "Robinson", username = "adrian_r"),
-    User(id = 7, role = Role.USER, firstName = "Alex", lastName = "Jackson", username = "alex_j"),
-    User(id = 8, role = Role.USER, firstName = "Amy", lastName = "Scott", username = "amy_s"),
-    User(id = 9, role = Role.USER, firstName = "Andrew", lastName = "Wright", username = "andrew_w"),
-    User(id = 10, role = Role.USER, firstName = "Anna", lastName = "Mitchell", username = "anna_m"),
-    User(id = 11, role = Role.USER, firstName = "Anna", lastName = "Parker", username = "anna_p"),
-    User(id = 12, role = Role.USER, firstName = "Brandon", lastName = "Johnson", username = "brandon_j"),
-    User(id = 13, role = Role.USER, firstName = "Chuck", lastName = "Taylor", username = "chuck_t"),
-    User(id = 14, role = Role.ADMIN, firstName = "Elisabeth", lastName = "Robinson", username = "elisabeth_r"),
-    User(id = 15, role = Role.ADMIN, firstName = "Eric", lastName = "Adams", username = "eric_a"),
-    User(id = 16, role = Role.ADMIN, firstName = "Erica", lastName = "Clark", username = "erica_c"),
-    User(id = 17, role = Role.ADMIN, firstName = "Jacob", lastName = "Smith", username = "jacob_s"),
-    User(id = 18, role = Role.ADMIN, firstName = "Juan", lastName = "Rodriguez", username = "juan_r"),
-    User(id = 19, role = Role.ADMIN, firstName = "Kim", lastName = "Anderson", username = "kim_a"),
-    User(id = 20, role = Role.ADMIN, firstName = "Lindsay", lastName = "Moore", username = "lindsay_m"),
-    User(id = 21, role = Role.ADMIN, firstName = "Lisa", lastName = "Moore", username = "lisa_m"),
-    User(id = 22, role = Role.ADMIN, firstName = "Maria", lastName = "Lopez", username = "maria_l"),
-    User(id = 23, role = Role.ADMIN, firstName = "Peter", lastName = "Nelson", username = "peter_n"),
-    User(id = 24, role = Role.ADMIN, firstName = "Rachel", lastName = "Thomas", username = "rachel_t"),
-    User(id = 25, role = Role.ADMIN, firstName = "Stuart", lastName = "Thomson", username = "stuart_t"),
-    User(id = 26, role = Role.ADMIN, firstName = "Victoria", lastName = "Lewis", username = "victoria_l"),
-    User(id = 27, role = Role.ADMIN, firstName = "Vincent", lastName = "Lee", username = "vincent_l"),
+    User(id = 6, role = Role.ADMIN, firstName = "Elisabeth", lastName = "Robinson", username = "elisabeth_r"),
+    User(id = 7, role = Role.ADMIN, firstName = "Eric", lastName = "Adams", username = "eric_a"),
+    User(id = 8, role = Role.ADMIN, firstName = "Erica", lastName = "Clark", username = "erica_c"),
+    User(id = 9, role = Role.ADMIN, firstName = "Jacob", lastName = "Smith", username = "jacob_s"),
+    User(id = 10, role = Role.ADMIN, firstName = "Juan", lastName = "Rodriguez", username = "juan_r")
 )
 
+fun getDate(year: Int, month: Int, day: Int): Date {
+    val calendar = Calendar.getInstance()
+    calendar.set(year, month - 1, day)
+    return calendar.time
+}
 
 val patients_seed = listOf(
-    Patient(userID = 1, gender = Gender.MALE, observations = "Sin observaciones", birthDate = Date()),
-    Patient(userID = 2, gender = Gender.MALE, observations = "Paciente con historial de lesiones", birthDate = Date()),
-    Patient(userID = 3, gender = Gender.MALE, observations = "Requiere seguimiento mensual", birthDate = Date()),
-    Patient(userID = 4, gender = Gender.MALE, observations = "Bajo tratamiento psicológico", birthDate = Date()),
-    Patient(userID = 5, gender = Gender.MALE, observations = "Consulta por ansiedad", birthDate = Date()),
-    Patient(userID = 6, gender = Gender.MALE, observations = "Paciente con trastorno del sueño", birthDate = Date()),
-    Patient(userID = 7, gender = Gender.MALE, observations = "Historial de depresión", birthDate = Date()),
-    Patient(userID = 8, gender = Gender.FEMALE, observations = "Evaluación inicial realizada", birthDate = Date()),
-    Patient(userID = 9, gender = Gender.MALE, observations = "Problemas de estrés laboral", birthDate = Date()),
-    Patient(userID = 10, gender = Gender.FEMALE, observations = "Seguimiento de terapia cognitiva", birthDate = Date()),
-    Patient(userID = 11, gender = Gender.FEMALE, observations = "Diagnóstico de TDAH", birthDate = Date()),
-    Patient(userID = 12, gender = Gender.MALE, observations = "Tratamiento por ansiedad social", birthDate = Date()),
-    Patient(userID = 13, gender = Gender.MALE, observations = "Consulta por fobia social", birthDate = Date())
+    Patient(userID = 1, gender = Gender.MALE, observations = "Sin observaciones", birthDate = getDate(1985, 5, 20)),
+    Patient(userID = 2, gender = Gender.MALE, observations = "Paciente con historial de lesiones", birthDate = getDate(1990, 8, 15)),
+    Patient(userID = 3, gender = Gender.MALE, observations = "Requiere seguimiento mensual", birthDate = getDate(1978, 11, 3)),
+    Patient(userID = 4, gender = Gender.MALE, observations = "Bajo tratamiento psicológico", birthDate = getDate(1982, 2, 28)),
+    Patient(userID = 5, gender = Gender.MALE, observations = "Consulta por ansiedad", birthDate = getDate(1995, 7, 10))
 )
 
 val therapists_seed = listOf(
-    Therapist(userID = 14),
-    Therapist(userID = 15),
-    Therapist(userID = 16),
-    Therapist(userID = 17),
-    Therapist(userID = 18),
-    Therapist(userID = 19),
-    Therapist(userID = 20),
-    Therapist(userID = 21),
-    Therapist(userID = 22),
-    Therapist(userID = 23),
-    Therapist(userID = 24),
-    Therapist(userID = 25),
-    Therapist(userID = 26),
-    Therapist(userID = 27)
+    Therapist(userID = 6),
+    Therapist(userID = 7),
+    Therapist(userID = 8),
+    Therapist(userID = 9),
+    Therapist(userID = 10)
 )
