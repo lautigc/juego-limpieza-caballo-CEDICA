@@ -150,14 +150,6 @@ private fun MenuItems(
     onGuestLogin: () -> Unit = {},
     spaceBetweenButtons: Dp? = null,
 ) {
-    if (!isGuestUser(uiState.user.id)) {
-        MenuButton("Ingresar como invitado", modifier = buttonModifier) {
-            onGuestLogin()
-            navController.navigate(Menu)
-        }
-    }
-    spaceBetweenButtons?.let { Spacer(modifier = Modifier.size(it)) }
-
     menuItems.forEach { item ->
         val button: @Composable () -> Unit = {
             MenuButton(item.text, modifier = buttonModifier) {
@@ -172,6 +164,14 @@ private fun MenuItems(
         } ?: button.invoke()
         spaceBetweenButtons?.let { Spacer(modifier = Modifier.size(it)) }
     }
+
+    if (!isGuestUser(uiState.user.id)) {
+        MenuButton("Ingresar como invitado", modifier = buttonModifier) {
+            onGuestLogin()
+            navController.navigate(Menu)
+        }
+    }
+    spaceBetweenButtons?.let { Spacer(modifier = Modifier.size(it)) }
 }
 
 @Composable
