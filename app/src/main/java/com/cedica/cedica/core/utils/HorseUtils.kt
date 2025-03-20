@@ -8,7 +8,8 @@ data class HorsePart(
     val name: String,
     val polygon: List<Pair<Float, Float>>,
     val zoomedPolygon: List<Pair<Float, Float>>,
-    @DrawableRes val drawableRes: Int
+    @DrawableRes val drawableRes: Int,
+    val dirtyLevel: Int
 )
 
 enum class HorsePartType(val partName: String, @DrawableRes val imageRes: Int) {
@@ -73,7 +74,8 @@ val horseParts = listOf(
             0.7414966f to 0.6666667f,
             0.7346939f to 0.4313725f
         ),
-        HorsePartType.CABEZA.imageRes
+        HorsePartType.CABEZA.imageRes,
+        3
     ),
     HorsePart(
         HorsePartType.CUERPO.partName,
@@ -91,7 +93,8 @@ val horseParts = listOf(
             0.325228f to 0.7272727f,
             0.2674772f to 0.1666667f
         ),
-        HorsePartType.CUERPO.imageRes
+        HorsePartType.CUERPO.imageRes,
+        5
     ),
     HorsePart(
         HorsePartType.COLA.partName,
@@ -112,11 +115,12 @@ val horseParts = listOf(
             0.5230769f to 0.4007937f,
             0.5076923f to 0.1825397f
         ),
-        HorsePartType.COLA.imageRes
+        HorsePartType.COLA.imageRes,
+        5
     ),
     HorsePart(
         HorsePartType.MANOS.partName,
-        listOf(0.4178571f to 0.6404494f, 0.3714286f to 0.6314607f, 0.3428571f to 0.8404494f, 0.3482143f to 0.988764f, 0.4428571f to 0.9955056f, 0.4892857f to 0.9235955f, 0.4821429f to 0.6651685f),
+        listOf(0.4660714f to 0.4404494f, 0.4785714f to 0.6f, 0.4839286f to 0.7932584f, 0.4517857f to 0.8516854f, 0.4089286f to 0.8449438f, 0.3875f to 0.8089888f, 0.3714286f to 0.7078652f, 0.3785714f to 0.5505618f, 0.3857143f to 0.447191f, 0.4196429f to 0.4247191f),
         listOf(
             0.4969325f to 0.0877193f,
             0.398773f to 0.1157895f,
@@ -127,7 +131,8 @@ val horseParts = listOf(
             0.6932515f to 0.2315789f,
             0.6441718f to 0.1192982f
         ),
-        HorsePartType.MANOS.imageRes
+        HorsePartType.MANOS.imageRes,
+        5
     ),
     HorsePart(
         HorsePartType.PATAS.partName,
@@ -144,7 +149,8 @@ val horseParts = listOf(
             0.2944444f to 0.0946372f,
             0.4277778f to 0.0694006f
         ),
-        HorsePartType.PATAS.imageRes
+        HorsePartType.PATAS.imageRes,
+        5
     ),
     HorsePart(
         HorsePartType.CUELLO.partName,
@@ -162,49 +168,57 @@ val horseParts = listOf(
             0.1987952f to 0.377193f,
             0.2710843f to 0.245614f
         ),
-        HorsePartType.CUELLO.imageRes
+        HorsePartType.CUELLO.imageRes,
+        4
     ),
     HorsePart(
         HorsePartType.LOMO.partName,
         listOf(0.7589286f to 0.211236f, 0.7678571f to 0.3101124f, 0.6446429f to 0.3640449f, 0.3892857f to 0.3573034f, 0.3375f to 0.2674157f, 0.4142857f to 0.2179775f),
         listOf(0.2765957f to 0.0959596f, 0.1489362f to 0.1212121f, 0.1732523f to 0.2878788f, 0.56231f to 0.2828283f, 0.8085106f to 0.2272727f, 0.775076f to 0.0909091f, 0.4893617f to 0.1666667f),
-        HorsePartType.LOMO.imageRes
+        HorsePartType.LOMO.imageRes,
+        20
     ),
     HorsePart(
         HorsePartType.PALETA.partName,
         listOf(0.2553571f to 0.3955056f, 0.3464286f to 0.3550562f, 0.3803571f to 0.4382022f, 0.3678571f to 0.5685393f, 0.2660714f to 0.4719101f),
         listOf(0.5061728f to 0.2388889f, 0.3497942f to 0.3888889f, 0.3292181f to 0.7055556f, 0.3868313f to 0.8333333f, 0.436214f to 0.9166667f, 0.4938272f to 0.9055556f, 0.6419753f to 0.6611111f, 0.6460905f to 0.5055556f, 0.5884774f to 0.2722222f),
-        HorsePartType.PALETA.imageRes
+        HorsePartType.PALETA.imageRes,
+        5
     ),
     HorsePart(
         HorsePartType.PANZA.partName,
         listOf(0.5071429f to 0.4561798f, 0.4285714f to 0.5438202f, 0.4410714f to 0.6314607f, 0.5196429f to 0.6561798f, 0.6964286f to 0.6089888f, 0.7553571f to 0.552809f, 0.7339286f to 0.4426966f),
         listOf(0.2948328f to 0.540404f, 0.2857143f to 0.7828283f, 0.2644377f to 0.8434343f, 0.4012158f to 0.9040404f, 0.5531915f to 0.8181818f, 0.6930091f to 0.6818182f, 0.674772f to 0.469697f),
-        HorsePartType.PANZA.imageRes
+        HorsePartType.PANZA.imageRes,
+        10
     ),
     HorsePart(
         HorsePartType.ANCA.partName,
         listOf(0.7142857f to 0.2898876f, 0.6375f to 0.3752809f, 0.6839286f to 0.5078652f, 0.7678571f to 0.5460674f, 0.8410714f to 0.447191f, 0.8232143f to 0.3235955f),
         listOf(0.7112462f to 0.1717172f, 0.5987842f to 0.4292929f, 0.6382979f to 0.6868687f, 0.9057751f to 0.5808081f, 0.8905775f to 0.2222222f),
-        HorsePartType.ANCA.imageRes
+        HorsePartType.ANCA.imageRes,
+        10
     ),
     HorsePart(
         HorsePartType.VERIJA.partName,
         listOf(0.7160714f to 0.4696629f, 0.6428571f to 0.5550562f, 0.7107143f to 0.6337079f, 0.75f to 0.6696629f, 0.8035714f to 0.5685393f),
         listOf(0.6899696f to 0.6010101f, 0.8176292f to 0.8484848f, 0.8541033f to 0.9444444f, 0.7720365f to 0.9545455f, 0.6930091f to 0.7727273f, 0.662614f to 0.7272727f, 0.5866261f to 0.7828283f, 0.6018237f to 0.6212121f),
-        HorsePartType.VERIJA.imageRes
+        HorsePartType.VERIJA.imageRes,
+        25
     ),
     HorsePart(
         HorsePartType.CRINES.partName,
         listOf(0.1053571f to 0.058427f, 0.2392857f to 0.0898876f, 0.3767857f to 0.2629213f, 0.3857143f to 0.3460674f, 0.2803571f to 0.3393258f, 0.1928571f to 0.2022472f),
         listOf(0.3484848f to 0.1555556f, 0.4280303f to 0.4088889f, 0.6439394f to 0.68f, 0.8371212f to 0.7111111f, 0.8295455f to 0.5511111f, 0.7386364f to 0.5288889f, 0.4848485f to 0.2666667f),
-        HorsePartType.CRINES.imageRes
+        HorsePartType.CRINES.imageRes,
+        8
     ),
     HorsePart(
         HorsePartType.VASOS.partName,
         listOf(0.3767857f to 0.8966292f, 0.475f to 0.9168539f, 0.4517857f to 0.9730337f, 0.4285714f to 0.988764f, 0.3535714f to 0.9842697f),
         listOf(0.145749f to 0.8545455f, 0.0283401f to 0.7181818f, 0.0445344f to 0.2409091f, 0.1659919f to 0.2090909f, 0.4817814f to 0.0818182f, 0.8380567f to 0.1772727f, 0.8461538f to 0.6909091f, 0.7975709f to 0.8909091f, 0.3036437f to 0.8545455f),
-        HorsePartType.VASOS.imageRes
+        HorsePartType.VASOS.imageRes,
+        5
     )
 )
 
