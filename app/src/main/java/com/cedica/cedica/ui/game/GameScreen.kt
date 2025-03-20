@@ -145,6 +145,7 @@ fun GameScreen(navigateToMenu: () -> Unit,
         val globalConfig = runBlocking {
              GlobalConfiguration.getGlobalConfiguration().first()
         }
+        Log.d("Volumen", "volumen global: ${globalConfig.effectsVolume}")
         soundPlayer = remember { SoundPlayer(context, globalConfig.effectsVolume) }
         speech = remember { TextToSpeechWrapper(context, voice) }
     } else {

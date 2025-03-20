@@ -7,17 +7,13 @@ import com.cedica.cedica.R
 import com.cedica.cedica.ui.utils.view_models.UserViewModel
 import kotlinx.coroutines.delay
 
-class SoundPlayer(private val context: Context, private val configVolume: Int) {
+class SoundPlayer(private val context: Context, configVolume: Int) {
     private val soundPool: SoundPool
     private val soundMap = mutableMapOf<String, Int>()
     private var normVolume = 0f;
 
     init {
-        if (configVolume != 0) {
-            this.normVolume = (1 / configVolume).toFloat()
-        } else {
-            this.normVolume = 0F
-        }
+        this.normVolume = (configVolume / 100).toFloat()
 
         val audioAttributes = AudioAttributes.Builder()
             .setUsage(AudioAttributes.USAGE_GAME)
