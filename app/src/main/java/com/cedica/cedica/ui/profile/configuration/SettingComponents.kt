@@ -61,7 +61,7 @@ fun SettingOption(
                 )
             }
         }
-        Spacer(modifier = Modifier.width(dimensionResource(R.dimen.padding_medium)))
+        Spacer(modifier = Modifier.width(dimensionResource(R.dimen.padding_small)))
         Row(modifier = Modifier.weight(1f), horizontalArrangement = arrangementSelector) {
             selector()
         }

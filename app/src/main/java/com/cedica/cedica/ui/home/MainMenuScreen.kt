@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,6 +35,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -43,15 +45,17 @@ import com.cedica.cedica.core.navigation.About
 import com.cedica.cedica.core.navigation.Game
 import com.cedica.cedica.core.navigation.Stats
 import com.cedica.cedica.core.navigation.UserListScreen
+import com.cedica.cedica.data.permissions.HasPermission
+import com.cedica.cedica.data.permissions.Permission
 import com.cedica.cedica.ui.AppViewModelProvider
 import com.cedica.cedica.ui.theme.CedicaTheme
 import com.cedica.cedica.ui.utils.view_models.UserViewModel
 
-data class MenuItem(val text: String, val destination: Any)
+data class MenuItem(val text: String, val destination: Any, val permission: Permission? = null)
 
 val menuItems = listOf(
-    MenuItem("Jugar", Game),
-    MenuItem("Progreso", Stats),
+    MenuItem("Jugar", Game, Permission.GAME_PLAY),
+    MenuItem("Progreso", Stats, Permission.STATS_READ),
     MenuItem("Acerca de", About)
 )
 
@@ -104,12 +108,14 @@ fun TopBar(navController: NavController, modifier: Modifier = Modifier, firstNam
 
 
         // Botón de configuración
-        IconButton(onClick = { navController.navigate(com.cedica.cedica.core.navigation.Configuration) }) {
-            Icon(
-                imageVector = Icons.Rounded.Settings,
-                contentDescription = "Configuración",
-                modifier = Modifier.size(60.dp)
-            )
+        HasPermission(Permission.CONFIG_CREATE) {
+            IconButton(onClick = { navController.navigate(com.cedica.cedica.core.navigation.Configuration) }) {
+                Icon(
+                    imageVector = Icons.Rounded.Settings,
+                    contentDescription = "Configuración",
+                    modifier = Modifier.size(60.dp)
+                )
+            }
         }
     }
 }
@@ -123,11 +129,29 @@ fun HorizontalLayout(navController: NavController) {
             .fillMaxSize()
             .padding(horizontal = 16.dp)
     ) {
-        menuItems.forEach { item ->
-            MenuButton(item.text, Modifier.weight(1f)) {
+        MenuItems(navController, Modifier.weight(1f))
+    }
+}
+
+@Composable
+private fun MenuItems(
+    navController: NavController,
+    buttonModifier: Modifier,
+    spaceBetweenButtons: Dp? = null,
+) {
+    menuItems.forEach { item ->
+        val button: @Composable () -> Unit = {
+            MenuButton(item.text, modifier = buttonModifier) {
                 navController.navigate(item.destination)
             }
         }
+
+        item.permission?.let {
+            HasPermission(it) {
+                button.invoke()
+            }
+        } ?: button.invoke()
+        spaceBetweenButtons?.let {Spacer(modifier = Modifier.size(it))}
     }
 }
 
@@ -139,12 +163,7 @@ fun VerticalLayout(navController: NavController) {
         modifier = Modifier
             .fillMaxSize()
     ) {
-        menuItems.forEach { item ->
-            MenuButton(text = item.text, Modifier.fillMaxWidth(0.6f).scale(1.4f)) {
-                navController.navigate(item.destination)
-            }
-            Spacer(modifier = Modifier.height(32.dp))
-        }
+        MenuItems(navController, Modifier.fillMaxWidth(0.6f).scale(1.4f), 32.dp)
     }
 }
 

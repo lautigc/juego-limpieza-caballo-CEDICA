@@ -62,6 +62,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cedica.cedica.R
+import com.cedica.cedica.data.permissions.Permission
+import com.cedica.cedica.data.permissions.hasPermission
 import com.cedica.cedica.data.seed.users_seed
 import com.cedica.cedica.data.user.User
 import com.cedica.cedica.ui.theme.CedicaTheme
@@ -132,7 +134,8 @@ fun UserList(
     onDelete: (User) -> Unit = {},
     onEdit: (userID: Long) -> Unit = {},
     onDetail: @Composable (id: Long) -> Unit = {},
-    onUserSetting: (Long) -> Unit = {},
+    onUserSetting: ((Long) -> Unit)? = {},
+    permission: PermissionData = PermissionData(),
     modifier: Modifier = Modifier
 ) {
     val userItemModifier = Modifier.padding(dimensionResource(R.dimen.padding_small))
@@ -156,7 +159,8 @@ fun UserList(
                     onDelete = { onDelete(currentUser) },
                     onEdit = { onEdit(currentUser.id) },
                     onDetail = @Composable { onDetail(currentUser.id) },
-                    onUserSetting = { onUserSetting(currentUser.id) },
+                    onUserSetting = onUserSetting?.let { { it(currentUser.id) } },
+                    permission = permission,
                     selected = true,
                 )
             }
@@ -170,8 +174,9 @@ fun UserList(
                     onLogin = { onLogin(user) },
                     onDelete = { onDelete(user) },
                     onDetail = @Composable { onDetail(user.id) },
-                    onUserSetting = { onUserSetting(user.id) },
+                    onUserSetting = onUserSetting?.let { { it(currentUser.id) } },
                     onEdit = { onEdit(user.id) },
+                    permission = permission,
                 )
             }
         }
@@ -258,8 +263,9 @@ fun UserItem(
     onLogin: () -> Unit = {},
     onDelete: () -> Unit = {},
     onEdit: () -> Unit = {},
-    onUserSetting: () -> Unit = {},
+    onUserSetting: (() -> Unit)? = {},
     onDetail: @Composable () -> Unit = {},
+    permission: PermissionData = PermissionData(),
     selected: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
@@ -293,12 +299,19 @@ fun UserItem(
                     onDetail = onDetail,
                     onEdit = onEdit,
                     onUserSetting = onUserSetting,
-                    userItem = userItem
+                    userItem = userItem,
+                    permission = permission
                 )
             }
         }
     }
 }
+
+data class PermissionData(
+    val onEdit: List<Permission> = emptyList(),
+    val onDelete: List<Permission> = emptyList(),
+    val onConfig: List<Permission> = emptyList(),
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -306,9 +319,10 @@ fun ItemUserActions(
     isCurrent: Boolean = false,
     onLogin: () -> Unit = {},
     onDelete: () -> Unit = {},
-    onUserSetting: () -> Unit = {},
+    onUserSetting: (() -> Unit)? = {},
     onDetail: @Composable () -> Unit = {},
     onEdit: () -> Unit = {},
+    permission: PermissionData = PermissionData(),
     userItem: User,
     modifier: Modifier = Modifier,
 ) {
@@ -391,36 +405,42 @@ fun ItemUserActions(
             )
         }
 
-        BottomSheetMenuItem(
-            label = "Editar",
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Outlined.Edit,
-                    contentDescription = null,
-                )
-            },
-            onClick = onEdit,
-            modifier = itemModifier
-        )
-        BottomSheetMenuItem(
-            label = "Configuracion",
-            leadingIcon = { Icon(Icons.Filled.Settings, contentDescription = null) },
-            onClick = onUserSetting,
-            modifier = itemModifier
-        )
+        if (hasPermission(permission.onEdit) || isCurrent) {
+            BottomSheetMenuItem(
+                label = "Editar",
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Outlined.Edit,
+                        contentDescription = null,
+                    )
+                },
+                onClick = onEdit,
+                modifier = itemModifier
+            )
+        }
 
-        var onDeleteOpenDialog by rememberSaveable { mutableStateOf(false) }
-        BottomSheetMenuItem(
-            label = "Eliminar",
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Outlined.Delete,
-                    contentDescription = null,
-                )
-            },
-            onClick = { onDeleteOpenDialog = true },
-            modifier = itemModifier
-        )
+        if (onUserSetting != null && (hasPermission(permission.onConfig) || isCurrent)) {
+            BottomSheetMenuItem(
+                label = "Configuracion",
+                leadingIcon = { Icon(Icons.Filled.Settings, contentDescription = null) },
+                onClick = onUserSetting,
+                modifier = itemModifier
+            )
+        }
+
+        if (hasPermission(permission.onDelete) && isCurrent) {
+            var onDeleteOpenDialog by rememberSaveable { mutableStateOf(false) }
+            BottomSheetMenuItem(
+                label = "Eliminar",
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Outlined.Delete,
+                        contentDescription = null,
+                    )
+                },
+                onClick = { onDeleteOpenDialog = true },
+                modifier = itemModifier
+            )
             onDeleteOpenDialog.takeIf { it }?.let {
                 SimpleAlertDialog(
                     onDismissRequest = { onDeleteOpenDialog = false },
@@ -434,6 +454,7 @@ fun ItemUserActions(
                     icon = Icons.Default.Delete
                 )
             }
+        }
     }
 
 }

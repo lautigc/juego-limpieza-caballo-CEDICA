@@ -13,6 +13,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cedica.cedica.data.seed.users_seed
 import com.cedica.cedica.core.guestData.GuestUser
+import com.cedica.cedica.data.permissions.HasPermission
+import com.cedica.cedica.data.permissions.Permission
 import com.cedica.cedica.data.user.User
 import com.cedica.cedica.ui.AppViewModelProvider
 import com.cedica.cedica.ui.profile.details.UserPatientData
@@ -109,11 +111,13 @@ private fun Screen(
 
     Scaffold(
         floatingActionButton = {
-            ExpandableFAB(
-                onGuestLogin = onGuestLogin,
-                onCreateTherapist = onCreateTherapist,
-                onCreatePatient = onCreatePatient,
-            )
+            HasPermission(listOf(Permission.PATIENT_CREATE, Permission.THERAPIST_CREATE)) {
+                ExpandableFAB(
+                    onGuestLogin = onGuestLogin,
+                    onCreateTherapist = onCreateTherapist,
+                    onCreatePatient = onCreatePatient,
+                )
+            }
         }
     ) { _ ->
         TabRowComponent(
@@ -128,6 +132,11 @@ private fun Screen(
                         onEdit = onEditPatient,
                         onUserSetting = onUserSetting,
                         onDetail = onDetailPatient,
+                        permission = PermissionData(
+                            onEdit = listOf(Permission.PATIENT_EDIT),
+                            onDelete = listOf(Permission.PATIENT_DELETE),
+                            onConfig = listOf(Permission.PATIENT_CONFIG),
+                        ),
                         modifier = Modifier.fillMaxWidth()
                     )
                 },
@@ -137,9 +146,14 @@ private fun Screen(
                         currentUser = currentUser,
                         onLogin = onLogin,
                         onDelete = onDeleteUser,
-                        onUserSetting = onUserSetting,
+                        onUserSetting = null,
                         onDetail = onDetailTherapist,
                         onEdit = onEditTherapist,
+                        permission = PermissionData(
+                            onEdit = listOf(Permission.THERAPIST_EDIT),
+                            onDelete = listOf(),
+                            onConfig = listOf(),
+                        ),
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
