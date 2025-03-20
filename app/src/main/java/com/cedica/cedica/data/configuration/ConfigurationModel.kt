@@ -47,13 +47,13 @@ object ConfigurationConstraints {
     const val MAX_TIME = 3600
     const val DEFAULT_TIME = 300
 
-    const val MIN_IMAGES = 0
-    const val MAX_IMAGES = 5
-    const val DEFAULT_IMAGES = 0
+    const val MIN_IMAGES = 1
+    const val MAX_IMAGES = 13
+    const val DEFAULT_IMAGES = 6
 
-    const val MIN_ATTEMPTS = 0
+    const val MIN_ATTEMPTS = 1
     const val MAX_ATTEMPTS = 100
-    const val DEFAULT_ATTEMPTS = 10
+    const val DEFAULT_ATTEMPTS = 5
 
     val DEFAULT_VOICE = VoiceType.FEMALE
 
