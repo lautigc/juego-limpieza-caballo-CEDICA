@@ -9,10 +9,10 @@
     <!-- Settings screen -->
     <string name="setting_time_title">Tiempo</string>
     <string name="setting_time_secondary_text">Para completar el juego</string>
-    <string name="setting_images_title">Cantidad de Imágenes</string>
-    <string name="setting_images_secondary_text">Como ayuda en el juego</string>
+    <string name="setting_images_title">Cantidad de etapas</string>
+    <string name="setting_images_secondary_text">Etapas a jugar por el usuario</string>
     <string name="setting_try_title">Intentos</string>
-    <string name="setting_try_secondary_text">Errores permitidos antes de restar puntos</string>
+    <string name="setting_try_secondary_text">Errores permitidos antes de proveer una pista</string>
     <string name="setting_dificulty_title">Dificultad</string>
     <string name="setting_voice_title">Tipo de voz</string>
     <string name="setting_level_title">Nivel</string>
