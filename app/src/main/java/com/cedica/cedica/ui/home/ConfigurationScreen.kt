@@ -265,16 +265,16 @@ fun VolumeConfiguration(
             volume = configuration.generalVolume,
             onChange = { onChangeConfiguration() },
         )
-        VolumeSlider(
-            label = "Música",
-            volume = configuration.musicVolume,
-            onChange = { onChangeConfiguration() },
-        )
-        VolumeSlider(
-            label = "Efectos",
-            volume = configuration.effectsVolume,
-            onChange = { onChangeConfiguration() },
-        )
+//        VolumeSlider(
+//            label = "Música",
+//            volume = configuration.musicVolume,
+//            onChange = { onChangeConfiguration() },
+//        )
+//        VolumeSlider(
+//            label = "Efectos",
+//            volume = configuration.effectsVolume,
+//            onChange = { onChangeConfiguration() },
+//        )
     }
 }
 
