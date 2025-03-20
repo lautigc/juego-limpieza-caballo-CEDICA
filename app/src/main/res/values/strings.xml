@@ -8,7 +8,7 @@
 
     <!-- Settings screen -->
     <string name="setting_time_title">Tiempo</string>
-    <string name="setting_time_secondary_text">Para completar el juego</string>
+    <string name="setting_time_secondary_text">En segundos para completar el juego</string>
     <string name="setting_images_title">Cantidad de etapas</string>
     <string name="setting_images_secondary_text">Etapas a jugar por el usuario</string>
     <string name="setting_try_title">Intentos</string>
