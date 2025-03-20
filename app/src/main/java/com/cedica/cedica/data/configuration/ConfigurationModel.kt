@@ -12,10 +12,10 @@ enum class DifficultyLevel(
     private val numberOfImages: Int,
     private val numberOfAttempts: Int,
 ) {
-    EASY("Fácil", 300, 5, 10),
-    MEDIUM("Medio", 200, 3, 5),
-    HARD("Difícil", 100, 2, 3),
-    CUSTOM("Personalizado", 300, 0, 10) {
+    EASY("Fácil", 600, 6, 3),
+    MEDIUM("Medio", 300, 9, 5),
+    HARD("Difícil", 180, 13, 7),
+    CUSTOM("Personalizado", 240, 13, 3) {
         override fun getSecondsTime(oldValue: Int): Int = oldValue
         override fun getNumberOfImages(oldValue: Int): Int = oldValue
         override fun getNumberOfAttempts(oldValue: Int): Int = oldValue
