@@ -75,15 +75,20 @@ import java.util.Locale
 import java.util.TimeZone
 
 @Composable
+private fun globalHeaderStyle() = MaterialTheme.typography.titleLarge
+@Composable
+private fun globalTextStyle() = MaterialTheme.typography.bodyLarge
+
+@Composable
 private fun FormContainer(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(dimensionResource(R.dimen.padding_extra_large))
+            .padding(dimensionResource(R.dimen.padding_medium))
             .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.Start,
+        horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
         content()
@@ -178,7 +183,6 @@ private fun CreateTherapistFormContent(
             lastName = lastName,
             username = username,
             spacerModifier = spacerModifier,
-            headerStyle = MaterialTheme.typography.displayMedium,
         )
 
         Spacer(modifier = spacerModifier)
@@ -199,7 +203,6 @@ fun CreatePatientFormContent(
     date: InputField<Date> = InputField(Date()),
     alert: AlertNotification = AlertNotification(),
     saveButtonTitle: String = "Botón",
-    headerStyle: TextStyle = MaterialTheme.typography.displayMedium,
     onCreate: () -> Unit = {},
 ) {
     FormContainer {
@@ -208,23 +211,20 @@ fun CreatePatientFormContent(
         CreateUserFormContent(
             firstName = firstName,
             lastName = lastName,
-            headerStyle = headerStyle,
             username = username,
             spacerModifier = spacerModifier,
         )
 
         Spacer(modifier = spacerModifier)
 
-        GenderInputField(gender, headerStyle)
+        GenderInputField(gender)
 
         Spacer(modifier = spacerModifier)
 
         FormInputField(
             title = "Observaciones",
-            titleStyle = headerStyle,
             text = observations.input,
             onValueChange = observations::onChange,
-            textFieldStyle = MaterialTheme.typography.bodyLarge,
         )
 
         Spacer(modifier = spacerModifier)
@@ -297,29 +297,32 @@ fun Date.toFormattedString(): String {
 @Composable
 fun DateInputField(
     date: InputField<Date>,
-    headerStyle: TextStyle = MaterialTheme.typography.displayMedium,
+    headerStyle: TextStyle = globalHeaderStyle(),
 ) {
     var display by rememberSaveable { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(initialDisplayMode = DisplayMode.Input)
 
-    Text(
-        text = "Fecha de nacimiento",
-        style = headerStyle,
-    )
+    Column{
+        Text(
+            text = "Fecha de nacimiento",
+            style = headerStyle,
+            modifier = Modifier.padding(
+                bottom = dimensionResource(R.dimen.padding_medium)
+            )
+        )
 
-    TextField(
-        value = date.input.toFormattedString(),
-        onValueChange = { },
-        textStyle = MaterialTheme.typography.bodyLarge,
-        enabled = false,
-        modifier = Modifier
-            .width(300.dp) // Ancho fijo
-            .wrapContentHeight() // Se ajusta verticalmente al contenido
-            .clip(RoundedCornerShape(20.dp)) // Esquinas redondeadas
-            .clickable {
-                display = true
-            }
-    )
+        TextField(
+            value = date.input.toFormattedString(),
+            onValueChange = { },
+            textStyle = MaterialTheme.typography.bodyLarge,
+            enabled = false,
+            modifier = Modifier
+                .wrapContentHeight() // Se ajusta verticalmente al contenido
+                .clickable {
+                    display = true
+                }
+        )
+    }
 
     display.takeIf { it }?.let {
         DatePickerDialog(
@@ -344,11 +347,11 @@ private fun CreateUserFormContent(
     firstName: ValidationInputField<String> = NameField(""),
     lastName: ValidationInputField<String> = NameField(""),
     username: InputField<String> = InputField(""),
-    headerStyle: TextStyle = MaterialTheme.typography.displayMedium,
+    headerStyle: TextStyle = MaterialTheme.typography.titleLarge,
     spacerModifier: Modifier,
 ) {
     Column {
-        val textFieldStyle = MaterialTheme.typography.headlineLarge
+        val textFieldStyle = MaterialTheme.typography.bodyMedium
 
         FormInputField(
             title = "Nombre de usuario",
@@ -390,7 +393,7 @@ private fun CreateUserFormContent(
 @Composable
 private fun GenderInputField(
     gender: InputField<Gender>,
-    headerStyle: TextStyle = MaterialTheme.typography.displayMedium,
+    headerStyle: TextStyle = globalHeaderStyle(),
 ) {
     Column {
         Text(
@@ -447,13 +450,13 @@ private fun GenderSelector(
 @OptIn(ExperimentalMaterial3Api::class)
 private fun FormInputField(
     title: String = "",
-    titleStyle: TextStyle = MaterialTheme.typography.displayMedium,
+    titleStyle: TextStyle = MaterialTheme.typography.titleLarge,
     text: String = "",
     hasError: Boolean = false,
     supportText: String = "",
     onValueChange: (String) -> Unit = {},
     modifier: Modifier = Modifier,
-    textFieldStyle: TextStyle = MaterialTheme.typography.headlineLarge,
+    textFieldStyle: TextStyle = MaterialTheme.typography.bodyMedium,
 ) {
     Column(modifier = modifier) {
         Text(
@@ -467,19 +470,11 @@ private fun FormInputField(
         TextField(
             value = text,
             onValueChange = { input -> onValueChange(input) },
-            colors = TextFieldDefaults.textFieldColors(
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                errorIndicatorColor = Color.Transparent,
-            ),
             isError = hasError,
             supportingText = { if (hasError) Text(text = supportText) },
             textStyle = textFieldStyle,
-            shape = RoundedCornerShape(20.dp), // Aplica esquinas redondeadas correctamente
             modifier = Modifier
-                .width(300.dp) // Ancho fijo
                 .wrapContentHeight() // Se ajusta verticalmente al contenido
-                .clip(RoundedCornerShape(20.dp)), // Esquinas redondeadas
         )
     }
 }
