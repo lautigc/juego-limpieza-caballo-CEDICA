@@ -367,7 +367,7 @@ fun DirtyHorsePart(part: HorsePart = horseParts[0], toolPosition: Offset, soundM
         Log.d("GameDebug", "🟢 Herramienta dentro del área centrada: $isOverCleanZone")
 
         val distance = sqrt((toolPosition.x - lastPosition.x).pow(2) + (toolPosition.y - lastPosition.y).pow(2))
-        isMoving.value = distance > 20f
+        isMoving.value = distance > 10f
         Log.d("GameDebug", "¿Hay movimiento?: ${isMoving.value}")
         lastPosition = toolPosition
         isCleaning.value = isOverCleanZone && isMoving.value
