@@ -391,7 +391,7 @@ fun DirtyHorsePart(part: HorsePart = horseParts[0], toolPosition: Offset, soundM
     }
 
     val dirtPositions = remember {
-        List(5) {
+        List(part.dirtyLevel) {
             val maxX = (horseBitmap.width - dirtBitmap.width).coerceAtLeast(1)
             val maxY = (horseBitmap.height - dirtBitmap.height).coerceAtLeast(1)
 
