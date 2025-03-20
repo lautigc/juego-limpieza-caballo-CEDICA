@@ -68,6 +68,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cedica.cedica.core.utils.HorsePart
 import com.cedica.cedica.R
+import com.cedica.cedica.core.configuration.GlobalConfiguration
 import com.cedica.cedica.core.utils.isInPreview
 import com.cedica.cedica.core.utils.sound.SoundPlayer
 import com.cedica.cedica.core.utils.getStageInfo
@@ -80,6 +81,7 @@ import com.google.android.material.progressindicator.LinearProgressIndicator
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.util.Date
 import kotlin.math.roundToInt
 
@@ -133,13 +135,17 @@ fun GameScreen(navigateToMenu: () -> Unit,
     val correctTool = tools.find {it.name == stageInfo.tool.displayName}
     val cantStages = if (currentConfiguration.numberOfImages in 1..groomingStages.size) currentConfiguration.numberOfImages else groomingStages.size
     Log.d("GameDebug", "Cant etapas: ${currentConfiguration.numberOfImages}, $cantStages")
+
     // para el audio (solo disponible fuera de la preview)
     val context = LocalContext.current
     val soundPlayer: SoundPlayer?
     val speech: TextToSpeechWrapper?
     val voice = currentConfiguration.voiceType
     if(!isInPreview()) {
-        soundPlayer = remember { SoundPlayer(context) }
+        val globalConfig = runBlocking {
+             GlobalConfiguration.getGlobalConfiguration().first()
+        }
+        soundPlayer = remember { SoundPlayer(context, globalConfig.effectsVolume) }
         speech = remember { TextToSpeechWrapper(context, voice) }
     } else {
         soundPlayer = remember { null }
@@ -148,7 +154,6 @@ fun GameScreen(navigateToMenu: () -> Unit,
 
     LaunchedEffect(Unit) {
         soundPlayer?.loadSound("success", R.raw.successed2)
-        soundPlayer?.loadSound("snort", R.raw.snort_cut)
         soundPlayer?.loadSound("wrong", R.raw.wrong)
         soundPlayer?.loadSound("notification", R.raw.new_notification)
         soundPlayer?.loadSound("cleaning", R.raw.scrubbing_brush)

@@ -4,13 +4,21 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.media.SoundPool
 import com.cedica.cedica.R
+import com.cedica.cedica.ui.utils.view_models.UserViewModel
 import kotlinx.coroutines.delay
 
-class SoundPlayer(private val context: Context) {
+class SoundPlayer(private val context: Context, private val configVolume: Int) {
     private val soundPool: SoundPool
     private val soundMap = mutableMapOf<String, Int>()
+    private var normVolume = 0f;
 
     init {
+        if (configVolume != 0) {
+            this.normVolume = (1 / configVolume).toFloat()
+        } else {
+            this.normVolume = 0F
+        }
+
         val audioAttributes = AudioAttributes.Builder()
             .setUsage(AudioAttributes.USAGE_GAME)
             .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
@@ -29,7 +37,7 @@ class SoundPlayer(private val context: Context) {
 
     fun playSound(key: String) {
         val soundId = soundMap[key] ?: return
-        soundPool.play(soundId, 1.0f, 1.0f, 1, 0, 1.0f)
+        soundPool.play(soundId, normVolume, normVolume, 1, 0, 1.0f)
     }
 
     fun playOnlyOneSound(key:String){
