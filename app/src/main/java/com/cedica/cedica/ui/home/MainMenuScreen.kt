@@ -1,6 +1,7 @@
 package com.cedica.cedica.ui.home
 
 import android.content.res.Configuration
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -44,6 +45,7 @@ import com.cedica.cedica.R
 import com.cedica.cedica.core.guestData.isGuestUser
 import com.cedica.cedica.core.navigation.About
 import com.cedica.cedica.core.navigation.Game
+import com.cedica.cedica.core.navigation.Menu
 import com.cedica.cedica.core.navigation.Stats
 import com.cedica.cedica.core.navigation.UserListScreen
 import com.cedica.cedica.data.permissions.HasPermission
@@ -151,6 +153,7 @@ private fun MenuItems(
     if (!isGuestUser(uiState.user.id)) {
         MenuButton("Ingresar como invitado", modifier = buttonModifier) {
             onGuestLogin()
+            navController.navigate(Menu)
         }
     }
     spaceBetweenButtons?.let { Spacer(modifier = Modifier.size(it)) }
@@ -161,10 +164,10 @@ private fun MenuItems(
                 navController.navigate(item.destination)
             }
         }
-
         item.permission?.let { p ->
             HasPermission(p) {
                 button.invoke()
+                Log.d("roleperm:", "uiState:${uiState.user.id}")
             }
         } ?: button.invoke()
         spaceBetweenButtons?.let { Spacer(modifier = Modifier.size(it)) }
