@@ -13,6 +13,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cedica.cedica.data.seed.users_seed
 import com.cedica.cedica.core.guestData.GuestUser
+import com.cedica.cedica.data.permissions.HasPermission
 import com.cedica.cedica.data.permissions.Permission
 import com.cedica.cedica.data.user.User
 import com.cedica.cedica.ui.AppViewModelProvider
@@ -110,11 +111,13 @@ private fun Screen(
 
     Scaffold(
         floatingActionButton = {
-            ExpandableFAB(
-                onGuestLogin = onGuestLogin,
-                onCreateTherapist = onCreateTherapist,
-                onCreatePatient = onCreatePatient,
-            )
+            HasPermission(listOf(Permission.PATIENT_CREATE, Permission.THERAPIST_CREATE)) {
+                ExpandableFAB(
+                    onGuestLogin = onGuestLogin,
+                    onCreateTherapist = onCreateTherapist,
+                    onCreatePatient = onCreatePatient,
+                )
+            }
         }
     ) { _ ->
         TabRowComponent(
