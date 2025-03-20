@@ -169,7 +169,7 @@ val horseParts = listOf(
             0.2710843f to 0.245614f
         ),
         HorsePartType.CUELLO.imageRes,
-        4
+        7
     ),
     HorsePart(
         HorsePartType.LOMO.partName,
