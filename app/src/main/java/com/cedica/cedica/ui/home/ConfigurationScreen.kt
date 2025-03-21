@@ -1,7 +1,5 @@
 package com.cedica.cedica.ui.home
 
-import android.util.Log
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,7 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -29,7 +27,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -85,51 +82,53 @@ private fun ConfigurationScreenContent(
 ) {
     val scrollState = rememberScrollState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFADD8E6))
-            .padding(16.dp)
-            .verticalScroll(scrollState),
-    ) {
-        val optionModifier = Modifier.padding(dimensionResource(R.dimen.padding_medium))
-        val labelStyle = MaterialTheme.typography.titleSmall
-
-        Text(
-            text = "Configuración",
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        )
-
-        HorizontalDivider(modifier = Modifier.padding(16.dp), color = Color.Black)
-
-        VolumeConfiguration(
-            configuration = globalConfig,
-            onChangeConfiguration = onChangeGlobalConfig,
-        )
-
-        HorizontalDivider(modifier = Modifier.padding(16.dp), color = Color.Black)
-
-        SectionTitle("Dificultad") {
-            DifficultyConfiguration(
-                optionModifier = optionModifier,
-                configuration = personalConfig,
-                onChange = onChangePersonalConfig,
-                labelStyle = labelStyle,
-            )
-        }
-
-        HorizontalDivider(modifier = Modifier.padding(16.dp), color = Color.Black)
-
-        SectionTitle("Accesibilidad"
-
+    Card(modifier = Modifier.padding(dimensionResource(R.dimen.padding_small))
+    ){
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .verticalScroll(scrollState),
         ) {
-            AccessibilityConfiguration(
-                configuration = personalConfig,
-                onChange = onChangePersonalConfig,
+            val optionModifier = Modifier.padding(dimensionResource(R.dimen.padding_medium))
+            val labelStyle = MaterialTheme.typography.titleSmall
+
+            Text(
+                text = "Configuración",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
+
+            HorizontalDivider(modifier = Modifier.padding(16.dp), color = MaterialTheme.colorScheme.primary)
+
+            VolumeConfiguration(
+                configuration = globalConfig,
+                onChangeConfiguration = onChangeGlobalConfig,
+            )
+
+            HorizontalDivider(modifier = Modifier.padding(16.dp), color = MaterialTheme.colorScheme.primary)
+
+            SectionTitle("Dificultad") {
+                DifficultyConfiguration(
+                    optionModifier = optionModifier,
+                    configuration = personalConfig,
+                    onChange = onChangePersonalConfig,
+                    labelStyle = labelStyle,
+                )
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(16.dp), color = MaterialTheme.colorScheme.primary)
+
+            SectionTitle("Accesibilidad"
+
+            ) {
+                AccessibilityConfiguration(
+                    configuration = personalConfig,
+                    onChange = onChangePersonalConfig,
+                )
+            }
+            //ConfigButtons(navigateToMenu)
         }
-        //ConfigButtons(navigateToMenu)
     }
 }
 
@@ -286,7 +285,6 @@ fun ConfigButtons(navigateToMenu: () -> Unit) {
     ) {
         Button(
             onClick = { navigateToMenu() },
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
         ) {
             Text("Volver")
         }

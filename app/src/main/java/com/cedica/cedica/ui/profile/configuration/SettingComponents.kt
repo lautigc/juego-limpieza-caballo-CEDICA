@@ -69,10 +69,12 @@ fun SettingOption(
     horizontalDivider.takeIf { it }?.let {
         HorizontalDivider(
             thickness = 1.dp,
-            modifier = Modifier.padding(
+            modifier = Modifier
+                .padding(
                 top = dimensionResource(R.dimen.padding_medium),
                 bottom = dimensionResource(R.dimen.padding_medium),
             ),
+            color = MaterialTheme.colorScheme.primary
         )
     }
 }
