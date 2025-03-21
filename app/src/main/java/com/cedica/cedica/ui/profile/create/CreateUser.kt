@@ -124,7 +124,8 @@ fun EditTherapistForm(
         lastName = viewModel.lastName,
         dataError = viewModel.dataError,
         username = viewModel.username,
-        onClick = { viewModel.insertUser(redirectTo = onEditTherapistNavigateTo) }
+        onClick = { viewModel.insertUser(redirectTo = onEditTherapistNavigateTo) },
+        saveButtonTitle = "Aplicar cambios"
     )
 }
 
@@ -162,7 +163,8 @@ fun EditPatientForm(
         date = viewModel.birthDate,
         alert = viewModel.alert,
         username = viewModel.username,
-        onCreate = { viewModel.insertUser(redirectTo = onEditPatientNavigateTo) }
+        onCreate = { viewModel.insertUser(redirectTo = onEditPatientNavigateTo) },
+        saveButtonTitle = "Aplicar cambios"
     )
 }
 
