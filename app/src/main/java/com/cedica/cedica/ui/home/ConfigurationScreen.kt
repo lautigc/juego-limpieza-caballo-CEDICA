@@ -129,7 +129,7 @@ private fun ConfigurationScreenContent(
                 onChange = onChangePersonalConfig,
             )
         }
-        ConfigButtons(navigateToMenu)
+        //ConfigButtons(navigateToMenu)
     }
 }
 

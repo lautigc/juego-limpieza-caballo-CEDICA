@@ -32,17 +32,33 @@ fun NavigationWrapper() {
 
         composable<Configuration> {
             ConfigurationScreen {
-                navController.navigate(Menu)
+                navController.navigate(Menu) {
+                    popUpTo(Menu) {
+                        inclusive = true
+                    }
+                }
             }
         }
 
         composable<Game> {
-            GameScreen (navigateToMenu = { navController.navigate(Menu) })
+            GameScreen (
+                navigateToMenu = {
+                    navController.navigate(Menu) {
+                        popUpTo(Menu) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
         }
 
         composable<About> {
             AboutScreen {
-                navController.navigate(Menu)
+                navController.navigate(Menu) {
+                    popUpTo(Menu) {
+                        inclusive = true
+                    }
+                }
             }
         }
 
@@ -50,8 +66,20 @@ fun NavigationWrapper() {
             val route: UserListScreen = backStackEntry.toRoute()
             ProfileListScreen(
                 notification = route.alertNotification,
-                onNavigateGuestLogin = { navController.navigate(Menu) },
-                onNavigateUserLogin = { navController.navigate(Menu) },
+                onNavigateGuestLogin = {
+                    navController.navigate(Menu) {
+                        popUpTo(Menu) {
+                            inclusive = true
+                        }
+                    }
+                },
+                onNavigateUserLogin = {
+                    navController.navigate(Menu) {
+                        popUpTo(Menu) {
+                            inclusive = true
+                        }
+                    }
+                },
                 onNavigateCreateTherapist = { navController.navigate(CreateTherapistScreen) },
                 onNavigateCreatePatient = { navController.navigate(CreatePatientScreen) },
                 onNavigateEditTherapist = { userID -> navController.navigate(EditTherapistScreen(userID)) },
@@ -66,17 +94,29 @@ fun NavigationWrapper() {
 
         composable<CreateTherapistScreen> {
             CreateTherapistForm(
-                onNavigateToCreateUser = { navController.navigate(route = UserListScreen(
-                    alertNotification = "Usuario creado correctamente"
-                )) }
+                onNavigateToCreateUser = {
+                    navController.navigate(
+                        route = UserListScreen(alertNotification = "Usuario creado correctamente")
+                    ) {
+                        popUpTo(UserListScreen()) {
+                            inclusive = true
+                        }
+                    }
+                }
             )
         }
 
         composable<CreatePatientScreen> {
             CreatePatientForm(
-                onNavigateToCreateUser = { navController.navigate(route = UserListScreen(
-                    alertNotification = "Usuario creado correctamente"
-                )) }
+                onNavigateToCreateUser = {
+                    navController.navigate(
+                        route = UserListScreen(alertNotification = "Usuario creado correctamente")
+                    ) {
+                        popUpTo(UserListScreen()) {
+                            inclusive = true
+                        }
+                    }
+                }
             )
         }
 
@@ -85,8 +125,13 @@ fun NavigationWrapper() {
             EditTherapistForm(
                 userID = args.userID,
                 onEditTherapistNavigateTo = {
-                    navController
-                        .navigate(UserListScreen(alertNotification = "Usuario editado correctamente"))
+                    navController.navigate(
+                        UserListScreen(alertNotification = "Usuario editado correctamente")
+                    ) {
+                        popUpTo(UserListScreen()) {
+                            inclusive = true
+                        }
+                    }
                 }
             )
         }
@@ -96,17 +141,20 @@ fun NavigationWrapper() {
             EditPatientForm(
                 userID = args.userID,
                 onEditPatientNavigateTo = {
-                    navController
-                        .navigate(UserListScreen(alertNotification = "Usuario editado correctamente"))
+                    navController.navigate(
+                            UserListScreen(alertNotification = "Usuario editado correctamente")
+                    ) {
+                        popUpTo(UserListScreen()) {
+                            inclusive = true
+                        }
+                    }
                 }
             )
         }
 
         composable<UserSetting> { backStackEntry ->
             val args: UserSetting = backStackEntry.toRoute()
-            UserSettingScreen(
-                userID = args.userID,
-            )
+            UserSettingScreen(userID = args.userID,)
         }
 
     }
