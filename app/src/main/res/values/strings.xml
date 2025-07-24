@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">cedica</string>
+
+    <!-- Profile screen -->
+    <string name="register_button_label">Registrar</string>
+    <string name="man_voice_option_title">Masculino</string>
+    <string name="woman_voice_option_title">Femenino</string>
+
+    <!-- Settings screen -->
+    <string name="setting_time_title">Tiempo</string>
+    <string name="setting_time_secondary_text">En segundos para completar el juego</string>
+    <string name="setting_images_title">Cantidad de etapas</string>
+    <string name="setting_images_secondary_text">Etapas a jugar por el usuario</string>
+    <string name="setting_try_title">Intentos</string>
+    <string name="setting_try_secondary_text">Errores permitidos antes de proveer una pista</string>
+    <string name="setting_dificulty_title">Dificultad</string>
+    <string name="setting_voice_title">Volumen</string>
+    <string name="setting_level_title">Nivel</string>
 </resources>
